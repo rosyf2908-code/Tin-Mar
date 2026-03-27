@@ -11,16 +11,26 @@ st.set_page_config(page_title="DMH National AI Weather Dashboard", layout="wide"
 
 # ၁။ မြန်မာနိုင်ငံ အထင်ကရမြို့များ Lat/Lon (အဆင့် ၁)
 MYANMAR_CITIES = {
-    "Naypyidaw": {"lat": 19.7633, "lon": 96.0785},
+     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785},
     "Yangon": {"lat": 16.8661, "lon": 96.1951},
     "Mandalay": {"lat": 21.9747, "lon": 96.0836},
     "Bago": {"lat": 17.3333, "lon": 96.4833},
     "Mawlamyine": {"lat": 16.4905, "lon": 97.6282},
     "Taunggyi": {"lat": 20.7888, "lon": 97.0333},
+    "Myitkyina": {"lat": 25.3831, "lon": 97.3964},
     "Sittwe": {"lat": 20.1436, "lon": 92.8977},
     "Pathein": {"lat": 16.7833, "lon": 94.7333},
     "Magway": {"lat": 20.1500, "lon": 94.9167},
-    "Monywa": {"lat": 22.1167, "lon": 95.1333}
+    "Monywa": {"lat": 22.1167, "lon": 95.1333},
+    "Lashio": {"lat": 22.9333, "lon": 97.7500},
+    "Hpa-An": {"lat": 16.8906, "lon": 97.6333},
+    "Loikaw": {"lat": 19.6742, "lon": 97.2093},
+    "Mindat": {"lat": 21.3748, "lon": 93.9725},
+    "Pyay": {"lat": 18.8167, "lon": 95.2167},
+    "Meiktila": {"lat": 20.8833, "lon": 95.8667},
+    "Dawei": {"lat": 14.0833, "lon": 98.2000},
+    "Kengtung": {"lat": 21.2833, "lon": 99.6000},
+    "Myeik": {"lat": 12.4333, "lon": 98.6000}
 }
 
 st.title("🌦️ DMH National AI Weather & Climate Dashboard")
