@@ -6,11 +6,17 @@ import requests
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
-# app.py ဖိုင်၏ အပေါ်ဆုံးတွင် ပြင်ဆင်ရန်
+# app.py ရဲ့ အပေါ်ဆုံး Line 10 ဝန်းကျင်က code ကို ဒီလိုလေး ပြောင်းလိုက်ပါ
 st.set_page_config(
-    page_title="DMH AI Weather Dashboard", # Browser Tab တွင် ပေါ်မည့်အမည်
+    page_title="DMH AI Weather Dashboard",
     layout="wide",
-    page_icon="🌦️"
+    page_icon="🌦️",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://www.moezala.gov.mm',
+        'Report a bug': None,
+        'About': "# DMH AI Weather Dashboard \n Developed by Tin-Mar (DMH Myanmar)"
+    }
 )
 
 # --- မြန်မာနိုင်ငံ အထင်ကရမြို့ကြီး (၂၀) ၏ Lat/Lon စာရင်း (အဆင့် ၁) ---
