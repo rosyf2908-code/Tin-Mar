@@ -8,9 +8,9 @@ from sklearn.metrics import mean_absolute_error
 
 # 1. Page Configuration - Title, Icon, Layout
 st.set_page_config(
-    page_title="DMH National AI Weather Dashboard",
+    page_title="DMH AI Weather Dashboard",  # ဒီနေရာမှာ လူကြီးမင်း ပေါ်စေချင်တဲ့ အမည်ကို ရေးပါ
     layout="wide",
-    page_icon="🌦️"
+    page_icon="🌦️" # Icon လေးလည်း ဒီမှာ တစ်ခါတည်း ပြောင်းလို့ရပါတယ်
 )
 
 # --- မြန်မာနိုင်ငံ အထင်ကရမြို့ကြီး (၂၀) ၏ Lat/Lon စာရင်း (အဆင့် ၁) ---
