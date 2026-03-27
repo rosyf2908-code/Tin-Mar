@@ -6,11 +6,11 @@ import requests
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
-# 1. Page Configuration - Title, Icon, Layout
+# app.py ဖိုင်၏ အပေါ်ဆုံးတွင် ပြင်ဆင်ရန်
 st.set_page_config(
-    page_title="DMH AI Weather Dashboard",  # ဒီနေရာမှာ လူကြီးမင်း ပေါ်စေချင်တဲ့ အမည်ကို ရေးပါ
+    page_title="DMH AI Weather Dashboard", # Browser Tab တွင် ပေါ်မည့်အမည်
     layout="wide",
-    page_icon="🌦️" # Icon လေးလည်း ဒီမှာ တစ်ခါတည်း ပြောင်းလို့ရပါတယ်
+    page_icon="🌦️"
 )
 
 # --- မြန်မာနိုင်ငံ အထင်ကရမြို့ကြီး (၂၀) ၏ Lat/Lon စာရင်း (အဆင့် ၁) ---
