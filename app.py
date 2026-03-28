@@ -23,6 +23,22 @@ st.set_page_config(
     }
 )
 
+# --- ဖုန်းမှာ အမည်မှန်ပေါ်စေရန် အောက်ပါ Code ကို ထပ်ဖြည့်ပေးပါ ---
+st.markdown(
+    """
+    <style>
+        /* Sidebar ထဲက Calendar icon ကို ချိန်ညှိရန် (Optional) */
+        .css-163ttbj { font-size: 24px; }
+    </style>
+    <head>
+        <title>DMH AI Weather Dashboard</title>
+        <meta name="apple-mobile-web-app-title" content="DMH Weather">
+        <meta name="application-name" content="DMH Weather">
+    </head>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- မြန်မာနိုင်ငံ အထင်ကရမြို့ကြီး (၂၀) ၏ Lat/Lon စာရင်း ---
 MYANMAR_CITIES_20 = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785},
