@@ -34,7 +34,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
+st.markdown('<link rel="manifest" href="./manifest.json">', unsafe_allow_html=True)
 # --- မြန်မာနိုင်ငံ မြို့ကြီး (၂၀) စာရင်း ---
 MYANMAR_CITIES_20 = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785},
