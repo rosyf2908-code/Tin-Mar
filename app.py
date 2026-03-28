@@ -72,7 +72,11 @@ st.sidebar.markdown("---")
 sorted_cities = sorted(list(MYANMAR_CITIES_20.keys()))
 selected_city = st.sidebar.selectbox("🎯 Select City / မြို့ရွေးချယ်ရန်", sorted_cities)
 
-view_mode = st.sidebar.radio("📊 View Mode", ["7-Day Forecast", "Future Projections (2100)"])
+#view_mode = st.sidebar.radio("📊 View Mode", ["7-Day Forecast", "Future Projections (2100)"])
+# အရင်က code: st.subheader(f"📅 7-Day Operational Forecast for {selected_city}")
+
+# အခုလို ပြောင်းရေးလိုက်ပါ (ရက်စွဲအမှန်ကို ရှေ့ဆုံးကနေ အကြီးကြီးပြပါမယ်)
+st.subheader(f"🗓️ {today_str} - 7-Day Forecast for {selected_city}")
 st.sidebar.markdown("---")
 st.sidebar.info("Developed for DMH Myanmar 🇲🇲")
 
