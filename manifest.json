@@ -1,6 +1,6 @@
 {
   "short_name": "DMH Weather",
-  "name": "DMH AI Weather Dashboard",
+  "name": "DMH Weather",
   "icons": [
     {
       "src": "https://www.moezala.gov.mm/themes/custom/dmh/logo.png",
@@ -9,7 +9,5 @@
     }
   ],
   "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#1E88E5",
-  "background_color": "#ffffff"
+  "display": "standalone"
 }
