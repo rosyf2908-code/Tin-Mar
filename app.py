@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 import requests
 from datetime import datetime
 
@@ -27,82 +28,74 @@ MYANMAR_CITIES_20 = {
     "Hkamti": {"lat": 25.9977, "lon": 95.6905}, "Dawei": {"lat": 14.0833, "lon": 98.2000}
 }
 
+def get_wind_dir_text(deg):
+    dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+    return dirs[int((deg + 11.25) / 22.5) % 16]
+
 @st.cache_data(ttl=300)
 def get_weather_data(city):
     lat, lon = MYANMAR_CITIES_20[city]['lat'], MYANMAR_CITIES_20[city]['lon']
-    # ၁၆ ရက်စာ (Free API ၏ အများဆုံး)
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
-        r = requests.get(url).json()
+        r = requests.get(url, timeout=10).json()
+        if 'hourly' not in r: return None, None
         h, d = r['hourly'], r['daily']
         df_h = pd.DataFrame({"Time": pd.to_datetime(h['time']), "Temp": h['temperature_2m'], "Rain": h['precipitation'], "Wind": h['windspeed_10m'], "WindDir": h['winddirection_10m']})
         df_d = pd.DataFrame({"Date": pd.to_datetime(d['time']), "Tmax": d['temperature_2m_max'], "Tmin": d['temperature_2m_min'], "RainSum": d['precipitation_sum'], "WindMax": d['windspeed_10m_max'], "WindDirDom": d['winddirection_10m_dominant']})
         return df_h, df_d
     except: return None, None
 
-# --- Sidebar & UI ---
+# --- Sidebar ---
 st.sidebar.image("https://www.moezala.gov.mm/themes/custom/dmh/logo.png", width=80)
 selected_city = st.sidebar.selectbox("🎯 Select City", sorted(list(MYANMAR_CITIES_20.keys())))
+
+# --- UI Display ---
+st.markdown(f"<h1 style='text-align: center; color: #1E88E5;'>🌦️ {selected_city} National AI Weather Dashboard</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'><b>Current Local Time:</b> {now.strftime('%I:%M %p, %d %b %Y')}</p>", unsafe_allow_html=True)
+
 df_h, df_d = get_weather_data(selected_city)
 
-if df_h is not None:
-    st.markdown(f"<h1 style='text-align: center;'>🌦️ {selected_city} Weather & Wind Analysis</h1>", unsafe_allow_html=True)
+# ဒေတာရှိမှသာ ဂရပ်များကို ပြသမည် (Error မတက်အောင် ဤနေရာတွင် စစ်ဆေးပါသည်)
+if df_d is not None and not df_d.empty:
+    # Live Highlights
+    curr_hour_idx = min(current_hour, len(df_h)-1)
+    curr_data = df_h.iloc[curr_hour_idx]
+    
+    st.markdown("### 📍 Live Highlights")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("🌡️ Temp", f"{curr_data['Temp']} °C")
+    c2.metric("🌧️ Rain", f"{curr_data['Rain']} mm")
+    c3.metric("💨 Wind", f"{curr_data['Wind']} mph")
+    c4.metric("🧭 Direction", f"{get_wind_dir_text(curr_data['WindDir'])}")
     st.markdown("---")
 
-    # --- Wind Analysis Graph (Line + Arrow Markers) ---
-    st.subheader("💨 Wind Speed (mph) & Direction (Arrows)")
-    
+    # --- ၁။ Wind Analysis (Line + Arrow Markers) ---
+    st.subheader("💨 Wind Speed (mph) & Direction (360° Arrows)")
     fig_wind = go.Figure()
-
-    # ၁။ Wind Speed Line (အစိမ်းရောင်လိုင်း)
-    fig_wind.add_trace(go.Scatter(
-        x=df_d['Date'], y=df_d['WindMax'],
-        mode='lines+markers',
-        name='Wind Speed',
-        line=dict(color='green', width=3),
-        marker=dict(size=8)
-    ))
-
-    # ၂။ Wind Direction Arrows (၃၆၀ ဒီဂရီ မြှားခေါင်းများ)
-    # Plotly တွင် 'arrow' သင်္ကေတကို သုံးပြီး angle ကို WindDir အတိုင်း လှည့်ပါမည်
-    fig_wind.add_trace(go.Scatter(
-        x=df_d['Date'], y=df_d['WindMax'] + 2, # လိုင်းပေါ်မှာ မြင်သာအောင် အပေါ်နည်းနည်းတင်ထားခြင်း
-        mode='markers',
-        name='Direction',
-        marker=dict(
-            symbol='arrow',
-            size=15,
-            angle=df_d['WindDirDom'], # မြှားကို ဒီဂရီအတိုင်းလှည့်ခြင်း
-            color='darkred',
-            line=dict(width=2, color='black')
-        ),
-        text=df_d['WindDirDom'].apply(lambda x: f"{x}°"),
-        hoverinfo='text'
-    ))
-
-    fig_wind.update_layout(
-        height=500,
-        xaxis_title="Date",
-        yaxis_title="Wind Speed (mph)",
-        plot_bgcolor="#f9f9f9",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-    )
+    fig_wind.add_trace(go.Scatter(x=df_d['Date'], y=df_d['WindMax'], mode='lines+markers', name='Max Wind Speed', line=dict(color='green', width=2)))
     
+    # မြှားခေါင်းများ ထည့်သွင်းခြင်း
+    fig_wind.add_trace(go.Scatter(
+        x=df_d['Date'], y=df_d['WindMax'] + 1,
+        mode='markers', name='Direction',
+        marker=dict(symbol='arrow', size=15, angle=df_d['WindDirDom'], color='red', line=dict(width=1, color='black'))
+    ))
+    fig_wind.update_layout(height=450, xaxis_title="Date", yaxis_title="Speed (mph)")
     st.plotly_chart(fig_wind, use_container_width=True)
-    st.caption("မြှားခေါင်းလေးများသည် လေတိုက်ရာအရပ် (Direction) ကို ညွှန်ပြနေခြင်းဖြစ်ပါသည်။")
 
-    # --- အခြား Graph များ (Temperature & Rain) ---
-    st.markdown("---")
+    # --- ၂။ Temperature & Rain ---
     st.subheader("🌡️ Temperature & 🌧️ Rain Forecast")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title="Temperature Outlook").update_layout(height=400))
-    with c2:
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', title="Precipitation Sum (mm)").update_layout(height=400))
+    colA, colB = st.columns(2)
+    with colA:
+        fig_t = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax': 'red', 'Tmin': 'blue'}, title="Temp Outlook")
+        st.plotly_chart(fig_t, use_container_width=True)
+    with colB:
+        fig_r = px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['skyblue'], title="Precipitation Sum (mm)")
+        st.plotly_chart(fig_r, use_container_width=True)
 
 else:
-    st.error("Data Fetching Error.")
+    st.error("⚠️ Data connection lost or API error. Please refresh the page or check your internet.")
 
-# Footer
+# --- Footer ---
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: gray;'>Source: Open-Meteo API | MMT Timezone</p>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: gray;'><p>Source: Open-Meteo API | MMT Timezone</p></div>", unsafe_allow_html=True)
