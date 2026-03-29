@@ -107,4 +107,4 @@ else:
     st.error("Data could not be fetched. Please refresh the page.")
 
 st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: gray;'>
+st.markdown(f"<p style='text-align: center; color: gray;'>DMH Myanmar | AI Integrated Weather Services <br> {today_str}</p>", unsafe_allow_html=True)
