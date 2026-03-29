@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -61,8 +60,7 @@ def get_live_forecast_20(city):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=Asia%2FYangon"
     try:
         r = requests.get(url).json()
-        if 'daily' not in r:
-            return pd.DataFrame()
+        if 'daily' not in r: return pd.DataFrame()
         return pd.DataFrame({
             "Date": pd.to_datetime(r['daily']['time']),
             "Temp_Max": r['daily']['temperature_2m_max'],
@@ -87,35 +85,53 @@ sorted_cities = sorted(list(MYANMAR_CITIES_20.keys()))
 selected_city = st.sidebar.selectbox("🎯 Select City", sorted_cities)
 view_mode = st.sidebar.radio("📊 View Mode", ["7-Day Forecast", "Future Projections (2100)"])
 
-# --- Main Logic ---
-st.markdown(f"<h1 style='text-align: center; color: #1E88E5;'>🌦️ {selected_city} Weather Dashboard</h1>", unsafe_allow_html=True)
+# --- Main UI ---
+st.markdown(f"<h1 style='text-align: center; color: #1E88E5;'>🌦️ {selected_city} National AI Weather Dashboard</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'><b>Last Updated:</b> {today_str}</p>", unsafe_allow_html=True)
+st.markdown("---")
 
 forecast_df = get_live_forecast_20(selected_city)
 
 if not forecast_df.empty:
+    # Today's Highlights
     st.markdown(f"### ☀️ {selected_city} - Today's Highlights")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("🌡️ Max Temp", f"{forecast_df['Temp_Max'][0]} °C")
     c2.metric("❄️ Min Temp", f"{forecast_df['Temp_Min'][0]} °C")
     c3.metric("🌧️ Rainfall", f"{forecast_df['Rain'][0]} mm")
     c4.metric("💨 Wind Speed", f"{forecast_df['Wind'][0]} km/h")
+    st.markdown("---")
 
     if view_mode == "7-Day Forecast":
-        st.subheader(f"📈 7-Day Forecast for {selected_city}")
-        col1, col2 = st.columns(2)
-        with col1:
-            fig_temp = px.line(forecast_df, x='Date', y=['Temp_Max', 'Temp_Min'], markers=True, title="Temperature Forecast (°C)")
-            st.plotly_chart(fig_temp, use_container_width=True)
-        with col2:
-            fig_rain = px.bar(forecast_df, x='Date', y='Rain', title="Precipitation Forecast (mm)")
-            st.plotly_chart(fig_rain, use_container_width=True)
+        # ရက်စွဲပါသော စာကြောင်း ပြန်ထည့်ခြင်း
+        st.subheader(f"📈 {today_str} - 7-Day Forecast for {selected_city}")
+        st.info(f"Forecast Period: {forecast_df['Date'].dt.strftime('%d %b').iloc[0]} to {forecast_df['Date'].dt.strftime('%d %b').iloc[-1]}")
+
+        # Graph ၁ - Temperature (အပေါ်)
+        fig_temp = px.line(forecast_df, x='Date', y=['Temp_Max', 'Temp_Min'], markers=True, 
+                          title=f"Temperature Forecast for {selected_city} (°C)",
+                          color_discrete_map={'Temp_Max': 'orange', 'Temp_Min': 'blue'})
+        fig_temp.update_layout(height=500, plot_bgcolor="#F8F9FA")
+        st.plotly_chart(fig_temp, use_container_width=True)
+
+        st.markdown("<br>", unsafe_allow_html=True) # Space
+
+        # Graph ၂ - Rain (အောက်)
+        fig_rain = px.bar(forecast_df, x='Date', y='Rain', 
+                         title=f"Precipitation Forecast for {selected_city} (mm)",
+                         color_discrete_sequence=['deepskyblue'])
+        fig_rain.update_layout(height=500, plot_bgcolor="#F8F9FA")
+        st.plotly_chart(fig_rain, use_container_width=True)
+
     else:
-        st.subheader(f"🔮 Future Trend (2026-2100)")
+        st.subheader(f"🔮 {selected_city} Future Climate Trend (2026-2100)")
         future_df = get_future_ai_projection_20(selected_city)
-        fig_future = px.line(future_df, x='Year', y='Projected_Temp', title="Projected Temperature Rise")
+        fig_future = px.line(future_df, x='Year', y='Projected_Temp', title="Projected Temperature Rise", color_discrete_sequence=['red'])
+        fig_future.update_layout(height=600)
         st.plotly_chart(fig_future, use_container_width=True)
+        st.warning("AI insight: This represents a long-term warming trend based on current data.")
 else:
-    st.error("Data could not be fetched. Please check your connection.")
+    st.error("Data could not be fetched. Please check connection and city selection.")
 
 st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: gray;'>Department of Meteorology and Hydrology (DMH) | Myanmar 🇲🇲</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: gray;'>Department of Meteorology and Hydrology (DMH) | Myanmar 🇲🇲 <br> Data as of: {today_str}</p>", unsafe_allow_html=True)
