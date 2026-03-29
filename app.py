@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 import requests
 from datetime import datetime
 
@@ -10,9 +11,9 @@ now = datetime.now()
 current_hour = now.hour
 
 # --- ၂။ Page Configuration ---
-st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide")
+st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌦️")
 
-# မြို့ကြီး (၂၀) စာရင်း (သြဒီနိတ်များ)
+# မြို့ကြီး (၂၀) စာရင်း
 MYANMAR_CITIES_20 = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon": {"lat": 16.8661, "lon": 96.1951},
     "Mandalay": {"lat": 21.9747, "lon": 96.0836}, "Bago": {"lat": 17.3333, "lon": 96.4833},
@@ -26,66 +27,59 @@ MYANMAR_CITIES_20 = {
     "Hkamti": {"lat": 25.9977, "lon": 95.6905}, "Dawei": {"lat": 14.0833, "lon": 98.2000}
 }
 
+def get_wind_dir_text(deg):
+    dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+    return dirs[int((deg + 11.25) / 22.5) % 16]
+
 @st.cache_data(ttl=300)
-def get_detailed_weather(city):
+def get_all_weather_data(city):
     lat, lon = MYANMAR_CITIES_20[city]['lat'], MYANMAR_CITIES_20[city]['lon']
-    # forecast_days=16 (Maximum available for free)
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=windspeed_10m,winddirection_10m&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    # နေ့စဉ်ခန့်မှန်းချက်နှင့် နာရီအလိုက်ခန့်မှန်းချက် (၁၆ ရက်စာ)
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=10).json()
-        h = r['hourly']
-        df = pd.DataFrame({
-            "Time": pd.to_datetime(h['time']),
-            "WindSpeed": h['windspeed_10m'],
-            "WindDir": h['winddirection_10m']
-        })
-        # နေ့စဉ် ပျမ်းမျှမဟုတ်ဘဲ နေ့လည် ၁ နာရီအချိန် (Peak hour) ဒေတာကို နမူနာယူ၍ ဂရပ်ဆွဲပါမည်
-        df_daily_sample = df[df['Time'].dt.hour == 13].copy()
-        return df_daily_sample
-    except: return None
+        h, d = r['hourly'], r['daily']
+        df_h = pd.DataFrame({"Time": pd.to_datetime(h['time']), "Temp": h['temperature_2m'], "Rain": h['precipitation'], "Wind": h['windspeed_10m'], "WindDir": h['winddirection_10m']})
+        df_d = pd.DataFrame({"Date": pd.to_datetime(d['time']), "Tmax": d['temperature_2m_max'], "Tmin": d['temperature_2m_min'], "RainSum": d['precipitation_sum'], "WindMax": d['windspeed_10m_max'], "WindDirDom": d['winddirection_10m_dominant']})
+        
+        # လေတိုက်ရာအရပ် အပြောင်းအလဲကို မြင်သာစေရန် နေ့စဉ် နေ့လည် ၁ နာရီ ဒေတာကို နမူနာယူခြင်း
+        df_wind_sample = df_h[df_h['Time'].dt.hour == 13].copy()
+        return df_h, df_d, df_wind_sample
+    except: return None, None, None
 
 # --- Sidebar ---
 st.sidebar.image("https://www.moezala.gov.mm/themes/custom/dmh/logo.png", width=80)
 selected_city = st.sidebar.selectbox("🎯 Select City", sorted(list(MYANMAR_CITIES_20.keys())))
 
 # --- Main UI ---
-st.title(f"💨 {selected_city} Wind Direction Analysis")
-df = get_detailed_weather(selected_city)
+st.markdown(f"<h1 style='text-align: center; color: #1E88E5;'>🌦️ {selected_city} Full Weather Dashboard</h1>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center;'><b>Local Time (MMT):</b> {now.strftime('%I:%M %p, %d %b %Y')}</p>", unsafe_allow_html=True)
 
-if df is not None:
-    # Wind Graph with Dynamic Arrows
-    fig = go.Figure()
+df_h, df_d, df_w = get_all_weather_data(selected_city)
 
-    # ၁။ Wind Speed Line
-    fig.add_trace(go.Scatter(
-        x=df['Time'], y=df['WindSpeed'],
-        mode='lines+markers',
-        name='Wind Speed (mph)',
-        line=dict(color='teal', width=2)
+if df_d is not None:
+    # ၁။ Live Highlights
+    curr_hour_idx = min(current_hour, len(df_h)-1)
+    curr_data = df_h.iloc[curr_hour_idx]
+    
+    st.markdown("### 📍 Live Highlights")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("🌡️ Temp", f"{curr_data['Temp']} °C")
+    c2.metric("🌧️ Rain", f"{curr_data['Rain']} mm")
+    c3.metric("💨 Wind", f"{curr_data['Wind']} mph")
+    c4.metric("🧭 Direction", f"{get_wind_dir_text(curr_data['WindDir'])}")
+    st.markdown("---")
+
+    # ၂။ Wind Analysis (Line + Dynamic Arrows)
+    st.subheader("💨 Wind Speed (mph) & Directional Arrows (16-Day)")
+    fig_wind = go.Figure()
+    fig_wind.add_trace(go.Scatter(x=df_w['Time'], y=df_w['WindSpeed'] if 'WindSpeed' in df_w else df_w['Wind'], 
+                                  mode='lines+markers', name='Wind Speed', line=dict(color='teal', width=2)))
+    fig_wind.add_trace(go.Scatter(
+        x=df_w['Time'], y=(df_w['WindSpeed'] if 'WindSpeed' in df_w else df_w['Wind']) + 1.5,
+        mode='markers', name='Direction',
+        marker=dict(symbol='arrow', size=18, angle=df_w['WindDir'], color='orangered', line=dict(width=1, color='black'))
     ))
-
-    # ၂။ Dynamic Arrows (မြှားခေါင်းများကို ဒီဂရီအလိုက် လှည့်ခြင်း)
-    fig.add_trace(go.Scatter(
-        x=df['Time'], y=df['WindSpeed'] + 1,
-        mode='markers',
-        name='Wind Direction',
-        marker=dict(
-            symbol='arrow',
-            size=18,
-            angle=df['WindDir'], # ၃၆၀ ဒီဂရီ အတိအကျ လှည့်မည်
-            color='orangered',
-            line=dict(width=1, color='black')
-        ),
-        text=df['WindDir'].apply(lambda x: f"Dir: {x}°"),
-        hoverinfo='text'
-    ))
-
-    fig.update_layout(height=500, xaxis_title="Date", yaxis_title="Speed (mph)")
-    st.plotly_chart(fig, use_container_width=True)
-    st.info("💡 မြှားခေါင်းလေးများသည် နေ့စဉ် နေ့လည် (၁) နာရီအချိန်ရှိ လေတိုက်ရာအရပ်ကို ညွှန်ပြနေခြင်းဖြစ်ပါသည်။")
-
-else:
-    st.error("Data Connection Error. Please refresh.")
-
-st.markdown("---")
-st.caption("Data Source: Open-Meteo API (16-Day Forecast Limit for Free Tier)")
+    fig_wind.update_layout(height=450, xaxis_title="Date", yaxis_title="Speed (mph)")
+    st.plotly_chart(fig_wind, use_container_width=True)
+    st.caption("မြှားခေါင်းများသည် တစ်ရက်ချင်းစီ၏ နေ့လည်ပိုင်း လေတိုက်ရာ
