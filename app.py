@@ -78,4 +78,44 @@ if df_h is not None:
     c4.metric("🧭 Direction", f"{get_wind_dir(curr_data['WindDir'])}")
     st.markdown("---")
 
-    if view_mode == "Hourly & 7-Day Forecast
+    if view_mode == "Hourly & 7-Day Forecast":
+        # ၁။ အပူချိန် Graph
+        st.subheader(f"📅 7-Day Temperature Outlook (Max/Min)")
+        fig_temp = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True,
+                          labels={'value': 'Temperature (°C)', 'variable': 'Type'},
+                          color_discrete_map={'Tmax': '#FF0000', 'Tmin': '#0000FF'})
+        st.plotly_chart(fig_temp, use_container_width=True)
+        st.caption("Source: Open-Meteo Global Forecasting Data (ECMWF/GFS)")
+
+        # ၂။ မိုးရေချိန် Graph
+        st.subheader(f"🌧️ 7-Day Precipitation Summary (mm)")
+        fig_rain = px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue'])
+        st.plotly_chart(fig_rain, use_container_width=True)
+        st.caption("Source: Open-Meteo Integrated Rainfall Analysis")
+
+        # ၃။ လေတိုက်နှုန်း Graph
+        st.subheader(f"💨 7-Day Maximum Wind Speed (km/h)")
+        fig_wind = px.line(df_d, x='Date', y='WindMax', markers=True, color_discrete_sequence=['green'])
+        st.plotly_chart(fig_wind, use_container_width=True)
+        st.caption("Source: Open-Meteo Wind Pattern Data")
+
+    else:
+        st.subheader(f"🔮 Future Climate Trend (2026-2100)")
+        future_df = get_future_ai_projection_20(selected_city)
+        st.plotly_chart(px.line(future_df, x='Year', y='Projected_Temp', color_discrete_sequence=['red']).update_layout(height=500), use_container_width=True)
+        st.caption("Source: CMIP6 Climate Models (IPCC Data via Open-Meteo)")
+        st.warning("Note: These are statistical projections for long-term monitoring.")
+else:
+    st.error("Data connection failed.")
+
+# --- Footer (Source များကို အောက်ခြေတွင် စုစည်းဖော်ပြခြင်း) ---
+st.markdown("---")
+st.markdown(
+    """
+    <div style='text-align: center; color: gray;'>
+        <p>Maintained by <a href='https://www.moezala.gov.mm/' target='_blank'>Department of Meteorology and Hydrology (DMH)</a> | Myanmar 🇲🇲</p>
+        <p style='font-size: 0.85em;'>Weather Forecasting Data: Open-Meteo API | Climate Projections: IPCC CMIP6</p>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
