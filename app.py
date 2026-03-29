@@ -78,35 +78,4 @@ if df_h is not None:
     c4.metric("🧭 Direction", f"{get_wind_dir(curr_data['WindDir'])}")
     st.markdown("---")
 
-    if view_mode == "Hourly & 7-Day Forecast":
-        # ၁။ ၇ ရက်စာ အပူချိန် (Line Chart with Custom Colors)
-        st.subheader(f"📅 7-Day Temperature Outlook (Max/Min)")
-        fig_temp = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True,
-                          labels={'value': 'Temperature (°C)', 'variable': 'Type'},
-                          color_discrete_map={'Tmax': '#FF0000', 'Tmin': '#0000FF'}) # အနီ နှင့် အပြာ
-        fig_temp.update_layout(height=450)
-        st.plotly_chart(fig_temp, use_container_width=True)
-
-        # ၂။ ၇ ရက်စာ မိုးရေချိန် (Bar Chart)
-        st.subheader(f"🌧️ 7-Day Precipitation Summary (mm)")
-        fig_rain = px.bar(df_d, x='Date', y='RainSum', title="Daily Total Rainfall",
-                         color_discrete_sequence=['deepskyblue'])
-        fig_rain.update_layout(height=450)
-        st.plotly_chart(fig_rain, use_container_width=True)
-
-        # ၃။ ၇ ရက်စာ လေတိုက်နှုန်း (Line Chart)
-        st.subheader(f"💨 7-Day Maximum Wind Speed (km/h)")
-        fig_wind = px.line(df_d, x='Date', y='WindMax', markers=True,
-                          color_discrete_sequence=['green'])
-        fig_wind.update_layout(height=450)
-        st.plotly_chart(fig_wind, use_container_width=True)
-
-    else:
-        st.subheader(f"🔮 Future Climate Trend (2026-2100)")
-        future_df = get_future_ai_projection_20(selected_city)
-        st.plotly_chart(px.line(future_df, x='Year', y='Projected_Temp', color_discrete_sequence=['red']).update_layout(height=500), use_container_width=True)
-else:
-    st.error("Data connection failed.")
-
-st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: gray;'>DMH Myanmar | AI Weather Analysis System</p>", unsafe_allow_html=True)
+    if view_mode == "Hourly & 7-Day Forecast
