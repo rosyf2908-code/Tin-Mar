@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
+import plotly.express as px  # သေချာအောင် ပြန်စစ်ပါ
 import requests
 from datetime import datetime
 
@@ -16,11 +16,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ဖုန်းမှာ အမည်မှန်ပေါ်စေရန် (Metadata)
+# ဖုန်းမှာ အမည်မှန်ပေါ်စေရန် Metadata (Title ကို ခေတ္တဖယ်ထားပါသည်)
 st.markdown(
     """
     <head>
-        <title>DMH Weather</title>
         <meta name="apple-mobile-web-app-title" content="DMH Weather">
         <meta name="application-name" content="DMH Weather">
     </head>
@@ -102,15 +101,21 @@ if not forecast_df.empty:
         st.subheader(f"📈 7-Day Forecast for {selected_city}")
         col1, col2 = st.columns(2)
         with col1:
-            fig_temp = px.line(forecast_df, x='Date', y=['Temp_Max', 'Temp_Min'], markers=True, title="Temperature (°C)")
+            fig_temp = px.line(forecast_df, x='Date', y=['Temp_Max', 'Temp_Min'], 
+                              markers=True, title="Temperature Forecast (°C)",
+                              labels={'value': 'Temp (°C)', 'variable': 'Type'})
             st.plotly_chart(fig_temp, use_container_width=True)
         with col2:
-            fig_rain = px.bar(forecast_df, x='Date', y='Rain', title="Precipitation (mm)")
+            fig_rain = px.bar(forecast_df, x='Date', y='Rain', 
+                             title="Precipitation Forecast (mm)",
+                             labels={'Rain': 'Rain (mm)'})
             st.plotly_chart(fig_rain, use_container_width=True)
     else:
         st.subheader(f"🔮 Future Trend (2026-2100)")
         future_df = get_future_ai_projection_20(selected_city)
-        fig_future = px.line(future_df, x='Year', y='Projected_Temp', title="Projected Temperature Rise")
+        fig_future = px.line(future_df, x='Year', y='Projected_Temp', 
+                            title="Projected Temperature Rise",
+                            labels={'Projected_Temp': 'Temp (°C)'})
         st.plotly_chart(fig_future, use_container_width=True)
 else:
     st.error("Data could not be fetched. Please check your connection.")
