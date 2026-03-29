@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
+import plotly.graph_objects as go
 import requests
 from datetime import datetime
 
@@ -27,14 +27,10 @@ MYANMAR_CITIES_20 = {
     "Hkamti": {"lat": 25.9977, "lon": 95.6905}, "Dawei": {"lat": 14.0833, "lon": 98.2000}
 }
 
-def get_wind_dir(deg):
-    dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
-    return dirs[int((deg + 11.25) / 22.5) % 16]
-
-@st.cache_data(ttl=300) # ၅ မိနစ်တစ်ခါ update စစ်မည်
+@st.cache_data(ttl=300)
 def get_weather_data(city):
     lat, lon = MYANMAR_CITIES_20[city]['lat'], MYANMAR_CITIES_20[city]['lon']
-    # forecast_days=16 သည် free API ၏ အများဆုံးကန့်သတ်ချက်ဖြစ်သဖြင့် ၁၆ ရက်စာ အရင်ယူပါမည်
+    # ၁၆ ရက်စာ (Free API ၏ အများဆုံး)
     url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,winddirection_10m_dominant&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url).json()
@@ -44,52 +40,69 @@ def get_weather_data(city):
         return df_h, df_d
     except: return None, None
 
-# --- Sidebar ---
+# --- Sidebar & UI ---
 st.sidebar.image("https://www.moezala.gov.mm/themes/custom/dmh/logo.png", width=80)
 selected_city = st.sidebar.selectbox("🎯 Select City", sorted(list(MYANMAR_CITIES_20.keys())))
-view_mode = st.sidebar.radio("📊 View Mode", ["Hourly & Forecast Trends", "Future Projections (2100)"])
-
-# --- Main UI ---
-st.markdown(f"<h1 style='text-align: center; color: #1E88E5;'>🌦️ {selected_city} Weather Dashboard</h1>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center;'><b>Current Local Time:</b> {now.strftime('%I:%M %p, %d %b %Y')}</p>", unsafe_allow_html=True)
-
 df_h, df_d = get_weather_data(selected_city)
 
 if df_h is not None:
-    curr_data = df_h.iloc[current_hour]
-    st.markdown("### 📍 Live Highlights")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🌡️ Temp", f"{curr_data['Temp']} °C")
-    c2.metric("🌧️ Rain", f"{curr_data['Rain']} mm")
-    c3.metric("💨 Wind Speed", f"{curr_data['Wind']} mph")
-    c4.metric("🧭 Wind Dir", f"{get_wind_dir(curr_data['WindDir'])}")
+    st.markdown(f"<h1 style='text-align: center;'>🌦️ {selected_city} Weather & Wind Analysis</h1>", unsafe_allow_html=True)
     st.markdown("---")
 
-    if view_mode == "Hourly & Forecast Trends":
-        # ၁။ အပူချိန် Graph
-        st.subheader("📈 Temperature Forecast Outlook")
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax': 'red', 'Tmin': 'blue'}).update_layout(height=400), use_container_width=True)
+    # --- Wind Analysis Graph (Line + Arrow Markers) ---
+    st.subheader("💨 Wind Speed (mph) & Direction (Arrows)")
+    
+    fig_wind = go.Figure()
 
-        # ၂။ မိုးရေချိန် Graph
-        st.subheader("🌧️ Precipitation Summary (mm)")
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']).update_layout(height=400), use_container_width=True)
+    # ၁။ Wind Speed Line (အစိမ်းရောင်လိုင်း)
+    fig_wind.add_trace(go.Scatter(
+        x=df_d['Date'], y=df_d['WindMax'],
+        mode='lines+markers',
+        name='Wind Speed',
+        line=dict(color='green', width=3),
+        marker=dict(size=8)
+    ))
 
-        # ၃။ လေတိုက်နှုန်းနှင့် လေတိုက်ရာအရပ် (mph)
-        st.subheader("💨 Wind Speed (mph) & Direction (deg)")
-        # လေတိုက်နှုန်းကို line ဖြင့်ပြပြီး အရောင်ကို လေတိုက်ရာအရပ်အလိုက် ပြောင်းလဲပေးခြင်း
-        fig_wind = px.bar(df_d, x='Date', y='WindMax', color='WindDirDom', 
-                          title="Max Wind Speed with Direction Gradient",
-                          labels={'WindMax': 'Wind Speed (mph)', 'WindDirDom': 'Direction (°)'},
-                          color_continuous_scale=px.colors.sequential.Viridis)
-        fig_wind.update_layout(height=450)
-        st.plotly_chart(fig_wind, use_container_width=True)
-        st.caption("Note: Bar color represents wind direction in degrees (0°=N, 90°=E, 180°=S, 270°=W)")
+    # ၂။ Wind Direction Arrows (၃၆၀ ဒီဂရီ မြှားခေါင်းများ)
+    # Plotly တွင် 'arrow' သင်္ကေတကို သုံးပြီး angle ကို WindDir အတိုင်း လှည့်ပါမည်
+    fig_wind.add_trace(go.Scatter(
+        x=df_d['Date'], y=df_d['WindMax'] + 2, # လိုင်းပေါ်မှာ မြင်သာအောင် အပေါ်နည်းနည်းတင်ထားခြင်း
+        mode='markers',
+        name='Direction',
+        marker=dict(
+            symbol='arrow',
+            size=15,
+            angle=df_d['WindDirDom'], # မြှားကို ဒီဂရီအတိုင်းလှည့်ခြင်း
+            color='darkred',
+            line=dict(width=2, color='black')
+        ),
+        text=df_d['WindDirDom'].apply(lambda x: f"{x}°"),
+        hoverinfo='text'
+    ))
 
-    else:
-        st.subheader("🔮 Climate Projections (2100)")
-        # ... (Future projection code as before)
+    fig_wind.update_layout(
+        height=500,
+        xaxis_title="Date",
+        yaxis_title="Wind Speed (mph)",
+        plot_bgcolor="#f9f9f9",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    
+    st.plotly_chart(fig_wind, use_container_width=True)
+    st.caption("မြှားခေါင်းလေးများသည် လေတိုက်ရာအရပ် (Direction) ကို ညွှန်ပြနေခြင်းဖြစ်ပါသည်။")
+
+    # --- အခြား Graph များ (Temperature & Rain) ---
+    st.markdown("---")
+    st.subheader("🌡️ Temperature & 🌧️ Rain Forecast")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title="Temperature Outlook").update_layout(height=400))
+    with c2:
+        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', title="Precipitation Sum (mm)").update_layout(height=400))
+
 else:
     st.error("Data Fetching Error.")
 
+# Footer
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: gray;'><p>Source: Open-Meteo API (ECMWF/GFS)</p></div>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray;'>Source: Open-Meteo API | MMT Timezone</p>", unsafe_allow_html=True)
