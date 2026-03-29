@@ -95,4 +95,20 @@ if df_d is not None:
         st.markdown("### 🏥 Health Sector Impact & Recommendations")
         col1, col2 = st.columns(2)
         with col1:
-            st.error("**⚠️ Possible Impacts:**\n* Heatstroke (အပူလျှပ်ခြင်း) ဖြစ်နိုင်ခြေ မြင့်မားခြင်း။\n* ရေဓာတ်ခမ်းခြောက်ခြင်းနှင့် မူးဝေခြင်း။\n* သက်ကြီးရွယ်
+            st.error("**⚠️ Possible Impacts:**\n* Heatstroke (အပူလျှပ်ခြင်း) ဖြစ်နိုင်ခြေ မြင့်မားခြင်း။\n* ရေဓာတ်ခမ်းခြောက်ခြင်းနှင့် မူးဝေခြင်း။\n* သက်ကြီးရွယ်အိုများနှင့် ကလေးငယ်များအတွက် အထူးအန္တရာယ်ရှိခြင်း။")
+        with col2:
+            st.success("**🛡️ Mitigation Actions:**\n* နေပူထဲ တိုက်ရိုက်သွားလာခြင်းကို အတတ်နိုင်ဆုံး ရှောင်ကြဉ်ပါ။\n* ရေနှင့် ဓာတ်ဆားရည်ကို ပုံမှန်ထက် ပိုသောက်ပါ။\n* လေဝင်လေထွက်ကောင်းသော အဝတ်အစားများ ဝတ်ဆင်ပါ။")
+
+    else:
+        st.subheader("🔮 Climate Projection (2100)")
+        years = np.arange(2026, 2101)
+        temp_trend = [30 + (y-2026)*0.043 + np.random.normal(0, 0.5) for y in years]
+        st.plotly_chart(px.line(x=years, y=temp_trend, labels={'x': 'Year', 'y': 'Mean Temp'}, color_discrete_sequence=['darkred']), use_container_width=True)
+
+else:
+    st.error("Error connecting to data source.")
+
+# --- Footer ---
+st.markdown("---")
+st.markdown(f"<p style='text-align: center; color: gray;'><b>DMH Myanmar | Powered by AI & Global Meteorological Data</b></p>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; font-size: 0.85em; color: #666;'>Data Sources: Open-Meteo (ECMWF, GFS), IBF Criteria (P90/P95/P99), IPCC AR6.</div>", unsafe_allow_html=True)
