@@ -82,4 +82,30 @@ if df_d is not None:
     ))
     fig_wind.update_layout(height=450, xaxis_title="Date", yaxis_title="Speed (mph)")
     st.plotly_chart(fig_wind, use_container_width=True)
-    st.caption("မြှားခေါင်းများသည် တစ်ရက်ချင်းစီ၏ နေ့လည်ပိုင်း လေတိုက်ရာ
+    st.caption("မြှားခေါင်းများသည် တစ်ရက်ချင်းစီ၏ နေ့လည်ပိုင်း လေတိုက်ရာအရပ်ကို ၃၆၀ ဒီဂရီအတိုင်း ညွှန်ပြနေခြင်းဖြစ်ပါသည်။")
+
+    # ၃။ Temperature & Rain Charts
+    st.markdown("---")
+    st.subheader("🌡️ Temperature & 🌧️ Rain Forecast")
+    colA, colB = st.columns(2)
+    with colA:
+        fig_t = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, 
+                        color_discrete_map={'Tmax': 'red', 'Tmin': 'blue'}, title="Temp Outlook (°C)")
+        st.plotly_chart(fig_t, use_container_width=True)
+    with colB:
+        fig_r = px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue'], title="Precipitation Sum (mm)")
+        st.plotly_chart(fig_r, use_container_width=True)
+
+else:
+    st.error("⚠️ Data connection failed. Please check your internet or refresh.")
+
+# --- Footer ---
+st.markdown("---")
+st.markdown(
+    """
+    <div style='text-align: center; color: gray;'>
+        <p>Maintained by <a href='https://www.moezala.gov.mm/' target='_blank'>Department of Meteorology and Hydrology (DMH)</a></p>
+        <p style='font-size: 0.8em;'>Source: Open-Meteo API (16-Day Forecast) | Unit: mph, °C, mm</p>
+    </div>
+    """, unsafe_allow_html=True
+)
