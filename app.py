@@ -234,39 +234,45 @@ if df_h is not None:
         
         years = np.arange(2026, 2101)
         
-        # ၁။ အပူချိန်တိုးလာမှု (Temperature Trend - Warming approx 4.4°C by 2100)
+        # ၁။ အပူချိန်တိုးလာမှု (Temperature Trend - SSP 5-8.5 Projection)
         temp_trend = [df_d['Tmax'].mean() + (y-2026)*0.06 + np.random.normal(0, 0.5) for y in years]
         
-        # ၂။ မိုးရေချိန်ပြောင်းလဲမှု (Precipitation Trend - More extreme variability)
+        # ၂။ မိုးရေချိန်ပြောင်းလဲမှု (Precipitation Trend - mm)
         rain_trend = [df_d['RainSum'].mean() * (1 + (y-2026)*0.002) + np.random.normal(0, 15) for y in years]
-        rain_trend = [max(0, r) for r in rain_trend] # မိုးရေချိန် အနှုတ်မဖြစ်စေရန်
+        rain_trend = [max(0, r) for r in rain_trend] 
         
-        # ၃။ လေတိုက်နှုန်း (Wind Speed Trend - Potential for stronger storms)
+        # ၃။ လေတိုက်နှုန်း (Wind Speed Trend - mph)
         wind_trend = [df_h['Wind'].mean() + (y-2026)*0.02 + np.random.normal(0, 1.2) for y in years]
 
-        # --- Graph 1: Temperature Projection ---
-        fig_ct = px.line(x=years, y=temp_trend, title="🌡️ Long-term Temperature Projection (°C)",
-                         labels={'x': 'Year', 'y': 'Average Max Temp (°C)'}, color_discrete_sequence=['darkred'])
+        # --- Graph 1: Temperature Projection (အပေါ်ဆုံး) ---
+        st.markdown(f"### {T['charts'][0]}")
+        fig_ct = px.line(x=years, y=temp_trend, 
+                         labels={'x': 'Year', 'y': 'Max Temp (°C)'}, 
+                         color_discrete_sequence=['#d32f2f'])
+        fig_ct.update_layout(height=450)
         st.plotly_chart(fig_ct, use_container_width=True)
 
-        col_c1, col_c2 = st.columns(2)
-        
-        with col_c1:
-            # --- Graph 2: Precipitation Projection (mm) ---
-            st.markdown(f"**🌧️ {T['charts'][1]} (Annual Mean)**")
-            fig_cr = px.bar(x=years, y=rain_trend, color=rain_trend, color_continuous_scale='Blues',
-                            labels={'x': 'Year', 'y': 'Precipitation (mm)'})
-            fig_cr.update_layout(showlegend=False)
-            st.plotly_chart(fig_cr, use_container_width=True)
+        st.markdown("---") # မျဉ်းတားပြီးခြားမည်
 
-        with col_c2:
-            # --- Graph 3: Wind Speed Projection (mph) ---
-            st.markdown(f"**💨 {T['charts'][2]} (Extreme Events Projection)**")
-            fig_cw = px.line(x=years, y=wind_trend, color_discrete_sequence=['orange'],
-                             labels={'x': 'Year', 'y': 'Wind Speed (mph)'})
-            st.plotly_chart(fig_cw, use_container_width=True)
+        # --- Graph 2: Precipitation Projection (အလယ်) ---
+        st.markdown(f"### {T['charts'][1]}")
+        fig_cr = px.bar(x=years, y=rain_trend, color=rain_trend, 
+                        color_continuous_scale='Blues',
+                        labels={'x': 'Year', 'y': 'Precipitation (mm)'})
+        fig_cr.update_layout(height=450, showlegend=False)
+        st.plotly_chart(fig_cr, use_container_width=True)
 
-        st.warning("⚠️ **SSP 5-8.5 Note:** This path assumes limited climate policy, leading to significant increases in heatwaves and storm intensity by 2100.")
+        st.markdown("---") # မျဉ်းတားပြီးခြားမည်
+
+        # --- Graph 3: Wind Speed Projection (အောက်ဆုံး) ---
+        st.markdown(f"### {T['charts'][2]}")
+        fig_cw = px.line(x=years, y=wind_trend, 
+                         labels={'x': 'Year', 'y': 'Wind Speed (mph)'},
+                         color_discrete_sequence=['#f57c00'])
+        fig_cw.update_layout(height=450)
+        st.plotly_chart(fig_cw, use_container_width=True)
+
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
