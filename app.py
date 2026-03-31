@@ -16,7 +16,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary (AI MODEL Graphic ထည့်သွင်းထားသည်) ---
+# --- ၂။ ဘာသာစကား Dictionary ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -78,7 +78,7 @@ LANG_DICT = {
     }
 }
 
-# --- ၃။ စခန်းစာရင်း (၃၄ မြို့) ---
+# --- ၃။ စခန်းစာရင်း ---
 MYANMAR_CITIES = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
@@ -91,8 +91,7 @@ MYANMAR_CITIES = {
     "Pathein": {"lat": 16.7833, "lon": 94.7333}, "Pyay": {"lat": 18.8167, "lon": 95.2167},
     "Taungoo": {"lat": 18.9333, "lon": 96.4333}, "Hinthada": {"lat": 17.6500, "lon": 95.3833},
     "Myitkyina": {"lat": 25.3831, "lon": 97.3964}, "Taunggyi": {"lat": 20.7888, "lon": 97.0333},
-    "Moegkok": {"lat": 22.9233, "lon": 96.5108}, "Ela Airport": {"lat": 19.6159, "lon": 96.2127},
-    "Chauk": {"lat": 20.8941, "lon": 94.8205}, "Myinmu": {"lat": 21.9219, "lon": 95.5772},
+    "Moegkok": {"lat": 22.9233, "lon": 96.5108}, "Chauk": {"lat": 20.8941, "lon": 94.8205},
     "Mawlamyine": {"lat": 16.4905, "lon": 97.6282}, "Sittwe": {"lat": 20.1436, "lon": 92.8977},
     "Lashio": {"lat": 22.9333, "lon": 97.7500}, "Hpa-An": {"lat": 16.8906, "lon": 97.6333},
     "Loikaw": {"lat": 19.6742, "lon": 97.2093}, "Mindat": {"lat": 21.3748, "lon": 93.9725},
@@ -121,8 +120,11 @@ def get_full_weather(city):
 st.sidebar.image(dm_header_logo, width=120)
 lang = st.sidebar.selectbox("🌐 Language", ["English", "မြန်မာ"])
 T = LANG_DICT[lang]
-temp_bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.5)
+
 selected_city = st.sidebar.selectbox(T["city_select"], sorted(list(MYANMAR_CITIES.keys())))
+st.sidebar.write(f"📍 Lat: `{MYANMAR_CITIES[selected_city]['lat']}`, Lon: `{MYANMAR_CITIES[selected_city]['lon']}`")
+
+temp_bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.5)
 view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 
 # --- ၅။ Main Display ---
@@ -136,6 +138,12 @@ if df_h is not None:
     df_d['Tmax'] += temp_bias
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
+
+    # Daily Summary Metrics (အသစ်ထည့်ထားသည်)
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Max Temp Today", f"{df_d['Tmax'].iloc[0]:.1f} °C")
+    m2.metric("Min Temp Today", f"{df_d['Tmin'].iloc[0]:.1f} °C")
+    m3.metric("Rainfall Today", f"{df_d['RainSum'].iloc[0]:.1f} mm")
 
     if view_mode == T["modes"][0]: 
         st.subheader(T['charts'][0])
@@ -154,10 +162,10 @@ if df_h is not None:
         st.subheader(T['charts'][3]) 
         st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][4]) # စိုထိုင်းဆ (ရာခိုင်နှုန်း)
+        st.subheader(T['charts'][4])
         st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][5]) # တိမ်ဖုံးမှုပမာဏ (Oktas 0-8)
+        st.subheader(T['charts'][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][6])
@@ -178,8 +186,7 @@ if df_h is not None:
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-   elif view_mode == "AI MODEL Graphic": 
-        # <<--- ဒီနေရာကနေ စပြီး အောက်က Code တွေနဲ့ အစားထိုးပါ --->>
+    elif view_mode == "AI MODEL Graphic": 
         st.header("🔬 AI Model Regional & Ensemble Forecast")
         st.caption("Myanmar Domain Settings: 9°N to 30°N | 75°E to 102°E")
         
@@ -220,14 +227,14 @@ if df_h is not None:
             st.plotly_chart(fig_prob, use_container_width=True)
             
         st.info("📝 Note: Ensemble forecasts account for uncertainties...")
-        # <<--- အစားထိုးရမည့်အပိုင်း ပြီးဆုံးသည် --->>
+
     else: 
         st.subheader(T['modes'][3])
         years = np.arange(2026, 2101)
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
-# --- ၅။ Data Source Footer ---
+# --- ၆။ Data Source Footer ---
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
@@ -237,4 +244,3 @@ st.markdown(f"""
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
-
