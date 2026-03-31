@@ -186,7 +186,7 @@ if df_h is not None:
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    st.markdown("---")
+        st.markdown("---")
         # ၁။ Download အတွက် Dataframe ကို Column အသစ်များဖြင့် ပြင်ဆင်ခြင်း
         # Date, Tmax, Tmin, RainSum (Daily Total Rainfall) နှင့် Station တို့ကို ယူပါမည်
         export_df = df_d[['Date', 'Tmax', 'Tmin', 'RainSum']].copy()
