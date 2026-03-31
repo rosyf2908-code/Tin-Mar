@@ -23,7 +23,7 @@ LANG_DICT = {
         "time_label": "Current Local Time (MMT)",
         "city_select": "🎯 Select Station/City",
         "view_mode": "📊 View Mode",
-        "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "AI MODEL Graphic", "Climate Projection (2100)"],
+        "modes": ["16-Day Detailed Analysis", "Heatwave Monitoring (IBF-Health)", "Climate Projection (2100)"],
         "charts": [
             "🌡️ 1. Temperature Outlook (°C)", 
             "🌧️ 2. Daily Precipitation Summary (mm)", 
