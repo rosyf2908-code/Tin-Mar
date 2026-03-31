@@ -8,9 +8,11 @@ from datetime import datetime
 import pytz
 import os
 
-# --- ၁။ Setup ---
+# --- ၁။ Setup & Timezone ---
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
+formatted_now = now.strftime('%I:%M %p, %d %b %Y') # ဥပမာ - 07:15 PM, 31 Mar 2026
+
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
@@ -19,7 +21,7 @@ st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_ic
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
-        "time_label": "Local Time (MMT)",
+        "time_label": "Current Local Time (MMT)",
         "city_select": "🎯 Select Station/City",
         "view_mode": "📊 View Mode",
         "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "Climate Projection (2100)"],
@@ -52,7 +54,7 @@ LANG_DICT = {
     },
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသ ခန့်မှန်းချက်စနစ်",
-        "time_label": "မြန်မာစံတော်ချိန်",
+        "time_label": "လက်ရှိ မြန်မာစံတော်ချိန်",
         "city_select": "🎯 စခန်း/မြို့အမည်ရွေးချယ်ပါ",
         "view_mode": "📊 ကြည့်ရှုမည့်ပုံစံ",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
@@ -86,7 +88,7 @@ LANG_DICT = {
 }
 
 MYANMAR_CITIES = {
-    "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
+   "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
     "Dagon (Seikan)": {"lat": 16.8489, "lon": 96.2734}, "Dagon (South)": {"lat": 16.8840, "lon": 96.2400},
     "Hlaing Thayar": {"lat": 16.8812, "lon": 96.0503}, "Shwe Pyithar": {"lat": 16.9759, "lon": 96.0760},
@@ -122,7 +124,7 @@ def get_full_weather(city):
         return df_h, df_d
     except: return None, None
 
-# --- ၃။ Sidebar (Bias Correction Slider ပြန်ထည့်သွင်းခြင်း) ---
+# --- ၃။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=120)
 lang = st.sidebar.selectbox("🌐 Language / ဘာသာစကား", ["English", "မြန်မာ"])
 T = LANG_DICT[lang]
@@ -133,14 +135,15 @@ temp_bias = st.sidebar.slider("🌡️ Temp Offset (°C)", -5.0, 5.0, 0.0, step=
 selected_city = st.sidebar.selectbox(T["city_select"], sorted(list(MYANMAR_CITIES.keys())))
 view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 
-# --- ၄။ Main Display ---
+# --- ၄။ Main Display (With Time Header) ---
 st.markdown(f"# {T['title']}")
+# ဤနေရာတွင် အချိန်စာတန်းလေး ပြန်ထည့်ထားပါသည်
+st.markdown(f"🕒 **{T['time_label']}:** `{formatted_now}` | 📍 **Station:** `{selected_city}`")
 st.warning(T["dmh_alert"])
 
 df_h, df_d = get_full_weather(selected_city)
 
 if df_h is not None:
-    # Applying Bias Correction to Data
     df_d['Tmax'] += temp_bias
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
@@ -170,9 +173,8 @@ if df_h is not None:
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22']), use_container_width=True)
-        st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
 
-    elif view_mode == T["modes"][1]: # IBF with Bias Correction
+    elif view_mode == T["modes"][1]: # IBF
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
@@ -186,7 +188,6 @@ if df_h is not None:
         years = np.arange(2026, 2101)
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}, color_discrete_sequence=['darkred']), use_container_width=True)
-
 
 
 # --- ၆။ Data Source Footer ---
