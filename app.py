@@ -189,12 +189,7 @@ if df_d is not None:
         temp_trend = [30 + (y-2026)*0.043 + np.random.normal(0, 0.5) for y in years]
         st.plotly_chart(px.line(x=years, y=temp_trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
-st.markdown("### 🏥 Health Sector Impact & Recommendations")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.error("**⚠️ Possible Impacts:**\n* Heatstroke (အပူလျှပ်ခြင်း) ဖြစ်နိုင်ခြေ မြင့်မားခြင်း။\n* ရေဓာတ်ခမ်းခြောက်ခြင်းနှင့် မူးဝေခြင်း။\n* သက်ကြီးရွယ်အိုများနှင့် ကလေးငယ်များအတွက် အထူးအန္တရာယ်ရှိခြင်း။")
-        with col2:
-            st.success("**🛡️ Mitigation Actions:**\n* နေပူထဲ တိုက်ရိုက်သွားလာခြင်းကို အတတ်နိုင်ဆုံး ရှောင်ကြဉ်ပါ။\n* ရေနှင့် ဓာတ်ဆားရည်ကို ပုံမှန်ထက် ပိုသောက်ပါ။\n* မိုးလေဝသသတင်းများကိုအမြဲနားထောင်ပါ။\n* လေဝင်လေထွက်ကောင်းသော အဝတ်အစားများ ဝတ်ဆင်ပါ။")
+
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
 st.markdown(f"""
