@@ -117,7 +117,7 @@ if df_d is not None:
         # ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (Thunderstorm Prob)
         st.subheader(f"⚡ 7. Thunderstorm Potential (%) - {selected_city}")
         df_h['Status'] = ["ပုံမှန်" if x < 30 else "သတိပြုရန်" if x < 60 else "အန္တရာယ်ရှိ" for x in df_h['StormProb']]
-        fig_storm = px.bar(df_h, x='အချိန်', y='မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ', color='Status',
+        fig_storm = px.bar(df_h, x='Time', y='StormProb', color='Status',
                            color_discrete_map={'ပုံမှန်': '#3498db', 'သတိပြုရန်': '#f1c40f', 'အန္တရာယ်ရှိ': '#e74c3c'})
         st.plotly_chart(fig_storm, use_container_width=True)
         st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
