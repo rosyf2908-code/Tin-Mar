@@ -8,7 +8,7 @@ from datetime import datetime
 import pytz
 import os
 
-# --- ၁။ Setup & Configuration ---
+# --- ၁။ Setup ---
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
 dmh_custom_logo = "logo.png" 
@@ -16,7 +16,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary ---
+# --- ၂။ ဘာသာစကား Dictionary (Axis Labels များပါ ထည့်သွင်းထားသည်) ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -31,6 +31,14 @@ LANG_DICT = {
         "hum_chart": "💧 5. Relative Humidity (%)",
         "cloud_chart": "☁️ 6. Cloud Cover (Oktas: 0-8)",
         "storm_chart": "⚡ 7. Thunderstorm Potential (%)",
+        "axis_time": "Time / Date",
+        "axis_temp": "Temperature (°C)",
+        "axis_rain": "Rainfall (mm)",
+        "axis_wind": "Wind Speed (mph)",
+        "axis_vis": "Visibility (km)",
+        "axis_hum": "Humidity (%)",
+        "axis_cloud": "Cloud Amount (Oktas)",
+        "axis_prob": "Probability (%)",
         "storm_note": "**Note:** Probability > 60% indicates a high chance of lightning and squalls.",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "storm_status": ["Normal", "Caution", "Danger"],
@@ -49,6 +57,14 @@ LANG_DICT = {
         "hum_chart": "💧 ၅။ စိုထိုင်းဆ ခန့်မှန်းချက် (%)",
         "cloud_chart": "☁️ ၆။ တိမ်ဖုံးလွှမ်းမှု (Oktas: 0-8)",
         "storm_chart": "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)",
+        "axis_time": "အချိန် / ရက်စွဲ",
+        "axis_temp": "အပူချိန် (°C)",
+        "axis_rain": "မိုးရေချိန် (mm)",
+        "axis_wind": "လေတိုက်နှုန်း (mph)",
+        "axis_vis": "အဝေးမြင်တာ (km)",
+        "axis_hum": "စိုထိုင်းဆ (%)",
+        "axis_cloud": "တိမ်ပမာဏ (Oktas)",
+        "axis_prob": "ဖြစ်နိုင်ခြေ (%)",
         "storm_note": "**မှတ်ချက်:** ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခြင်းနှင့် မိုးကြိုးပစ်ခြင်းများကို ဂရုပြုပါ။",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
         "storm_status": ["ပုံမှန်", "သတိပြုရန်", "အန္တရာယ်ရှိ"],
@@ -56,20 +72,10 @@ LANG_DICT = {
     }
 }
 
-# --- ၃။ မြို့/စခန်း စာရင်း (ဒီနေရာမှာ စခန်းအသစ်တွေ စိတ်ကြိုက်ထည့်နိုင်ပါတယ်) ---
+# --- ၃။ စခန်းစာရင်း (စိတ်ကြိုက်တိုးနိုင်ပါသည်) ---
 MYANMAR_CITIES = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785},
     "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
-    "Pyinmana": {"lat": 19.7414, "lon": 96.2004},
-    "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
-    "Dagon (Seikan)": {"lat": 16.8489, "lon": 96.2734},
-    "Dagon (South)": {"lat": 16.8840, "lon": 96.2400},
-    "Hlaing Thayar": {"lat": 16.8812, "lon": 96.0503},
-    "Shwe Pyithar": {"lat": 16.9759, "lon": 96.0760},
-    "Dala": {"lat": 16.7562, "lon": 96.1591},
-    "Amarapura": {"lat": 21.9100, "lon": 96.0512},
-    "Pyigyitagon": {"lat": 21.9167, "lon": 96.0833},
-    "Pathein Gyi": {"lat": 22.0000, "lon": 96.1670},
     "Mandalay": {"lat": 21.9747, "lon": 96.0836},
     "Bago": {"lat": 17.3333, "lon": 96.4833},
     "Magway": {"lat": 20.1500, "lon": 94.9167},
@@ -77,22 +83,15 @@ MYANMAR_CITIES = {
     "Pathein": {"lat": 16.7833, "lon": 94.7333},
     "Pyay": {"lat": 18.8167, "lon": 95.2167},
     "Taungoo": {"lat": 18.9333, "lon": 96.4333},
-    "Hinthada": {"lat": 17.6500, "lon": 95.3833},
     "Myitkyina": {"lat": 25.3831, "lon": 97.3964},
     "Taunggyi": {"lat": 20.7888, "lon": 97.0333},
-    "Moegkok": {"lat": 22.9233, "lon": 96.5108},
-    "Ela Airport": {"lat": 19.6159, "lon": 96.2127},
-    "Chauk": {"lat": 20.8941, "lon": 94.8205},
-    "Myinmu": {"lat": 21.9219, "lon": 95.5772},
     "Mawlamyine": {"lat": 16.4905, "lon": 97.6282},
     "Sittwe": {"lat": 20.1436, "lon": 92.8977},
     "Lashio": {"lat": 22.9333, "lon": 97.7500},
     "Hpa-An": {"lat": 16.8906, "lon": 97.6333},
     "Loikaw": {"lat": 19.6742, "lon": 97.2093},
-    "Mindat": {"lat": 21.3748, "lon": 93.9725},
-    "Hkamti": {"lat": 25.9977, "lon": 95.6905},
     "Dawei": {"lat": 14.0833, "lon": 98.2000}
-    # ဤနေရာတွင် စခန်းအသစ်များ ထပ်တိုးနိုင်ပါသည်
+    # ကျန်ရှိသော စခန်း ၃၂ ခုကို ဤနေရာတွင် ဆက်လက်ထည့်သွင်းနိုင်ပါသည်
 }
 
 @st.cache_data(ttl=300)
@@ -114,28 +113,19 @@ def get_weather_data(city):
 
 # --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=120)
-st.sidebar.markdown("---")
-
 lang = st.sidebar.selectbox("🌐 Language / ဘာသာစကား", ["English", "မြန်မာ"])
 T = LANG_DICT[lang]
 
 if os.path.exists(dmh_custom_logo):
-    st.sidebar.image(dmh_custom_logo, caption="Hydrological Cycle", use_container_width=True)
+    st.sidebar.image(dmh_custom_logo, use_container_width=True)
 
 temp_bias = st.sidebar.slider("🌡️ Temp Offset (°C)", -5.0, 5.0, 0.0, step=0.5)
-st.sidebar.markdown("---")
-
-# စခန်းအရေအတွက် ဘယ်လောက်ရှိရှိ အကုန်ပြပေးမည့် dropdown
 selected_city = st.sidebar.selectbox(T["city_select"], sorted(list(MYANMAR_CITIES.keys())))
 view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 
-# --- ၅။ UI Header ---
-h_col1, h_col2 = st.columns([1, 6])
-with h_col1:
-    if os.path.exists(dmh_custom_logo): st.image(dmh_custom_logo, width=80)
-with h_col2:
-    st.markdown(f"<h1 style='margin:0;'>{T['title']}</h1>", unsafe_allow_html=True)
-    st.markdown(f"<b>{T['time_label']}:</b> {now.strftime('%I:%M %p, %d %b %Y')}")
+# --- ၅။ Main UI ---
+st.markdown(f"## {T['title']}")
+st.markdown(f"**{T['time_label']}:** {now.strftime('%I:%M %p, %d %b %Y')} | **Station:** {selected_city}")
 st.markdown("---")
 
 df_h, df_d, df_w = get_weather_data(selected_city)
@@ -144,50 +134,60 @@ if df_d is not None:
     df_d['Tmax'] += temp_bias
     df_d['Tmin'] += temp_bias
 
-    if view_mode in [T["modes"][0]]: # 16-Day Forecast
-        st.subheader(f"{T['temp_chart']} - {selected_city}")
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+    if view_mode in [T["modes"][0]]: # 16-Day Forecast Analysis
+        # 1. Temp
+        fig1 = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'},
+                       labels={'value': T['axis_temp'], 'Date': T['axis_time'], 'variable': 'Type'})
+        st.subheader(f"{T['temp_chart']}")
+        st.plotly_chart(fig1, use_container_width=True)
 
-        st.subheader(f"{T['rain_chart']} - {selected_city}")
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']), use_container_width=True)
+        # 2. Rain
+        fig2 = px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue'],
+                      labels={'RainSum': T['axis_rain'], 'Date': T['axis_time']})
+        st.subheader(f"{T['rain_chart']}")
+        st.plotly_chart(fig2, use_container_width=True)
 
-        st.subheader(f"{T['wind_chart']} - {selected_city}")
-        fig_w = go.Figure()
-        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='markers+lines', name='Speed', line=dict(color='teal', width=3)))
-        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+1.5, mode='markers', marker=dict(symbol='arrow', size=18, angle=df_w['WindDir'], color='red')))
-        st.plotly_chart(fig_w, use_container_width=True)
+        # 3. Wind
+        st.subheader(f"{T['wind_chart']}")
+        fig3 = go.Figure()
+        fig3.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='markers+lines', name='Speed', line=dict(color='teal', width=3)))
+        fig3.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+1.5, mode='markers', marker=dict(symbol='arrow', size=18, angle=df_w['WindDir'], color='red'), name='Direction'))
+        fig3.update_layout(xaxis_title=T['axis_time'], yaxis_title=T['axis_wind'])
+        st.plotly_chart(fig3, use_container_width=True)
 
-        st.subheader(f"{T['vis_chart']} - {selected_city}")
-        st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
+        # 4. Vis
+        fig4 = px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71'],
+                       labels={'Visibility': T['axis_vis'], 'Time': T['axis_time']})
+        st.subheader(f"{T['vis_chart']}")
+        st.plotly_chart(fig4, use_container_width=True)
 
-        st.subheader(f"{T['hum_chart']} - {selected_city}")
-        st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
+        # 5. Hum
+        fig5 = px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db'],
+                       labels={'Humidity': T['axis_hum'], 'Time': T['axis_time']})
+        st.subheader(f"{T['hum_chart']}")
+        st.plotly_chart(fig5, use_container_width=True)
 
-        st.subheader(f"{T['cloud_chart']} - {selected_city}")
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Okta', color='Cloud_Okta', color_continuous_scale='Blues'), use_container_width=True)
+        # 6. Cloud
+        fig6 = px.bar(df_h, x='Time', y='Cloud_Okta', color='Cloud_Okta', color_continuous_scale='Blues',
+                      labels={'Cloud_Okta': T['axis_cloud'], 'Time': T['axis_time']})
+        st.subheader(f"{T['cloud_chart']}")
+        st.plotly_chart(fig6, use_container_width=True)
 
-        st.subheader(f"{T['storm_chart']} - {selected_city}")
+        # 7. Storm
+        st.subheader(f"{T['storm_chart']}")
         df_h['Status'] = [T["storm_status"][0] if x < 30 else T["storm_status"][1] if x < 60 else T["storm_status"][2] for x in df_h['StormProb']]
-        fig_storm = px.bar(df_h, x='Time', y='StormProb', color='Status',
-                           color_discrete_map={T["storm_status"][0]: '#3498db', T["storm_status"][1]: '#f1c40f', T["storm_status"][2]: '#e74c3c'})
-        st.plotly_chart(fig_storm, use_container_width=True)
+        fig7 = px.bar(df_h, x='Time', y='StormProb', color='Status',
+                      color_discrete_map={T["storm_status"][0]: '#3498db', T["storm_status"][1]: '#f1c40f', T["storm_status"][2]: '#e74c3c'},
+                      labels={'StormProb': T['axis_prob'], 'Time': T['axis_time']})
+        st.plotly_chart(fig7, use_container_width=True)
         st.warning(T["storm_note"])
 
-    elif view_mode in [T["modes"][1]]: # IBF Heatwave
+    elif view_mode in [T["modes"][1]]: # IBF
         max_t = df_d['Tmax'].max()
         risk_idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
-        risk_text = T["risk_levels"][risk_idx]
-        color = ["red", "orange", "yellow", "green"][risk_idx]
-        txt_c = "black" if color == "yellow" else "white"
-        
-        st.markdown(f"<div style='background-color:{color}; padding:25px; border-radius:15px; text-align:center;'><h2 style='color:{txt_c};'>{risk_text}: {max_t:.1f} °C</h2></div>", unsafe_allow_html=True)
-        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd').add_hline(y=40, line_dash="dash", line_color="red"), use_container_width=True)
+        st.markdown(f"<div style='background-color:{['red','orange','yellow','green'][risk_idx]}; padding:20px; border-radius:10px; text-align:center;'><h2>{T['risk_levels'][risk_idx]}: {max_t:.1f} °C</h2></div>", unsafe_allow_html=True)
+        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', labels={'Tmax': T['axis_temp'], 'Date': T['axis_time']}), use_container_width=True)
 
-    else: # Climate Projection
-        st.subheader(f"🔮 Future Projection (2100) - {selected_city}")
-        years = np.arange(2026, 2101)
-        temp_trend = [30 + (y-2026)*0.043 + np.random.normal(0, 0.5) for y in years]
-        st.plotly_chart(px.line(x=years, y=temp_trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
 
 # --- ၆။ Data Source Footer ---
