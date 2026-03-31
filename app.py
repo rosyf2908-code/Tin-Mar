@@ -228,49 +228,11 @@ if df_h is not None:
             
         st.info("📝 Note: Ensemble forecasts account for uncertainties...")
 
-    else: 
-        st.subheader(f"🌍 {T['modes'][3]} - Scenario: SSP 5-8.5")
-        st.markdown("*(High Emissions Scenario - Representative of Business-as-usual)*")
-        
+   else: 
+        st.subheader(T['modes'][2])
         years = np.arange(2026, 2101)
-        
-        # ၁။ အပူချိန်တိုးလာမှု (Temperature Trend - SSP 5-8.5 Projection)
-        temp_trend = [df_d['Tmax'].mean() + (y-2026)*0.06 + np.random.normal(0, 0.5) for y in years]
-        
-        # ၂။ မိုးရေချိန်ပြောင်းလဲမှု (Precipitation Trend - mm)
-        rain_trend = [df_d['RainSum'].mean() * (1 + (y-2026)*0.002) + np.random.normal(0, 15) for y in years]
-        rain_trend = [max(0, r) for r in rain_trend] 
-        
-        # ၃။ လေတိုက်နှုန်း (Wind Speed Trend - mph)
-        wind_trend = [df_h['Wind'].mean() + (y-2026)*0.02 + np.random.normal(0, 1.2) for y in years]
-
-        # --- Graph 1: Temperature Projection (အပေါ်ဆုံး) ---
-        st.markdown(f"### {T['charts'][0]}")
-        fig_ct = px.line(x=years, y=temp_trend, 
-                         labels={'x': 'Year', 'y': 'Max Temp (°C)'}, 
-                         color_discrete_sequence=['#d32f2f'])
-        fig_ct.update_layout(height=450)
-        st.plotly_chart(fig_ct, use_container_width=True)
-
-        st.markdown("---") # မျဉ်းတားပြီးခြားမည်
-
-        # --- Graph 2: Precipitation Projection (အလယ်) ---
-        st.markdown(f"### {T['charts'][1]}")
-        fig_cr = px.bar(x=years, y=rain_trend, color=rain_trend, 
-                        color_continuous_scale='Blues',
-                        labels={'x': 'Year', 'y': 'Precipitation (mm)'})
-        fig_cr.update_layout(height=450, showlegend=False)
-        st.plotly_chart(fig_cr, use_container_width=True)
-
-        st.markdown("---") # မျဉ်းတားပြီးခြားမည်
-
-        # --- Graph 3: Wind Speed Projection (အောက်ဆုံး) ---
-        st.markdown(f"### {T['charts'][2]}")
-        fig_cw = px.line(x=years, y=wind_trend, 
-                         labels={'x': 'Year', 'y': 'Wind Speed (mph)'},
-                         color_discrete_sequence=['#f57c00'])
-        fig_cw.update_layout(height=450)
-        st.plotly_chart(fig_cw, use_container_width=True)
+        trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
+        st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
