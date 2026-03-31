@@ -107,7 +107,7 @@ if df_d is not None:
 
         # ၅။ Humidity
         st.subheader(f"💧 5. Relative Humidity (%) - {selected_city}")
-        st.plotly_chart(px.area(df_h, x='Time', y='စိုထိုင်းဆ(ရာခိုင်နှုန်း)', color_discrete_sequence=['#3498db']), use_container_width=True)
+        st.plotly_chart(px.area(df_h, x='Time', y='Humidity (%)', color_discrete_sequence=['#3498db']), use_container_width=True)
 
         # ၆။ Cloud Cover
         st.subheader(f"☁️ 6. Cloud Cover (Oktas: 0-8) - {selected_city}")
