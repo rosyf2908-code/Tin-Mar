@@ -172,7 +172,7 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][6])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22']), use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['#e67e22']), use_container_width=True)
         st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
     
     elif view_mode == T["modes"][1]: # IBF
