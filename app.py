@@ -111,7 +111,7 @@ if df_d is not None:
 
         # ၆။ Cloud Cover
         st.subheader(f"☁️ 6. Cloud Cover (Oktas: 0-8) - {selected_city}")
-        fig_c = px.bar(df_h, x='Time', y=''Cloud_Okta'', color='Cloud_Okta', color_continuous_scale='Blues')
+        fig_c = px.bar(df_h, x='Time', y='Cloud_Okta', color='Cloud_Okta', color_continuous_scale='Blues')
         st.plotly_chart(fig_c, use_container_width=True)
 
         # ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (Thunderstorm Prob)
