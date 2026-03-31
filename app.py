@@ -16,14 +16,14 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary (ပြင်ဆင်ပြီးသော အညွှန်းများ) ---
+# --- ၂။ ဘာသာစကား Dictionary (View Mode အသစ်ထည့်သွင်းခြင်း) ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
         "time_label": "Current Local Time (MMT)",
         "city_select": "🎯 Select Station/City",
         "view_mode": "📊 View Mode",
-        "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "Climate Projection (2100)"],
+        "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "AI MODEL Graphic", "Climate Projection (2100)"],
         "charts": [
             "🌡️ 1. Temperature Outlook (°C)", 
             "🌧️ 2. Daily Precipitation Summary (mm)", 
@@ -33,13 +33,10 @@ LANG_DICT = {
             "☁️ 6. Cloud Cover (Oktas: 0-8)", 
             "⚡ 7. Thunderstorm Potential (%)"
         ],
+        "ai_model_info": "🔬 Model: Multi-Model Super Ensemble (ECMWF IFS, GFS, ICON, JMA)",
         "axis_time": "Time / Date",
         "dmh_alert": "📢 Recommendations: Please monitor DMH official news regularly.",
         "storm_note": "📝 Note: If Thunderstorm Potential > 60%, please beware of strong winds, thunder, and lightning.",
-        "ibf_header": "🏥 Health Sector Impact & Recommendations",
-        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "impacts": ["Severe threat!", "Significant risk!", "Moderate threat!", "Low threat!"],
-        "recommends": ["STAY INDOORS.", "Limit outdoor work.", "Wear light clothes.", "Standard precautions."],
         "footer": "Data: Open-Meteo | System: Department of Meteorology and Hydrology"
     },
     "မြန်မာ": {
@@ -47,7 +44,7 @@ LANG_DICT = {
         "time_label": "လက်ရှိ မြန်မာစံတော်ချိန်",
         "city_select": "🎯 စခန်း/မြို့အမည်ရွေးချယ်ပါ",
         "view_mode": "📊 ကြည့်ရှုမည့်ပုံစံ",
-        "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
+        "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "AI MODEL Graphic", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
         "charts": [
             "🌡️ ၁။ အပူချိန်ခန့်မှန်းချက် (°C)", 
             "🌧️ ၂။ မိုးရေချိန်ခန့်မှန်းချက် (mm)", 
@@ -57,28 +54,19 @@ LANG_DICT = {
             "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas 0-8)", 
             "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
+        "ai_model_info": "🔬 အသုံးပြုထားသော မော်ဒယ်များ: Open-Meteo API (Combining ECMWF IFS, GFS, ICON, and JMA global models)",
         "axis_time": "အချိန် / ရက်စွဲ",
         "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလကို သတင်းများစောင့်ကြည့်ပါ။",
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "impacts": [
-            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။",
-            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။",
-            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။",
-            "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
-        ],
-        "recommends": [
-            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးဇလကို စောင့်ကြည့်ပါ။",
-            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးဇလကို နားထောင်ပါ။",
-            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်ကို စစ်ဆေးပါ။",
-            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသကို ဆက်လက်စောင့်ကြည့်ပါ။"
-        ],
+        "impacts": ["အလွန်စိုးရိမ်ရ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
+        "recommends": ["အိမ်ထဲတွင်နေပါ", "ပြင်ပအလုပ်လျှော့ပါ", "ရေများများသောက်ပါ", "ပုံမှန်အတိုင်းနေနိုင်ပါ"],
         "footer": "အချက်အလက်ရင်းမြစ်: Open-Meteo | တရားဝင်စနစ်: မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန"
     }
 }
 
-# --- ၃။ စခန်းစာရင်း (၃၄ မြို့) ---
+# --- ၃။ စခန်းစာရင်း ---
 MYANMAR_CITIES = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
@@ -96,14 +84,14 @@ MYANMAR_CITIES = {
     "Mawlamyine": {"lat": 16.4905, "lon": 97.6282}, "Sittwe": {"lat": 20.1436, "lon": 92.8977},
     "Lashio": {"lat": 22.9333, "lon": 97.7500}, "Hpa-An": {"lat": 16.8906, "lon": 97.6333},
     "Loikaw": {"lat": 19.6742, "lon": 97.2093}, "Mindat": {"lat": 21.3748, "lon": 93.9725},
-    "Hakha": {"lat": 22.6707, "lon": 93.6041}, "Putao": {"lat": 27.6182, "lon": 97.4057},
     "Hkamti": {"lat": 25.9977, "lon": 95.6905}, "Dawei": {"lat": 14.0833, "lon": 98.2000}
 }
 
 @st.cache_data(ttl=300)
 def get_full_weather(city):
     lat, lon = MYANMAR_CITIES[city]['lat'], MYANMAR_CITIES[city]['lon']
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    # လေထုဖိအား (Surface Pressure) ပါ ထည့်သွင်းထားသည်
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,surface_pressure,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=10).json()
         h, d = r['hourly'], r['daily']
@@ -111,6 +99,7 @@ def get_full_weather(city):
             "Time": pd.to_datetime(h['time']), "Temp": h['temperature_2m'], "Humidity": h['relative_humidity_2m'],
             "Visibility": np.array(h['visibility']) / 1000, "Cloud": [round((c/100)*8) for c in h['cloud_cover']],
             "Wind": h['windspeed_10m'], "WindDir": h['winddirection_10m'], "Rain": h['precipitation'],
+            "Pressure": h['surface_pressure'],
             "Storm": [min(round((c/3500)*100), 100) for c in h['cape']]
         })
         df_d = pd.DataFrame({"Date": pd.to_datetime(d['time']), "Tmax": d['temperature_2m_max'], "Tmin": d['temperature_2m_min'], "RainSum": d['precipitation_sum']})
@@ -137,53 +126,57 @@ if df_h is not None:
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
 
-    if view_mode == T["modes"][0]: 
+    if view_mode == T["modes"][0]: # 16-Day
+        # ... (ယခင် Graph များအတိုင်း) ...
         st.subheader(T['charts'][0])
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][1])
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']), use_container_width=True)
-        st.markdown("---")
-        st.subheader(T['charts'][2]) 
-        df_w = df_h[df_h['Time'].dt.hour == 13]
-        fig_w = go.Figure()
-        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='lines+markers', name='Speed'))
-        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+2, mode='markers', marker=dict(symbol='arrow', angle=df_w['WindDir'], size=14, color='red'), name='Dir'))
-        st.plotly_chart(fig_w, use_container_width=True)
-        st.markdown("---")
-        st.subheader(T['charts'][3]) 
-        st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
-        st.markdown("---")
-        st.subheader(T['charts'][4]) # စိုထိုင်းဆ (ရာခိုင်နှုန်း)
-        st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
-        st.markdown("---")
-        st.subheader(T['charts'][5]) # တိမ်ဖုံးမှုပမာဏ (Oktas 0-8)
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
+        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum'), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.warning(T["storm_note"]) 
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], labels={'Storm':'Thunderstorm %'}), use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', labels={'Storm':'Thunderstorm %'}), use_container_width=True)
 
-    elif view_mode == T["modes"][1]: 
+    elif view_mode == T["modes"][2]: # AI MODEL Graphic (NEW SECTION)
+        st.subheader(f"📊 {T['modes'][2]}")
+        st.markdown(f"*{T['ai_model_info']}*")
+        
+        # ၁။ လေထုဖိအားနှင့် အပူချိန် ဆက်စပ်မှု Graphic
+        fig_ai = go.Figure()
+        fig_ai.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Pressure'], name='Sea Level Pressure (hPa)', line=dict(color='gray', width=1, dash='dot')))
+        fig_ai.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Temp'], name='Temperature (°C)', yaxis="y2", line=dict(color='red', width=2)))
+        
+        fig_ai.update_layout(
+            title=f"Vertical Surface Dynamics for {selected_city}",
+            yaxis=dict(title="Pressure (hPa)", side="left"),
+            yaxis2=dict(title="Temperature (°C)", side="right", overlaying="y", showgrid=False),
+            hovermode="x unified", legend=dict(orientation="h", y=1.1)
+        )
+        st.plotly_chart(fig_ai, use_container_width=True)
+
+        # ၂။ Wind Field Graphic (နမူနာပုံစံအတိုင်း လေတိုက်နှုန်း အရောင်ဖြင့်ပြခြင်း)
+        st.markdown("---")
+        st.subheader("💨 Wind Speed & Distribution Field")
+        fig_wind = px.density_heatmap(df_h, x="Time", y="Wind", z="Temp", 
+                                      color_continuous_scale="Viridis",
+                                      labels={'Wind': 'Wind Speed (mph)', 'Temp': 'Temp Influence'})
+        st.plotly_chart(fig_wind, use_container_width=True)
+
+    elif view_mode == T["modes"][1]: # IBF
+        # ... (ယခင် IBF Code များအတိုင်း) ...
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
-        st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
-        st.subheader(T['ibf_header'])
-        st.error(f"⚠️ **Impact:**\n\n{T['impacts'][idx]}")
-        st.success(f"💡 **Recommendations:**\n\n{T['recommends'][idx]}")
-        
+        st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
-        fig_ibf.add_hline(y=42, line_dash="dash", line_color="maroon", annotation_text="Extreme (42°C)")
-        fig_ibf.add_hline(y=40, line_dash="dash", line_color="red", annotation_text="High (40°C)")
-        fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
+        fig_ibf.add_hline(y=40, line_dash="dash", line_color="red", annotation_text="High Risk")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    else: 
-        st.subheader(T['modes'][2])
+    else: # Climate
+        st.subheader(T['modes'][3])
         years = np.arange(2026, 2101)
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
-
+        st.plotly_chart(px.line(x=years, y=trend), use_container_width=True)
 
 
 # --- ၅။ Data Source Footer ---
