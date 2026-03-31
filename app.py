@@ -186,21 +186,29 @@ if df_h is not None:
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    # --- CSV Download Button ထည့်သွင်းခြင်း ---
-        st.markdown("---")
-        # Download အတွက် Dataframe ကို ပြင်ဆင်ခြင်း
-        csv_df = df_d[['Date', 'Tmax', 'Tmin']].copy()
-        csv_df['Station'] = selected_city
-        csv_df['Date'] = csv_df['Date'].dt.strftime('%Y-%m-%d')
+    st.markdown("---")
+        # ၁။ Download အတွက် Dataframe ကို Column အသစ်များဖြင့် ပြင်ဆင်ခြင်း
+        # Date, Tmax, Tmin, RainSum (Daily Total Rainfall) နှင့် Station တို့ကို ယူပါမည်
+        export_df = df_d[['Date', 'Tmax', 'Tmin', 'RainSum']].copy()
         
-        csv_data = csv_df.to_csv(index=False).encode('utf-8-sig')
+        # ၂။ စခန်းအမည် Column အသစ်ထည့်ခြင်း
+        export_df['Station'] = selected_city
+        
+        # ၃။ ရက်စွဲ Format ပြင်ခြင်း (ဥပမာ - 2026-03-31)
+        export_df['Date'] = export_df['Date'].dt.strftime('%Y-%m-%d')
+        
+        # ၄။ Column အမည်များကို ပိုမိုရှင်းလင်းအောင် ပြောင်းလဲခြင်း (Optional)
+        export_df.columns = ['Date', 'Max_Temp_C', 'Min_Temp_C', 'Daily_Rainfall_mm', 'Station_Name']
+
+        # CSV အဖြစ် ပြောင်းလဲခြင်း (မြန်မာစာလုံးများ Excel တွင် မှန်ကန်စေရန် utf-8-sig သုံးထားပါသည်)
+        csv_data = export_df.to_csv(index=False).encode('utf-8-sig')
 
         st.download_button(
-            label="📥 Download 16-Day Temperature Data (CSV)",
+            label=f"📥 Download 16-Day Data for {selected_city} (CSV)",
             data=csv_data,
-            file_name=f"Heatwave_Data_{selected_city}_{now.strftime('%Y%m%d')}.csv",
+            file_name=f"DMH_Forecast_{selected_city}_{now.strftime('%Y%m%d')}.csv",
             mime="text/csv",
-            key='download-csv'
+            key='download-full-csv'
         )
 
     
