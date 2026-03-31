@@ -186,47 +186,7 @@ if df_h is not None:
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    elif view_mode == "AI MODEL Graphic": 
-        st.header("🔬 AI Model Regional & Ensemble Forecast")
-        st.caption("Myanmar Domain Settings: 9°N to 30°N | 75°E to 102°E")
-        
-        lats = np.linspace(9, 30, 30)
-        lons = np.linspace(75, 102, 30)
-        
-        c1, c2 = st.columns(2)
-        with c1:
-            st.subheader("🌡️ Regional Temperature Contour")
-            z_temp = np.random.uniform(22, 43, size=(30, 30))
-            fig_t = go.Figure(data=go.Contour(z=z_temp, x=lons, y=lats, colorscale='YlOrRd', colorbar=dict(title="°C")))
-            fig_t.update_layout(xaxis_title="Longitude (°E)", yaxis_title="Latitude (°N)", height=450)
-            st.plotly_chart(fig_t, use_container_width=True)
-
-        with c2:
-            st.subheader("🌧️ Rainfall Intensity (WRF Style)")
-            z_rain = np.random.uniform(0, 5.5, size=(30, 30)) 
-            fig_r = go.Figure(data=go.Contour(z=z_rain, x=lons, y=lats, colorscale='Blues', colorbar=dict(title="inches")))
-            fig_r.update_layout(xaxis_title="Longitude (°E)", yaxis_title="Latitude (°N)", height=450)
-            st.plotly_chart(fig_r, use_container_width=True)
-
-        st.markdown("---")
-        st.subheader("📊 Ensemble Rainfall Analysis (Probabilistic)")
-        col_e1, col_e2 = st.columns(2)
-        
-        with col_e1:
-            st.markdown("**Ensemble Mean Rainfall (Weighted)**")
-            z_mean = np.random.gamma(2, 0.5, size=(30, 30)) 
-            fig_mean = go.Figure(data=go.Contour(z=z_mean, x=lons, y=lats, colorscale='Viridis', colorbar=dict(title="inches")))
-            fig_mean.update_layout(xaxis_title="Lon", yaxis_title="Lat", height=400)
-            st.plotly_chart(fig_mean, use_container_width=True)
-
-        with col_e2:
-            st.markdown("**Probability of Heavy Rain (> 1.0 inch)**")
-            z_prob = np.random.uniform(0, 100, size=(30, 30))
-            fig_prob = go.Figure(data=go.Contour(z=z_prob, x=lons, y=lats, colorscale='YlGnBu', colorbar=dict(title="%")))
-            fig_prob.update_layout(xaxis_title="Lon", yaxis_title="Lat", height=400)
-            st.plotly_chart(fig_prob, use_container_width=True)
-            
-            st.info("📝 Note: Ensemble forecasts account for uncertainties...")
+    
 
     else: 
          st.subheader(T['modes'][2])
