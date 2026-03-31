@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -11,7 +11,7 @@ import os
 # --- ၁။ Setup & Timezone ---
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
-formatted_now = now.strftime('%I:%M %p, %d %b %Y') # ဥပမာ - 07:15 PM, 31 Mar 2026
+formatted_now = now.strftime('%I:%M %p, %d %b %Y')
 
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
@@ -35,7 +35,7 @@ LANG_DICT = {
             "⚡ 7. Thunderstorm Potential (%)"
         ],
         "axis_time": "Time / Date",
-        "dmh_alert": "📢 Please monitor official DMH announcements in real-time for latest updates.",
+        "dmh_alert": "📢 Recommendations: Please monitor official DMH announcements in real-time for latest updates.",
         "ibf_header": "🏥 Health Sector Impact & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "impacts": [
@@ -68,10 +68,10 @@ LANG_DICT = {
             "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
         "axis_time": "အချိန် / ရက်စွဲ",
-        "dmh_alert": "📢 အရေးကြီးသတိပေးချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန (DMH) ၏ ထုတ်ပြန်ချက်များကို အချိန်နဲ့တစ်ပြေးညီ မပြတ်မကွက် စောင့်ကြည့်ပါ။",,
+        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန (DMH) ၏ ထုတ်ပြန်ချက်များကို အချိန်နဲ့တစ်ပြေးညီ မပြတ်မကွက် စောင့်ကြည့်ပါ။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "impacts
+        "impacts": [
             "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။",
             "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။",
             "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။",
@@ -88,7 +88,7 @@ LANG_DICT = {
 }
 
 MYANMAR_CITIES = {
-   "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
+    "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
     "Dagon (Seikan)": {"lat": 16.8489, "lon": 96.2734}, "Dagon (South)": {"lat": 16.8840, "lon": 96.2400},
     "Hlaing Thayar": {"lat": 16.8812, "lon": 96.0503}, "Shwe Pyithar": {"lat": 16.9759, "lon": 96.0760},
@@ -135,11 +135,11 @@ temp_bias = st.sidebar.slider("🌡️ Temp Offset (°C)", -5.0, 5.0, 0.0, step=
 selected_city = st.sidebar.selectbox(T["city_select"], sorted(list(MYANMAR_CITIES.keys())))
 view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 
-# --- ၄။ Main Display (With Time Header) ---
+# --- ၄။ Main Display ---
 st.markdown(f"# {T['title']}")
-# ဤနေရာတွင် အချိန်စာတန်းလေး ပြန်ထည့်ထားပါသည်
 st.markdown(f"🕒 **{T['time_label']}:** `{formatted_now}` | 📍 **Station:** `{selected_city}`")
-st.warning(T["dmh_alert"])
+# "အကြံပြုချက်" ဟု ပြင်ဆင်ထားသော စာသား
+st.info(T["dmh_alert"])
 
 df_h, df_d = get_full_weather(selected_city)
 
@@ -173,8 +173,7 @@ if df_h is not None:
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22']), use_container_width=True)
-        st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
-    
+
     elif view_mode == T["modes"][1]: # IBF
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
@@ -189,6 +188,10 @@ if df_h is not None:
         years = np.arange(2026, 2101)
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}, color_discrete_sequence=['darkred']), use_container_width=True)
+
+# --- ၅။ Footer ---
+st.markdown("---")
+st.markdown(f"<div style='text-align: center; color: gray;'>{T['footer']}</div>", unsafe_allow_html=True)
 
 
 # --- ၆။ Data Source Footer ---
