@@ -170,6 +170,7 @@ if df_h is not None:
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22']), use_container_width=True)
+        st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
 
     elif view_mode == T["modes"][1]: # IBF with Bias Correction
         max_t = df_d['Tmax'].max()
@@ -186,9 +187,6 @@ if df_h is not None:
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}, color_discrete_sequence=['darkred']), use_container_width=True)
 
-# --- Footer ---
-st.markdown("---")
-st.markdown(f"<div style='text-align: center; color: gray;'>{T['footer']}</div>", unsafe_allow_html=True)
 
 
 # --- ၆။ Data Source Footer ---
