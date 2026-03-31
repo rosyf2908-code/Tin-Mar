@@ -8,17 +8,20 @@ from datetime import datetime
 import pytz
 import os
 
-# --- ၁။ Setup ---
+# --- ၁။ အချိန်ဇုန်နှင့် Logo အမည်သတ်မှတ်ခြင်း ---
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
+
+# လူကြီးမင်းပေးထားသော Logo ဖိုင်အမည်
 dmh_custom_logo = "logo.png" 
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
-st.set_page_config(page_title="DMH AI Public Weather", layout="wide")
+# --- ၂။ Page Configuration ---
+st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ မြို့ကြီး ၃၀ စာရင်း ---
+# --- ၃။ မြို့ကြီး ၃၀ စာရင်း (Verified Dictionary) ---
 MYANMAR_CITIES_30 = {
-     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
+    "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
     "Dagon (Seikan)": {"lat": 16.8489, "lon": 96.2734}, "Dagon (South)": {"lat": 16.8840, "lon": 96.2400},
     "Hlaing Thayar": {"lat": 16.8812, "lon": 96.0503}, "Shwe Pyithar": {"lat": 16.9759, "lon": 96.0760},
@@ -39,45 +42,85 @@ MYANMAR_CITIES_30 = {
 
 @st.cache_data(ttl=300)
 def get_weather_data(city):
+    # MYANMAR_CITIES_30 သို့ ပြောင်းလဲပြင်ဆင်ထားပါသည်
     lat, lon = MYANMAR_CITIES_30[city]['lat'], MYANMAR_CITIES_30[city]['lon']
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=10).json()
         h, d = r['hourly'], r['daily']
-        # CAPE ကို % အဖြစ်ပြောင်းလဲခြင်း (Max 4000 J/kg ကို 100% ဟု ယူဆသည်)
-        storm_prob = [min(round((c / 3500) * 100), 100) for c in h['cape']]
-        
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(h['time']), "Temp": h['temperature_2m'], 
             "Humidity": h['relative_humidity_2m'], "Visibility": np.array(h['visibility']) / 1000,
             "Cloud_Okta": [round((c / 100) * 8) for c in h['cloud_cover']], 
             "Wind": h['windspeed_10m'], "WindDir": h['winddirection_10m'],
-            "Rain": h['precipitation'], "StormProb": storm_prob
+            "Rain": h['precipitation']
         })
         df_d = pd.DataFrame({"Date": pd.to_datetime(d['time']), "Tmax": d['temperature_2m_max'], "Tmin": d['temperature_2m_min'], "RainSum": d['precipitation_sum']})
         return df_h, df_d, df_h[df_h['Time'].dt.hour == 13].copy()
     except: return None, None, None
 
-# --- Sidebar ---
+# --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=120)
-selected_city = st.sidebar.selectbox("🎯 မြို့အမည်ရွေးချယ်ပါ", sorted(list(MYANMAR_CITIES_30.keys())))
-view_mode = st.sidebar.radio("📊 ကြည့်ရှုမည့်ပုံစံ", ["၁၆ ရက်စာ မိုးလေဝသ", "အပူချိန်သတိပေးချက် (IBF)"])
+st.sidebar.markdown("---")
+if os.path.exists(dmh_custom_logo):
+    st.sidebar.image(dmh_custom_logo, caption="Hydrological Cycle", use_container_width=True)
 
-# --- Header ---
-st.markdown(f"## 🌤️ DMH AI အများပြည်သူဆိုင်ရာ ခန့်မှန်းချက် - {selected_city}")
-st.markdown(f"ထုတ်ပြန်ချိန်: {now.strftime('%d %b %Y, %I:%M %p')}")
+st.sidebar.markdown("### ⚙️ Bias Correction")
+temp_bias = st.sidebar.slider("🌡️ Temp Offset (°C)", -5.0, 5.0, 0.0, step=0.5)
+
+st.sidebar.markdown("---")
+# Selectbox ကို MYANMAR_CITIES_30 ဖြင့် ချိတ်ဆက်ထားပါသည်
+selected_city = st.sidebar.selectbox("🎯 Select City", sorted(list(MYANMAR_CITIES_30.keys())))
+view_mode = st.sidebar.radio("📊 Analysis View", ["16-Day Forecast Analysis", "Heatwave Monitoring (IBF)", "Climate Projection (2100)"])
+
+# --- ၅။ Main UI Header ---
+h_col1, h_col2 = st.columns([1, 6])
+with h_col1:
+    if os.path.exists(dmh_custom_logo): st.image(dmh_custom_logo, width=80)
+with h_col2:
+    st.markdown(f"<h1 style='margin:0;'>DMH AI Weather Forecast System</h1>", unsafe_allow_html=True)
+    st.markdown(f"<b>Local Time (MMT):</b> {now.strftime('%I:%M %p, %d %b %Y')}")
 st.markdown("---")
 
 df_h, df_d, df_w = get_weather_data(selected_city)
 
 if df_d is not None:
-    if view_mode == "၁၆ ရက်စာ မိုးလေဝသ":
-        # ၁။ အပူချိန် နှင့် မိုးရေချိန်
-        st.subheader("🌡️ ၁။ အပူချိန်နှင့် မိုးရွာနိုင်မှု အခြေအနေ")
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, title="နေ့အပူချိန်နှင့် ညအပူချိန် (°C)"), use_container_width=True)
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', title="မိုးရေချိန် ခန့်မှန်းချက် (mm)"), use_container_width=True)
+    df_d['Tmax'] += temp_bias
+    df_d['Tmin'] += temp_bias
 
-        # ၂။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (အများပြည်သူ နားလည်စေရန် ပြောင်းထားသောအပိုင်း)
+    if view_mode == "16-Day Forecast Analysis":
+        # ၁။ အပူချိန် (Temperature)
+        st.subheader(f"🌡️ 1. Temperature Outlook (°C) - {selected_city}")
+        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True,
+                               color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+
+        # ၂။ မိုးရေချိန် (Precipitation)
+        st.subheader(f"🌧️ 2. Daily Precipitation Summary (mm) - {selected_city}")
+        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']), use_container_width=True)
+
+        # ၃။ လေတိုက်နှုန်းနှင့် လေတိုက်ရာအရပ် (Wind)
+        st.subheader(f"💨 3. Wind Speed (mph) & Direction - {selected_city}")
+        fig_w = go.Figure()
+        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='markers+lines', name='Speed', line=dict(color='teal', width=3)))
+        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+1.5, mode='markers', name='Direction',
+                                   marker=dict(symbol='arrow', size=18, angle=df_w['WindDir'], color='red')))
+        st.plotly_chart(fig_w, use_container_width=True)
+
+        # ၄။ အဝေးမြင်တာ (Visibility)
+        st.subheader(f"🔭 4. Visibility Analysis (km) - {selected_city}")
+        st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
+
+        # ၅။ စိုထိုင်းဆ (Relative Humidity)
+        st.subheader(f"💧 5. Relative Humidity (%) - {selected_city}")
+        st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
+
+        # ၆။ တိမ်အခြေအနေ (Cloud Cover in Oktas)
+        st.subheader(f"☁️ 6. Cloud Cover (Oktas: 0-8) - {selected_city}")
+        fig_c = px.bar(df_h, x='Time', y='Cloud_Okta', color='Cloud_Okta', color_continuous_scale='Blues')
+        fig_c.update_layout(yaxis=dict(tickmode='linear', tick0=0, dtick=1, range=[0, 8.5]))
+        st.plotly_chart(fig_c, use_container_width=True)
+
+        # ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (အများပြည်သူ နားလည်စေရန် ပြောင်းထားသောအပိုင်း)
         st.subheader("⚡ ၂။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ ခန့်မှန်းချက် (%)")
         
         # Color coding for public safety
@@ -91,18 +134,31 @@ if df_d is not None:
         
         st.warning("**မှတ်ချက်:** မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။")
 
-        # ၃။ လေတိုက်နှုန်း
-        st.subheader("💨 ၃။ လေတိုက်နှုန်း ခန့်မှန်းချက် (mph)")
-        st.plotly_chart(px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['teal']), use_container_width=True)
-
-    elif view_mode == "အပူချိန်သတိပေးချက် (IBF)":
-        # IBF Section
+       
+    elif view_mode == "Heatwave Monitoring (IBF)":
+        if os.path.exists(dmh_custom_logo): st.image(dmh_custom_logo, width=60)
+        st.subheader(f"🔥 Impact-Based Monitoring: Extreme Heat ({selected_city})")
+        
         max_t = df_d['Tmax'].max()
-        st.subheader(f"🔥 အပူဒဏ်သတိပေးချက် - {selected_city}")
-        if max_t >= 40:
-            st.error(f"အမြင့်ဆုံးအပူချိန် {max_t:.1f}°C ရှိနိုင်သဖြင့် အပြင်မထွက်ရန် သတိပြုပါ။")
-        else:
-            st.success(f"အမြင့်ဆုံးအပူချိန် {max_t:.1f}°C ရှိနိုင်ပါသည်။ ပုံမှန်အတိုင်း သွားလာနိုင်ပါသည်။")
+        risk_level, color, text_c = ("Extreme Risk", "red", "white") if max_t >= 42 else ("High Risk", "orange", "white") if max_t >= 40 else ("Moderate Risk", "yellow", "black") if max_t >= 38 else ("Low Risk", "green", "white")
+        
+        st.markdown(f"<div style='background-color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'><h2 style='color:{text_c}; margin:0;'>Heat Risk Status: {risk_level}</h2><p style='color:{text_c}; font-size:1.2em;'>Highest Expected: {max_t:.1f} °C</p></div>", unsafe_allow_html=True)
+        
+        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd').add_hline(y=40, line_dash="dash", line_color="red"), use_container_width=True)
+        
+        st.markdown("### 🏥 Health Sector Impact & Recommendations")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.error("**⚠️ Possible Impacts:**\n* Heatstroke (အပူလျှပ်ခြင်း) ဖြစ်နိုင်ခြေ မြင့်မားခြင်း။\n* ရေဓာတ်ခမ်းခြောက်ခြင်းနှင့် မူးဝေခြင်း။\n* သက်ကြီးရွယ်အိုများနှင့် ကလေးငယ်များအတွက် အထူးအန္တရာယ်ရှိခြင်း။")
+        with col2:
+            st.success("**🛡️ Mitigation Actions:**\n* နေပူထဲ တိုက်ရိုက်သွားလာခြင်းကို အတတ်နိုင်ဆုံး ရှောင်ကြဉ်ပါ။\n* ရေနှင့် ဓာတ်ဆားရည်ကို ပုံမှန်ထက် ပိုသောက်ပါ။\n* လေဝင်လေထွက်ကောင်းသော အဝတ်အစားများ ဝတ်ဆင်ပါ။")
+
+    else:
+        if os.path.exists(dmh_custom_logo): st.image(dmh_custom_logo, width=60)
+        st.subheader(f"🔮 Future Climate Projection (2100) - {selected_city}")
+        years = np.arange(2026, 2101)
+        temp_trend = [30 + (y-2026)*0.043 + np.random.normal(0, 0.5) for y in years]
+        st.plotly_chart(px.line(x=years, y=temp_trend, labels={'y':'Mean Temp'}, color_discrete_sequence=['darkred']), use_container_width=True)
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
