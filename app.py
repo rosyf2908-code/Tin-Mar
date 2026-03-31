@@ -226,15 +226,15 @@ if df_h is not None:
             fig_prob.update_layout(xaxis_title="Lon", yaxis_title="Lat", height=400)
             st.plotly_chart(fig_prob, use_container_width=True)
             
-        st.info("📝 Note: Ensemble forecasts account for uncertainties...")
+            st.info("📝 Note: Ensemble forecasts account for uncertainties...")
 
-   else: 
-        st.subheader(T['modes'][2])
-        years = np.arange(2026, 2101)
-        trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
+    else: 
+         st.subheader(T['modes'][2])
+         years = np.arange(2026, 2101)
+         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
+         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
-        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
