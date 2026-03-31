@@ -16,7 +16,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary ---
+# --- ၂။ ဘာသာစကား Dictionary (ပြင်ဆင်ပြီးသော အညွှန်းများ) ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -24,23 +24,22 @@ LANG_DICT = {
         "city_select": "🎯 Select Station/City",
         "view_mode": "📊 View Mode",
         "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "Climate Projection (2100)"],
-        "charts": ["🌡️ Temp", "🌧️ Rain", "💨 Wind", "🔭 Visibility", "💧 Humidity", "☁️ Cloud", "⚡ Storm Potential"],
+        "charts": [
+            "🌡️ 1. Temperature Outlook (°C)", 
+            "🌧️ 2. Daily Precipitation Summary (mm)", 
+            "💨 3. Wind Speed (mph) & Direction", 
+            "🔭 4. Visibility (km)", 
+            "💧 5. Relative Humidity (%)", 
+            "☁️ 6. Cloud Cover (Oktas: 0-8)", 
+            "⚡ 7. Thunderstorm Potential (%)"
+        ],
+        "axis_time": "Time / Date",
         "dmh_alert": "📢 Recommendations: Please monitor DMH official news regularly.",
         "storm_note": "📝 Note: If Thunderstorm Potential > 60%, please beware of strong winds, thunder, and lightning.",
         "ibf_header": "🏥 Health Sector Impact & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "impacts": [
-            "Severe threat! High risk of heatstroke and critical dehydration.",
-            "Significant risk! Heat exhaustion likely. Children/Elderly at high risk.",
-            "Moderate threat! Prolonged exposure may cause fatigue.",
-            "Low threat! Standard conditions."
-        ],
-        "recommends": [
-            "STAY INDOORS. Drink 3-4L water. Seek urgent medical care if dizzy. Follow DMH updates.",
-            "Limit outdoor work. Wear hats. Stay in cool areas. Monitor DMH news.",
-            "Wear light clothes. Drink water frequently. Check DMH daily forecasts.",
-            "Standard health precautions. Monitor DMH official channels."
-        ],
+        "impacts": ["Severe threat!", "Significant risk!", "Moderate threat!", "Low threat!"],
+        "recommends": ["STAY INDOORS.", "Limit outdoor work.", "Wear light clothes.", "Standard precautions."],
         "footer": "Data: Open-Meteo | System: Department of Meteorology and Hydrology"
     },
     "မြန်မာ": {
@@ -49,7 +48,16 @@ LANG_DICT = {
         "city_select": "🎯 စခန်း/မြို့အမည်ရွေးချယ်ပါ",
         "view_mode": "📊 ကြည့်ရှုမည့်ပုံစံ",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
-        "charts": ["🌡️ အပူချိန်", "🌧️ မိုးရေချိန်", "💨 လေတိုက်နှုန်း", "🔭 အဝေးမြင်တာ", "💧 စိုထိုင်းဆ", "☁️ တိမ်ဖုံးမှု", "⚡ မိုးတိမ်တောင်"],
+        "charts": [
+            "🌡️ ၁။ အပူချိန်ခန့်မှန်းချက် (°C)", 
+            "🌧️ ၂။ မိုးရေချိန်ခန့်မှန်းချက် (mm)", 
+            "💨 ၃။ လေတိုက်နှုန်းနှင့် လေတိုက်ရာအရပ်", 
+            "🔭 ၄။ အဝေးမြင်တာ(ကီလိုမီတာ)", 
+            "💧 ၅။ စိုထိုင်းဆ (ရာခိုင်နှုန်း)", 
+            "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas 0-8)", 
+            "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
+        ],
+        "axis_time": "အချိန် / ရက်စွဲ",
         "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလကို သတင်းများစောင့်ကြည့်ပါ။",
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
@@ -88,6 +96,7 @@ MYANMAR_CITIES = {
     "Mawlamyine": {"lat": 16.4905, "lon": 97.6282}, "Sittwe": {"lat": 20.1436, "lon": 92.8977},
     "Lashio": {"lat": 22.9333, "lon": 97.7500}, "Hpa-An": {"lat": 16.8906, "lon": 97.6333},
     "Loikaw": {"lat": 19.6742, "lon": 97.2093}, "Mindat": {"lat": 21.3748, "lon": 93.9725},
+    "Hakha": {"lat": 22.6707, "lon": 93.6041}, "Putao": {"lat": 27.6182, "lon": 97.4057},
     "Hkamti": {"lat": 25.9977, "lon": 95.6905}, "Dawei": {"lat": 14.0833, "lon": 98.2000}
 }
 
@@ -119,7 +128,6 @@ view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 # --- ၅။ Main Display ---
 st.markdown(f"# {T['title']}")
 st.markdown(f"🕒 **{T['time_label']}:** `{formatted_now}` | 📍 **Station:** `{selected_city}`")
-# ပြင်ဆင်ထားသော မိုးဇလ သတင်းစောင့်ကြည့်ရန် စာသား
 st.info(T["dmh_alert"])
 
 df_h, df_d = get_full_weather(selected_city)
@@ -129,57 +137,56 @@ if df_h is not None:
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
 
-    if view_mode == T["modes"][0]: # အသေးစိတ် View
+    if view_mode == T["modes"][0]: 
         st.subheader(T['charts'][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']), use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][2])
+        st.subheader(T['charts'][2]) 
         df_w = df_h[df_h['Time'].dt.hour == 13]
         fig_w = go.Figure()
         fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='lines+markers', name='Speed'))
         fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+2, mode='markers', marker=dict(symbol='arrow', angle=df_w['WindDir'], size=14, color='red'), name='Dir'))
         st.plotly_chart(fig_w, use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][3])
+        st.subheader(T['charts'][3]) 
         st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][4])
+        st.subheader(T['charts'][4]) # စိုထိုင်းဆ (ရာခိုင်နှုန်း)
         st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
         st.markdown("---")
-        st.subheader(T['charts'][5])
+        st.subheader(T['charts'][5]) # တိမ်ဖုံးမှုပမာဏ (Oktas 0-8)
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.warning(T["storm_note"]) 
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], labels={'Storm':'Thunderstorm %'}), use_container_width=True)
 
-    elif view_mode == T["modes"][1]: # IBF (ကျန်းမာရေး View)
+    elif view_mode == T["modes"][1]: 
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
-        
         st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
         st.subheader(T['ibf_header'])
         st.error(f"⚠️ **Impact:**\n\n{T['impacts'][idx]}")
         st.success(f"💡 **Recommendations:**\n\n{T['recommends'][idx]}")
         
-        # Risk Threshold Lines များ ပြန်လည်ထည့်သွင်းခြင်း
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
         fig_ibf.add_hline(y=42, line_dash="dash", line_color="maroon", annotation_text="Extreme (42°C)")
         fig_ibf.add_hline(y=40, line_dash="dash", line_color="red", annotation_text="High (40°C)")
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    else: # Climate
+    else: 
         st.subheader(T['modes'][2])
         years = np.arange(2026, 2101)
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
 
-# --- ၆။ Data Source Footer ---
+
+# --- ၅။ Data Source Footer ---
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
