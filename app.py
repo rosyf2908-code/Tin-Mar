@@ -16,7 +16,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary ---
+# --- ၂။ ဘာသာစကား Dictionary (IBF အချက်အလက်များ အပြည့်အစုံ) ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -24,19 +24,24 @@ LANG_DICT = {
         "city_select": "🎯 Select Station/City",
         "view_mode": "📊 View Mode",
         "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "Climate Projection (2100)"],
-        "charts": [
-            "🌡️ 1. Temperature Outlook (°C)", 
-            "🌧️ 2. Daily Precipitation Summary (mm)", 
-            "💨 3. Wind Speed (mph) & Direction", 
-            "🔭 4. Visibility Analysis (km)", 
-            "💧 5. Relative Humidity (%)", 
-            "☁️ 6. Cloud Cover (Oktas: 0-8)", 
-            "⚡ 7. Thunderstorm Potential (%)"
+        "charts": ["🌡️ Temp", "🌧️ Rain", "💨 Wind", "🔭 Visibility", "💧 Humidity", "☁️ Cloud", "⚡ Storm Potential"],
+        "dmh_alert": "📢 Recommendations: Please monitor official DMH announcements in real-time.",
+        "storm_note": "📝 Note: If Thunderstorm Potential > 60%, please beware of strong winds, thunder, and lightning.",
+        "ibf_header": "🏥 Health Sector Impact & Recommendations",
+        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
+        "impacts": [
+            "Severe threat! High risk of heatstroke and critical dehydration for everyone.",
+            "Significant risk! Heat exhaustion likely. Children and elderly are at high risk.",
+            "Moderate threat! Prolonged exposure may cause fatigue and heat rashes.",
+            "Low threat! Standard conditions. No significant health impact."
         ],
-        "axis_time": "Time / Date",
-        "dmh_alert": "📢 Recommendations: Please monitor official DMH announcements in real-time for latest updates.",
-        "storm_note": "📝 Note: If Thunderstorm Potential exceeds 60%, please beware of strong winds, thunder, and lightning strikes.",
-        "footer": "Data: Open-Meteo | System: Department of Meteorology and Hydrology (Myanmar)"
+        "recommends": [
+            "STAY INDOORS. Drink 3-4L water. Seek urgent medical care if dizzy. Follow DMH updates.",
+            "Limit outdoor work. Wear hats/umbrellas. Stay in cool areas. Monitor news.",
+            "Wear light clothes. Drink water even if not thirsty. Take breaks in shade.",
+            "Standard health precautions. Stay hydrated."
+        ],
+        "footer": "Data: Open-Meteo | System: Department of Meteorology and Hydrology"
     },
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသ ခန့်မှန်းချက်စနစ်",
@@ -44,23 +49,28 @@ LANG_DICT = {
         "city_select": "🎯 စခန်း/မြို့အမည်ရွေးချယ်ပါ",
         "view_mode": "📊 ကြည့်ရှုမည့်ပုံစံ",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
-        "charts": [
-            "🌡️ ၁။ အပူချိန်ခန့်မှန်းချက် (°C)", 
-            "🌧️ ၂။ မိုးရေချိန်ခန့်မှန်းချက် (mm)", 
-            "💨 ၃။ လေတိုက်နှုန်းနှင့် လေအရပ်", 
-            "🔭 ၄။ အဝေးမြင်တာ ခန့်မှန်းချက် (km)", 
-            "💧 ၅။ စိုထိုင်းဆ ခန့်မှန်းချက် (%)", 
-            "☁️ ၆။ တိမ်ဖုံးလွှမ်းမှု (Oktas: 0-8)", 
-            "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
-        ],
-        "axis_time": "အချိန် / ရက်စွဲ",
-        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန (DMH) ၏ ထုတ်ပြန်ချက်များကို အချိန်နဲ့တစ်ပြေးညီ မပြတ်မကွက် စောင့်ကြည့်ပါ။",
+        "charts": ["🌡️ အပူချိန်", "🌧️ မိုးရေချိန်", "💨 လေတိုက်နှုန်း", "🔭 အဝေးမြင်တာ", "💧 စိုထိုင်းဆ", "☁️ တိမ်ဖုံးမှု", "⚡ မိုးတိမ်တောင်"],
+        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန (DMH) ကို စောင့်ကြည့်ပါ။",
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
+        "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
+        "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
+        "impacts": [
+            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။",
+            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။",
+            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။",
+            "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
+        ],
+        "recommends": [
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးဇလကို စောင့်ကြည့်ပါ။",
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးဇလကို နားထောင်ပါ။",
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်ကို စစ်ဆေးပါ။",
+            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသကို ဆက်လက်စောင့်ကြည့်ပါ။"
+        ],
         "footer": "အချက်အလက်ရင်းမြစ်: Open-Meteo | တရားဝင်စနစ်: မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန"
     }
 }
 
-# --- ၃။ စခန်းစာရင်း (လူကြီးမင်းပေးထားသော မြို့အားလုံး) ---
+# --- ၃။ စခန်းစာရင်း (၃၄ မြို့) ---
 MYANMAR_CITIES = {
     "Naypyidaw": {"lat": 19.7633, "lon": 96.0785}, "Yangon (Kaba-aye)": {"lat": 16.8661, "lon": 96.1951},
     "Pyinmana": {"lat": 19.7414, "lon": 96.2004}, "Bawlakhae": {"lat": 19.1576, "lon": 97.3328},
@@ -100,12 +110,9 @@ def get_full_weather(city):
 
 # --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=120)
-lang = st.sidebar.selectbox("🌐 Language / ဘာသာစကား", ["English", "မြန်မာ"])
+lang = st.sidebar.selectbox("🌐 Language", ["English", "မြန်မာ"])
 T = LANG_DICT[lang]
-
-st.sidebar.markdown("### ⚙️ Bias Correction")
-temp_bias = st.sidebar.slider("🌡️ Temp Offset (°C)", -5.0, 5.0, 0.0, step=0.5)
-
+temp_bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.5)
 selected_city = st.sidebar.selectbox(T["city_select"], sorted(list(MYANMAR_CITIES.keys())))
 view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 
@@ -121,8 +128,7 @@ if df_h is not None:
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
 
-    if view_mode == T["modes"][0]:
-        # 1-6 Charts
+    if view_mode == T["modes"][0]: # အသေးစိတ် View
         st.subheader(T['charts'][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         st.markdown("---")
@@ -145,18 +151,23 @@ if df_h is not None:
         st.subheader(T['charts'][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
         st.markdown("---")
-
-        # 7. Storm Potential with Note and Correct Y-Axis
         st.subheader(T['charts'][6])
-        st.warning(T["storm_note"]) # မိုးတိမ်တောင် မှတ်ချက်
-        fig_storm = px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], 
-                           labels={'Storm': 'Thunderstorm %', 'Time': T['axis_time']})
-        st.plotly_chart(fig_storm, use_container_width=True)
+        st.warning(T["storm_note"]) # မှတ်ချက်
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], labels={'Storm':'Thunderstorm %'}), use_container_width=True)
 
-    elif view_mode == T["modes"][1]: # IBF
+    elif view_mode == T["modes"][1]: # IBF (ကျန်းမာရေး View - အကုန်ပြန်ထည့်ထားသည်)
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
-        st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
+        
+        # Risk Box
+        st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
+        
+        # Impact & Recommendations
+        st.subheader(T['ibf_header'])
+        st.error(f"⚠️ **Impact / အကျိုးသက်ရောက်မှု:**\n\n{T['impacts'][idx]}")
+        st.success(f"💡 **Recommendations / အကြံပြုချက်:**\n\n{T['recommends'][idx]}")
+        
+        # Heat Trend Graph
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
     else: # Climate
@@ -165,9 +176,6 @@ if df_h is not None:
         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
 
-# --- ၅။ Footer ---
-st.markdown("---")
-st.markdown(f"<div style='text-align: center; color: gray;'>{T['footer']}</div>", unsafe_allow_html=True)
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
