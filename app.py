@@ -114,7 +114,9 @@ def get_full_weather(city):
         })
         df_d = pd.DataFrame({"Date": pd.to_datetime(d['time']), "Tmax": d['temperature_2m_max'], "Tmin": d['temperature_2m_min'], "RainSum": d['precipitation_sum']})
         return df_h, df_d
-    except: return None, None
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
+        return None, None
 
 # --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=120)
@@ -134,12 +136,13 @@ st.info(T["dmh_alert"])
 
 df_h, df_d = get_full_weather(selected_city)
 
-if df_h is not None:
+if df_h is not None and df_d is not None:
+    # Apply Bias
     df_d['Tmax'] += temp_bias
     df_d['Tmin'] += temp_bias
     df_h['Temp'] += temp_bias
 
-    # Daily Summary Metrics (အသစ်ထည့်ထားသည်)
+    # Daily Summary Metrics
     m1, m2, m3 = st.columns(3)
     m1.metric("Max Temp Today", f"{df_d['Tmax'].iloc[0]:.1f} °C")
     m2.metric("Min Temp Today", f"{df_d['Tmin'].iloc[0]:.1f} °C")
@@ -148,9 +151,11 @@ if df_h is not None:
     if view_mode == T["modes"][0]: 
         st.subheader(T['charts'][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', color_discrete_sequence=['deepskyblue']), use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][2]) 
         df_w = df_h[df_h['Time'].dt.hour == 13]
@@ -158,15 +163,19 @@ if df_h is not None:
         fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='lines+markers', name='Speed'))
         fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+2, mode='markers', marker=dict(symbol='arrow', angle=df_w['WindDir'], size=14, color='red'), name='Dir'))
         st.plotly_chart(fig_w, use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][3]) 
         st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['#2ecc71']), use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][4])
         st.plotly_chart(px.area(df_h, x='Time', y='Humidity', color_discrete_sequence=['#3498db']), use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
+        
         st.markdown("---")
         st.subheader(T['charts'][6])
         st.warning(T["storm_note"]) 
@@ -175,7 +184,9 @@ if df_h is not None:
     elif view_mode == T["modes"][1]: 
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
+        
         st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
+        
         st.subheader(T['ibf_header'])
         st.error(f"⚠️ **Impact:**\n\n{T['impacts'][idx]}")
         st.success(f"💡 **Recommendations:**\n\n{T['recommends'][idx]}")
@@ -187,20 +198,12 @@ if df_h is not None:
         st.plotly_chart(fig_ibf, use_container_width=True)
 
         st.markdown("---")
-        # ၁။ Download အတွက် Dataframe ကို Column အသစ်များဖြင့် ပြင်ဆင်ခြင်း
-        # Date, Tmax, Tmin, RainSum (Daily Total Rainfall) နှင့် Station တို့ကို ယူပါမည်
+        # CSV Export Logic
         export_df = df_d[['Date', 'Tmax', 'Tmin', 'RainSum']].copy()
-        
-        # ၂။ စခန်းအမည် Column အသစ်ထည့်ခြင်း
         export_df['Station'] = selected_city
-        
-        # ၃။ ရက်စွဲ Format ပြင်ခြင်း (ဥပမာ - 2026-03-31)
         export_df['Date'] = export_df['Date'].dt.strftime('%Y-%m-%d')
-        
-        # ၄။ Column အမည်များကို ပိုမိုရှင်းလင်းအောင် ပြောင်းလဲခြင်း (Optional)
         export_df.columns = ['Date', 'Max_Temp_C', 'Min_Temp_C', 'Daily_Rainfall_mm', 'Station_Name']
 
-        # CSV အဖြစ် ပြောင်းလဲခြင်း (မြန်မာစာလုံးများ Excel တွင် မှန်ကန်စေရန် utf-8-sig သုံးထားပါသည်)
         csv_data = export_df.to_csv(index=False).encode('utf-8-sig')
 
         st.download_button(
@@ -211,15 +214,15 @@ if df_h is not None:
             key='download-full-csv'
         )
 
-    
-
     else: 
-         st.subheader(T['modes'][2])
-         years = np.arange(2026, 2101)
-         trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
+        st.subheader(T['modes'][2])
+        years = np.arange(2026, 2101)
+        trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
+        st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
-         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+else:
+    st.error("⚠️ အချက်အလက်များ ရယူ၍မရနိုင်ပါ (API Error)။ အင်တာနက်ချိတ်ဆက်မှုကို ပြန်စစ်ပေးပါ။")
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
