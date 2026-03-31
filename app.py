@@ -226,7 +226,7 @@ if df_h is not None:
             fig_prob.update_layout(xaxis_title="Lon", yaxis_title="Lat", height=400)
             st.plotly_chart(fig_prob, use_container_width=True)
             
-         st.info("📝 Note: Ensemble forecasts account for uncertainties...")
+            st.info("📝 Note: Ensemble forecasts account for uncertainties...")
 
     else: 
          st.subheader(T['modes'][2])
