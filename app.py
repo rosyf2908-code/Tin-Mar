@@ -120,7 +120,7 @@ if df_d is not None:
         fig_c.update_layout(yaxis=dict(tickmode='linear', tick0=0, dtick=1, range=[0, 8.5]))
         st.plotly_chart(fig_c, use_container_width=True)
 
-        # ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (အများပြည်သူ နားလည်စေရန် ပြောင်းထားသောအပိုင်း)
+      # ၂။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (အများပြည်သူ နားလည်စေရန် ပြောင်းထားသောအပိုင်း)
         st.subheader("⚡ ၂။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ ခန့်မှန်းချက် (%)")
         
         # Color coding for public safety
