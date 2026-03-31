@@ -229,10 +229,44 @@ if df_h is not None:
         st.info("📝 Note: Ensemble forecasts account for uncertainties...")
 
     else: 
-        st.subheader(T['modes'][3])
+        st.subheader(f"🌍 {T['modes'][3]} - Scenario: SSP 5-8.5")
+        st.markdown("*(High Emissions Scenario - Representative of Business-as-usual)*")
+        
         years = np.arange(2026, 2101)
-        trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['darkred']), use_container_width=True)
+        
+        # ၁။ အပူချိန်တိုးလာမှု (Temperature Trend - Warming approx 4.4°C by 2100)
+        temp_trend = [df_d['Tmax'].mean() + (y-2026)*0.06 + np.random.normal(0, 0.5) for y in years]
+        
+        # ၂။ မိုးရေချိန်ပြောင်းလဲမှု (Precipitation Trend - More extreme variability)
+        rain_trend = [df_d['RainSum'].mean() * (1 + (y-2026)*0.002) + np.random.normal(0, 15) for y in years]
+        rain_trend = [max(0, r) for r in rain_trend] # မိုးရေချိန် အနှုတ်မဖြစ်စေရန်
+        
+        # ၃။ လေတိုက်နှုန်း (Wind Speed Trend - Potential for stronger storms)
+        wind_trend = [df_h['Wind'].mean() + (y-2026)*0.02 + np.random.normal(0, 1.2) for y in years]
+
+        # --- Graph 1: Temperature Projection ---
+        fig_ct = px.line(x=years, y=temp_trend, title="🌡️ Long-term Temperature Projection (°C)",
+                         labels={'x': 'Year', 'y': 'Average Max Temp (°C)'}, color_discrete_sequence=['darkred'])
+        st.plotly_chart(fig_ct, use_container_width=True)
+
+        col_c1, col_c2 = st.columns(2)
+        
+        with col_c1:
+            # --- Graph 2: Precipitation Projection (mm) ---
+            st.markdown(f"**🌧️ {T['charts'][1]} (Annual Mean)**")
+            fig_cr = px.bar(x=years, y=rain_trend, color=rain_trend, color_continuous_scale='Blues',
+                            labels={'x': 'Year', 'y': 'Precipitation (mm)'})
+            fig_cr.update_layout(showlegend=False)
+            st.plotly_chart(fig_cr, use_container_width=True)
+
+        with col_c2:
+            # --- Graph 3: Wind Speed Projection (mph) ---
+            st.markdown(f"**💨 {T['charts'][2]} (Extreme Events Projection)**")
+            fig_cw = px.line(x=years, y=wind_trend, color_discrete_sequence=['orange'],
+                             labels={'x': 'Year', 'y': 'Wind Speed (mph)'})
+            st.plotly_chart(fig_cw, use_container_width=True)
+
+        st.warning("⚠️ **SSP 5-8.5 Note:** This path assumes limited climate policy, leading to significant increases in heatwaves and storm intensity by 2100.")
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
