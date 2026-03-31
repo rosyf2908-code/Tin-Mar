@@ -186,6 +186,23 @@ if df_h is not None:
         fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
+    # --- CSV Download Button ထည့်သွင်းခြင်း ---
+        st.markdown("---")
+        # Download အတွက် Dataframe ကို ပြင်ဆင်ခြင်း
+        csv_df = df_d[['Date', 'Tmax', 'Tmin']].copy()
+        csv_df['Station'] = selected_city
+        csv_df['Date'] = csv_df['Date'].dt.strftime('%Y-%m-%d')
+        
+        csv_data = csv_df.to_csv(index=False).encode('utf-8-sig')
+
+        st.download_button(
+            label="📥 Download 16-Day Temperature Data (CSV)",
+            data=csv_data,
+            file_name=f"Heatwave_Data_{selected_city}_{now.strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            key='download-csv'
+        )
+
     
 
     else: 
