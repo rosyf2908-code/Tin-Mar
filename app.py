@@ -16,7 +16,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
 
-# --- ၂။ ဘာသာစကား Dictionary (IBF အချက်အလက်များ အပြည့်အစုံ) ---
+# --- ၂။ ဘာသာစကား Dictionary ---
 LANG_DICT = {
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -25,21 +25,21 @@ LANG_DICT = {
         "view_mode": "📊 View Mode",
         "modes": ["16-Day Detailed Analysis", "Heatwave IBF (Health)", "Climate Projection (2100)"],
         "charts": ["🌡️ Temp", "🌧️ Rain", "💨 Wind", "🔭 Visibility", "💧 Humidity", "☁️ Cloud", "⚡ Storm Potential"],
-        "dmh_alert": "📢 Recommendations: Please monitor official DMH announcements in real-time.",
+        "dmh_alert": "📢 Recommendations: Please monitor DMH official news regularly.",
         "storm_note": "📝 Note: If Thunderstorm Potential > 60%, please beware of strong winds, thunder, and lightning.",
         "ibf_header": "🏥 Health Sector Impact & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "impacts": [
-            "Severe threat! High risk of heatstroke and critical dehydration for everyone.",
-            "Significant risk! Heat exhaustion likely. Children and elderly are at high risk.",
-            "Moderate threat! Prolonged exposure may cause fatigue and heat rashes.",
-            "Low threat! Standard conditions. No significant health impact."
+            "Severe threat! High risk of heatstroke and critical dehydration.",
+            "Significant risk! Heat exhaustion likely. Children/Elderly at high risk.",
+            "Moderate threat! Prolonged exposure may cause fatigue.",
+            "Low threat! Standard conditions."
         ],
         "recommends": [
             "STAY INDOORS. Drink 3-4L water. Seek urgent medical care if dizzy. Follow DMH updates.",
-            "Limit outdoor work. Wear hats/umbrellas. Stay in cool areas. Monitor news.",
-            "Wear light clothes. Drink water even if not thirsty. Take breaks in shade.",
-            "Standard health precautions. Stay hydrated."
+            "Limit outdoor work. Wear hats. Stay in cool areas. Monitor DMH news.",
+            "Wear light clothes. Drink water frequently. Check DMH daily forecasts.",
+            "Standard health precautions. Monitor DMH official channels."
         ],
         "footer": "Data: Open-Meteo | System: Department of Meteorology and Hydrology"
     },
@@ -50,7 +50,7 @@ LANG_DICT = {
         "view_mode": "📊 ကြည့်ရှုမည့်ပုံစံ",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်နှင့် ကျန်းမာရေး (IBF)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
         "charts": ["🌡️ အပူချိန်", "🌧️ မိုးရေချိန်", "💨 လေတိုက်နှုန်း", "🔭 အဝေးမြင်တာ", "💧 စိုထိုင်းဆ", "☁️ တိမ်ဖုံးမှု", "⚡ မိုးတိမ်တောင်"],
-        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန (DMH) ကို စောင့်ကြည့်ပါ။",
+        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလကို သတင်းများစောင့်ကြည့်ပါ။",
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
@@ -119,6 +119,7 @@ view_mode = st.sidebar.radio(T["view_mode"], T["modes"])
 # --- ၅။ Main Display ---
 st.markdown(f"# {T['title']}")
 st.markdown(f"🕒 **{T['time_label']}:** `{formatted_now}` | 📍 **Station:** `{selected_city}`")
+# ပြင်ဆင်ထားသော မိုးဇလ သတင်းစောင့်ကြည့်ရန် စာသား
 st.info(T["dmh_alert"])
 
 df_h, df_d = get_full_weather(selected_city)
@@ -152,23 +153,24 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', color='Cloud'), use_container_width=True)
         st.markdown("---")
         st.subheader(T['charts'][6])
-        st.warning(T["storm_note"]) # မှတ်ချက်
+        st.warning(T["storm_note"]) 
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], labels={'Storm':'Thunderstorm %'}), use_container_width=True)
 
-    elif view_mode == T["modes"][1]: # IBF (ကျန်းမာရေး View - အကုန်ပြန်ထည့်ထားသည်)
+    elif view_mode == T["modes"][1]: # IBF (ကျန်းမာရေး View)
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         
-        # Risk Box
         st.markdown(f"<div style='background-color:{['#800000','#d00000','#ffaa00','#008000'][idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
-        
-        # Impact & Recommendations
         st.subheader(T['ibf_header'])
-        st.error(f"⚠️ **Impact / အကျိုးသက်ရောက်မှု:**\n\n{T['impacts'][idx]}")
-        st.success(f"💡 **Recommendations / အကြံပြုချက်:**\n\n{T['recommends'][idx]}")
+        st.error(f"⚠️ **Impact:**\n\n{T['impacts'][idx]}")
+        st.success(f"💡 **Recommendations:**\n\n{T['recommends'][idx]}")
         
-        # Heat Trend Graph
-        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
+        # Risk Threshold Lines များ ပြန်လည်ထည့်သွင်းခြင်း
+        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
+        fig_ibf.add_hline(y=42, line_dash="dash", line_color="maroon", annotation_text="Extreme (42°C)")
+        fig_ibf.add_hline(y=40, line_dash="dash", line_color="red", annotation_text="High (40°C)")
+        fig_ibf.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Moderate (38°C)")
+        st.plotly_chart(fig_ibf, use_container_width=True)
 
     else: # Climate
         st.subheader(T['modes'][2])
