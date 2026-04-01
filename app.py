@@ -255,10 +255,13 @@ if df_h is not None:
 
 st.markdown("---")
 st.markdown(f"""
-<div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
-    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (Combining ECMWF IFS, GFS, ICON, and JMA global models).</p>
-    <p><b>Heatwave Analysis:</b> Based on Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
-    <p><b>Climate Data:</b> IPCC AR6 Assessment Report and CMIP6 Global Climate Models (SSP scenarios).</p>
-    <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
+<div style='text-align: center; font-size: 0.85em; color: #555; line-height: 1.8; padding: 20px; border-top: 1px solid #eee;'>
+    <p style='margin-bottom: 5px;'><b>Forecast Data Source:</b> Open-Meteo API (ECMWF, GFS, ICON, JMA)</p>
+    <p style='margin-bottom: 5px;'><b>Heatwave Analysis:</b> Impact-Based Forecasting (IBF) & WMO Criteria</p>
+    <p style='margin-bottom: 5px;'><b>Climate Data:</b> IPCC AR6 & CMIP6 (SSP Scenarios)</p>
+    <div style='margin-top: 15px; padding-top: 10px;'>
+        <p style='font-weight: bold; color: #2c3e50; font-size: 1.1em;'>Official System: Department of Meteorology and Hydrology (DMH)</p>
+        <p style='font-style: italic; font-size: 0.9em;'>Ministry of Transport and Communications, Myanmar</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
