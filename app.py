@@ -163,6 +163,11 @@ if df_h is not None:
         st.subheader(T['ibf_header'])
         st.error(f"⚠️ **Impact:** {impact_list[idx] if lang=='မြန်မာ' else 'Severe heat impact possible.'}")
         st.success(f"💡 **Recommendations:** {recom_list[idx] if lang=='မြန်မာ' else 'Stay hydrated and avoid direct sunlight.'}")
+      
+        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
+        for val, color, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
+            fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
+        st.plotly_chart(fig_ibf, use_container_width=True)
         
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
         st.plotly_chart(fig_ibf, use_container_width=True)
