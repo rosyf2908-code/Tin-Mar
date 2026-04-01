@@ -2,20 +2,21 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import os
 from datetime import datetime
 import pytz
 
 # --- ၁။ Layout Setup ---
-st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide", page_icon="🌤️")
+st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide")
 
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
 formatted_now = now.strftime('%I:%M %p, %d %b %Y')
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
-# --- ၂။ ဘာသာစကားနှင့် စာသားများ (Translations) ---
+# --- ၂။ ဘာသာစကားနှင့် စာသားများ ---
 LANG_DATA = {
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသခန့်မှန်းစနစ်",
@@ -26,7 +27,7 @@ LANG_DATA = {
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန်", "💨 ၃။ လေတိုက်နှုန်း (mph)", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု (%)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"]
+        "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန်", "💨 ၃။ လေတိုက်နှုန်းနှင့် လားရာ (mph)", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု (%)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -37,7 +38,7 @@ LANG_DATA = {
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temperature", "🌧️ 2. Precipitation", "💨 3. Wind Speed (mph)", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (%)", "⚡ 7. Thunderstorm Probability (%)"]
+        "charts": ["🌡️ 1. Temperature", "🌧️ 2. Precipitation", "💨 3. Wind Speed & Direction (mph)", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (%)", "⚡ 7. Thunderstorm Probability (%)"]
     }
 }
 
@@ -75,13 +76,15 @@ view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    # API တွင် winddirection_10m ကိုပါ ထပ်ထည့်ထားသည်
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=15).json()
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(r['hourly']['time']), 
             "Temp": r['hourly']['temperature_2m'], 
             "Wind": r['hourly']['windspeed_10m'],
+            "WindDir": r['hourly']['winddirection_10m'],
             "Vis": [v/1000 for v in r['hourly']['visibility']],
             "Humid": r['hourly']['relative_humidity_2m'],
             "Cloud": r['hourly']['cloud_cover'],
@@ -110,24 +113,49 @@ if df_h is not None:
     st.warning(T["dmh_alert"])
 
     if view_mode == T["modes"][0]:
-        # --- ၁၆ ရက်စာ အသေးစိတ် (Chart ၇ ခုလုံး) ---
+        # ၁။ အပူချိန်
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T["charts"][0], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+        # ၂။ မိုးရေချိန်
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
-        st.plotly_chart(px.line(df_h, x='Time', y='Wind', title=T["charts"][2]), use_container_width=True)
-        st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
-        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T["charts"][5], color_continuous_scale='Blues'), use_container_width=True)
         
+        # ၃။ လေတိုက်နှုန်း (Arrows ဖြင့်ပြသခြင်း)
+        fig_wind = go.Figure()
+        # နောက်ခံ Line Chart
+        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='green', width=1)))
+        # မြှားများ (၆ နာရီခြားတစ်ခါပြရန် filter လုပ်သည် - ဇယားရှုပ်မသွားစေရန်)
+        df_arrow = df_h.iloc[::6, :] 
+        fig_wind.add_trace(go.Scatter(
+            x=df_arrow['Time'], y=df_arrow['Wind'],
+            mode='markers',
+            marker=dict(
+                symbol='arrow',
+                size=15,
+                angle=df_arrow['WindDir'], # လေတိုက်ရာအရပ်အတိုင်း လှည့်မည်
+                color='darkgreen',
+                line=dict(width=1, color='white')
+            ),
+            name='Wind Direction',
+            hovertemplate="Time: %{x}<br>Speed: %{y} mph<br>Direction: %{marker.angle}°"
+        ))
+        fig_wind.update_layout(title=T["charts"][2], xaxis_title="Time", yaxis_title="mph")
+        st.plotly_chart(fig_wind, use_container_width=True)
+
+        # ၄။ အဝေးမြင်တာ
+        st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
+        # ၅။ စိုထိုင်းဆ
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
+        # ၆။ တိမ်ဖုံးမှု
+        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T["charts"][5], color_continuous_scale='Blues'), use_container_width=True)
+        # ၇။ မိုးတိမ်တောင်
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['purple']), use_container_width=True)
 
     elif view_mode == T["modes"][1]:
-        # --- Heatwave IBF View ---
+        # --- Heatwave IBF View (ယခင်အတိုင်း) ---
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
         
-        # စာသားများ (မြန်မာဘာသာအတွက်သာ သီးသန့်)
         impact_list = ["အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke ဖြစ်နိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! ပင်ပန်းနွမ်းနယ်နိုင်သည်။", "သတိပြုရန် အခြေအနေ! ကြာရှည်နေပါက ပင်ပန်းနိုင်ပါသည်။", "ပုံမှန်အခြေအနေ!"]
         recom_list = ["အိမ်ထဲတွင်နေပါ။ ရေများများသောက်ပါ။", "နံနက်/ညနေသာ အပြင်ထွက်ပါ။ ထီးဆောင်းပါ။", "ပေါ့ပါးသောအဝတ်ဝတ်ပါ။ အရိပ်တွင်နားပါ။", "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။"]
 
@@ -137,12 +165,9 @@ if df_h is not None:
         st.success(f"💡 **Recommendations:** {recom_list[idx] if lang=='မြန်မာ' else 'Stay hydrated and avoid direct sunlight.'}")
         
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
-        for val, color, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
-            fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-        # Batch Export with Error Fix
-        if st.button("🚀 စခန်းအားလုံး၏ Data စုစည်းမည် / Export All"):
+        if st.button("🚀 Export All Stations Data"):
             all_data = []
             p_bar = st.progress(0)
             for i, c in enumerate(city_list):
@@ -153,22 +178,22 @@ if df_h is not None:
                 p_bar.progress((i+1)/len(city_list))
             if all_data:
                 st.session_state['master_df'] = pd.concat(all_data)
-                st.success("✅ Done!")
+                st.success("✅ Collected!")
 
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
-            m_df['Date'] = pd.to_datetime(m_df['Date']) # Convert first to fix AttributeError
+            m_df['Date'] = pd.to_datetime(m_df['Date'])
             m_df['Date_Str'] = m_df['Date'].dt.strftime('%Y-%m-%d')
-            sel_date = st.selectbox("Date", m_df['Date_Str'].unique())
+            sel_date = st.selectbox("Date Selector", m_df['Date_Str'].unique())
             final_df = m_df[m_df['Date_Str'] == sel_date].sort_values(by='Station')
             st.dataframe(final_df, use_container_width=True)
-            st.download_button("📥 Download CSV", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv")
+            st.download_button("📥 Download Report", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv")
 
     else:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}), use_container_width=True)
+        st.plotly_chart(px.line(x=years, y=trend), use_container_width=True)
 
 st.markdown("---")
 st.markdown(f"<center>{'တရားဝင်စနစ်: မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန' if lang=='မြန်မာ' else 'Official System: Department of Meteorology and Hydrology'}</center>", unsafe_allow_html=True)
