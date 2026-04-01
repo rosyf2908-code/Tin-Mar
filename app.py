@@ -173,10 +173,12 @@ if df_h is not None:
         # --- ဒေတာများကို Export လုပ်သည့်အပိုင်း ---
         if st.button("🚀 Export All Stations Data"):
             all_data = []
-            p_bar = st.progress(0)
+            p_bar = st.progress(0) # Progress bar စတင်ခြင်း
+            status_text = st.empty() # အခြေအနေပြစာသားအတွက်နေရာလွတ်
             generation_time = formatted_now 
 
             for i, c in enumerate(city_list):
+                status_text.text(f"⏳ Processing: {c}...") # ဘယ်စခန်းကို လုပ်နေလဲဆိုတာ ပြပေးရန်
                 df_h_tmp, df_d_tmp = fetch_weather(c)
                 if df_h_tmp is not None:
                     daily_records = []
@@ -184,60 +186,54 @@ if df_h is not None:
                         today_930 = d + pd.Timedelta(hours=9, minutes=30)
                         yesterday_930 = today_930 - pd.Timedelta(days=1)
                         mask = (df_h_tmp['Time'] > yesterday_930) & (df_h_tmp['Time'] <= today_930)
-                        rain_24h = df_h_tmp.loc[mask, 'precipitation'].sum()
+                        
+                        # မိုးရေချိန်ပေါင်းခြင်း
+                        rain_val = df_h_tmp.loc[mask, 'precipitation'].sum() if 'precipitation' in df_h_tmp else 0
+                        
                         tmax_val = df_d_tmp.loc[df_d_tmp['Date'] == d, 'Tmax'].values[0]
                         tmin_val = df_d_tmp.loc[df_d_tmp['Date'] == d, 'Tmin'].values[0]
 
                         daily_records.append({
                             'Date': d.strftime('%Y-%m-%d'),
-                            'Max_Temp_C': tmax_val,
-                            'Min_Temp_C': tmin_val,
-                            'Rainfall_24h_mm': round(rain_24h, 2),
                             'Station': c,
-                            'Forecast_Generated_At': generation_time
+                            'Max_Temp_C': round(tmax_val, 1),
+                            'Min_Temp_C': round(tmin_val, 1),
+                            'Rainfall_24h_mm': round(rain_val, 2)
                         })
                     all_data.extend(daily_records)
-                p_bar.progress((i+1)/len(city_list))
+                p_bar.progress((i + 1) / len(city_list))
             
             if all_data:
                 st.session_state['master_df'] = pd.DataFrame(all_data)
-                st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။")
+                status_text.success("✅ ဒေတာများ အားလုံး စုစည်းပြီးပါပြီ။")
+            else:
+                status_text.error("❌ ဒေတာရယူ၍ မရနိုင်ပါ။")
 
-     # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download (Box ပြန်ဖော်ခြင်း) ---
+        # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
-            
-            # Date အလိုက် ရွေးချယ်ရန်
             unique_dates = sorted(m_df['Date'].unique())
             sel_date = st.selectbox("📅 Report ထုတ်လိုသည့် နေ့စွဲကို ရွေးပါ", unique_dates)
             
-            # ရွေးထားတဲ့ နေ့စွဲနဲ့ ကိုက်ညီတဲ့ ဒေတာကို စစ်ထုတ်ခြင်း
             final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
-            
-            # လိုချင်တဲ့ column ၄ ခုကိုပဲ သတ်မှတ်ခြင်း
             display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']
             
-            # ဇယားနဲ့ ခလုတ်ကို ဒေတာရှိမှသာ ပြသရန် logic
             if not final_df.empty:
                 st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
-                
-                # ဇယားထုတ်ခြင်း
                 st.dataframe(final_df[display_cols], use_container_width=True)
                 
-                # CSV format သို့ သေချာစွာ ပြောင်းလဲခြင်း
                 try:
                     csv_output = final_df[display_cols].to_csv(index=False).encode('utf-8-sig')
                     
+                    # ဒီနေရာမှာ fileName ကို file_name လို့ ပြောင်းလိုက်ပါတယ်
                     st.download_button(
                         label=f"📥 Download {sel_date} Report (CSV)",
                         data=csv_output,
-                        fileName=f"DMH_Report_{sel_date}.csv",
+                        file_name=f"DMH_Report_{sel_date}.csv", # ပြင်ဆင်လိုက်သည့်နေရာ
                         mime='text/csv'
                     )
                 except Exception as e:
                     st.error(f"CSV ထုတ်ယူရာတွင် အမှားအယွင်းရှိနေပါသည် - {e}")
-            else:
-                st.info("ရွေးချယ်ထားသော နေ့စွဲအတွက် ဒေတာမရှိသေးပါ။ 'Export All Stations Data' ကို အရင်နှိပ်ပေးပါ။")
 
     # Climate Change View Mode
     elif view_mode == T["modes"][2]:
