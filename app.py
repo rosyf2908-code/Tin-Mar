@@ -27,7 +27,9 @@ LANG_DATA = {
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"]
+        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"],
+        "impact_list": ["အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke ဖြစ်နိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! ပင်ပန်းနွမ်းနယ်နိုင်သည်။", "သတိပြုရန် အခြေအနေ! ကြာရှည်နေပါက ပင်ပန်းနိုင်ပါသည်။", "ပုံမှန်အခြေအနေ!"],
+        "recom_list": ["အိမ်ထဲတွင်နေပါ။ ရေများများသောက်ပါ။", "နံနက်/ညနေသာ အပြင်ထွက်ပါ။ ထီးဆောင်းပါ။", "ပေါ့ပါးသောအဝတ်ဝတ်ပါ။ အရိပ်တွင်နားပါ။", "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။"]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -38,7 +40,9 @@ LANG_DATA = {
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm Probability (%)"]
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm Probability (%)"],
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
+        "recom_list": ["Stay indoors. Drink 3-4L water.", "Work morning/evening only. Use umbrella.", "Wear light clothes. Rest in shade.", "Stay hydrated and follow updates."]
     }
 }
 
@@ -76,19 +80,19 @@ view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
-    # API တွင် winddirection_10m ကိုပါ ထပ်ထည့်ထားသည်
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=15).json()
+        h_data = r['hourly']
         df_h = pd.DataFrame({
-            "Time": pd.to_datetime(r['hourly']['time']), 
-            "Temp": r['hourly']['temperature_2m'], 
-            "Wind": r['hourly']['windspeed_10m'],
-            "WindDir": r['hourly']['winddirection_10m'],
-            "Vis": [v/1000 for v in r['hourly']['visibility']],
-            "Humid": r['hourly']['relative_humidity_2m'],
-            "Cloud": r['hourly']['cloud_cover'],
-            "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in h.get('cape', [])]
+            "Time": pd.to_datetime(h_data['time']), 
+            "Temp": h_data['temperature_2m'], 
+            "Wind": h_data['windspeed_10m'],
+            "WindDir": h_data['winddirection_10m'],
+            "Vis": [v/1000 for v in h_data['visibility']],
+            "Humid": h_data['relative_humidity_2m'],
+            "Cloud": h_data['cloud_cover'],
+            "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in h_data.get('cape', [])]
         })
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(r['daily']['time']), 
@@ -113,64 +117,42 @@ if df_h is not None:
     st.warning(T["dmh_alert"])
 
     if view_mode == T["modes"][0]:
-        # ၁။ အပူချိန်
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T["charts"][0], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
-        # ၂။ မိုးရေချိန်
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
         
-        # ၃။ လေတိုက်နှုန်း (Arrows ဖြင့်ပြသခြင်း)
         fig_wind = go.Figure()
-        # နောက်ခံ Line Chart
         fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='green', width=1)))
-        # မြှားများ (၆ နာရီခြားတစ်ခါပြရန် filter လုပ်သည် - ဇယားရှုပ်မသွားစေရန်)
         df_arrow = df_h.iloc[::6, :] 
         fig_wind.add_trace(go.Scatter(
-            x=df_arrow['Time'], y=df_arrow['Wind'],
-            mode='markers',
-            marker=dict(
-                symbol='arrow',
-                size=15,
-                angle=df_arrow['WindDir'], # လေတိုက်ရာအရပ်အတိုင်း လှည့်မည်
-                color='darkgreen',
-                line=dict(width=1, color='white')
-            ),
-            name='Wind Direction',
-            hovertemplate="Time: %{x}<br>Speed: %{y} mph<br>Direction: %{marker.angle}°"
+            x=df_arrow['Time'], y=df_arrow['Wind'], mode='markers',
+            marker=dict(symbol='arrow', size=15, angle=df_arrow['WindDir'], color='darkgreen', line=dict(width=1, color='white')),
+            name='Wind Direction'
         ))
-        fig_wind.update_layout(title=T["charts"][2], xaxis_title="Time", yaxis_title="mph")
+        fig_wind.update_layout(title=T["charts"][2])
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        # ၄။ အဝေးမြင်တာ
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
-        # ၅။ စိုထိုင်းဆ
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
-        # ၆။ တိမ်ဖုံးမှု
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T["charts"][5], color_continuous_scale='Blues'), use_container_width=True)
-        # ၇။ မိုးတိမ်တောင်
+        
         st.error(T["storm_note"])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['#e67e22'], labels={'Storm':'Thunderstorm %'}), use_container_width=True)
-
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['#e67e22']), use_container_width=True)
 
     elif view_mode == T["modes"][1]:
-        # --- Heatwave IBF View (ယခင်အတိုင်း) ---
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
         
-        impact_list = ["အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke ဖြစ်နိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! ပင်ပန်းနွမ်းနယ်နိုင်သည်။", "သတိပြုရန် အခြေအနေ! ကြာရှည်နေပါက ပင်ပန်းနိုင်ပါသည်။", "ပုံမှန်အခြေအနေ!"]
-        recom_list = ["အိမ်ထဲတွင်နေပါ။ ရေများများသောက်ပါ။", "နံနက်/ညနေသာ အပြင်ထွက်ပါ။ ထီးဆောင်းပါ။", "ပေါ့ပါးသောအဝတ်ဝတ်ပါ။ အရိပ်တွင်နားပါ။", "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။"]
-
         st.markdown(f"<div style='background-color:{colors[idx]}; padding:35px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
         st.subheader(T['ibf_header'])
-        st.error(f"⚠️ **Impact:** {impact_list[idx] if lang=='မြန်မာ' else 'Severe heat impact possible.'}")
-        st.success(f"💡 **Recommendations:** {recom_list[idx] if lang=='မြန်မာ' else 'Stay hydrated and avoid direct sunlight.'}")
+        st.error(f"⚠️ **Impact:** {T['impact_list'][idx]}")
+        st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
       
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
         for val, color, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
-        
-      
+
         if st.button("🚀 Export All Stations Data"):
             all_data = []
             p_bar = st.progress(0)
@@ -200,14 +182,10 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend), use_container_width=True)
 
 st.markdown("---")
-st.markdown(f"<center>{'တရားဝင်စနစ်: မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန' if lang=='မြန်မာ' else 'Official System: Department of Meteorology and Hydrology'}</center>", unsafe_allow_html=True)
-
-# --- ၆။ Data Source Footer ---
-st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
     <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (Combining ECMWF IFS, GFS, ICON, and JMA global models).</p>
-    <p><b>Heatwave Analysis:</b> Based on Impact-Based Forecasting (IBF) thresholds (P90, P95, P99) and WMO criteria.</p>
+    <p><b>Heatwave Analysis:</b> Based on Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
     <p><b>Climate Data:</b> IPCC AR6 Assessment Report and CMIP6 Global Climate Models (SSP scenarios).</p>
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
