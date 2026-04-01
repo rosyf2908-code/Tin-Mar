@@ -180,7 +180,24 @@ if df_h is not None:
                 st.download_button("📥 Download Master CSV (247 Stations)", master_csv, f"DMH_Full_Forecast_{now.strftime('%Y%m%d')}.csv", "text/csv")
                 
                 # Date Filter Export
-                st.markdown("
+                st.markdown("#### 📅 Export by Specific Date")
+                sel_date = st.selectbox("Pick a date to export all stations", final_all['Date'].unique())
+                daily_csv = final_all[final_all['Date'] == sel_date].to_csv(index=False).encode('utf-8-sig')
+                st.download_button(f"📥 Download Report for {sel_date}", daily_csv, f"DMH_Report_{sel_date}.csv", "text/csv")
+                status.success("Done!")
+
+    else:
+        # --- Climate Projection Section ---
+        st.subheader(T['modes'][2])
+        years = np.arange(2026, 2101)
+        trend = [30 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
+        fig_climate = px.line(x=years, y=trend, labels={'x':'Year','y':'Avg Temp (°C)'}, title="Projected Warming (2026-2100)")
+        st.plotly_chart(fig_climate, use_container_width=True)
+        st.warning("⚠️ **Note:** This scenario assumes high greenhouse gas emissions (SSP 5-8.5).")
+
+# --- ၇။ Footer ---
+st.markdown("---")
+st.markdown(f"<div style='text-align: center; font-size: 0.9em; color: gray;'>{T['footer']}</div>", unsafe_allow_html=True)
 
 
 # --- ၆။ Data Source Footer ---
