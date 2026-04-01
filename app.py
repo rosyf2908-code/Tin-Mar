@@ -16,33 +16,36 @@ now = datetime.now(mm_tz)
 formatted_now = now.strftime('%I:%M %p, %d %b %Y')
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
-# --- ၂။ စခန်းစာရင်းဖတ်ခြင်း (Dropdown အတွက် အသေအချာ ပြင်ဆင်ထားသည်) ---
+# --- ၂။ စခန်းစာရင်းဖတ်ခြင်း (Dropdown အတွက် ပိုမိုခိုင်မာသော Logic) ---
 @st.cache_data
 def load_stations():
     file_path = "Station.csv"
     
-    # ၁။ ဖိုင်ရှိမရှိ အရင်စစ်ဆေးခြင်း
+    # ဖိုင်ရှိမရှိ အရင်စစ်ဆေးခြင်း
     if not os.path.exists(file_path):
-        # ဖိုင်မရှိပါက အနီရောင်စာသားဖြင့် ပြသမည်
         return {"❌ Station.csv ဖိုင် မတွေ့ပါ": {"lat": 19.7633, "lon": 96.0785}}
     
     try:
-        # UTF-8-SIG ကိုသုံးပြီး ဖတ်ခြင်း
+        # UTF-8-SIG ဖြင့် ဖတ်ပြီး ရှေ့နောက် Space များကို ဖယ်ထုတ်ခြင်း
         df = pd.read_csv(file_path, encoding='utf-8-sig')
-        
-        # Column names ထဲက ရှေ့နောက် Space တွေကို အကုန်ဖယ်ခြင်း
         df.columns = [c.strip() for c in df.columns]
         
-        # City, Lat, Lon Column အမည်များကို Case-insensitive (စာလုံးအကြီးအသေးမရွေး) ရှာခြင်း
-        cols = {c.lower(): c for c in df.columns}
-        name_key = cols.get('city', cols.get('station', df.columns[0]))
-        lat_key = cols.get('lat', df.columns[1] if len(df.columns) > 1 else 'Lat')
-        lon_key = cols.get('lon', df.columns[2] if len(df.columns) > 2 else 'Lon')
+        # Column အမည်များကို စာလုံးအသေးဖြင့် ပြောင်းလဲစစ်ဆေးခြင်း
+        col_map = {c.lower(): c for c in df.columns}
+        
+        # City/Station, Lat, Lon column များကို အသေအချာရှာခြင်း
+        name_col = col_map.get('city', col_map.get('station', df.columns[0]))
+        lat_col = col_map.get('lat', df.columns[1] if len(df.columns) > 1 else 'Lat')
+        lon_col = col_map.get('lon', df.columns[2] if len(df.columns) > 2 else 'Lon')
         
         station_dict = {}
         for _, row in df.iterrows():
-            city_name = str(row[name_key]).strip()
-            station_dict[city_name] = {'lat': float(row[lat_key]), 'lon': float(row[lon_key])}
+            city_name = str(row[name_col]).strip()
+            # Lat/Lon ကို float ဖြစ်အောင် ပြောင်းခြင်း
+            try:
+                station_dict[city_name] = {'lat': float(row[lat_col]), 'lon': float(row[lon_col])}
+            except:
+                continue
         return station_dict
     except Exception as e:
         return {f"⚠️ Error: {str(e)}": {"lat": 19.7633, "lon": 96.0785}}
@@ -50,20 +53,18 @@ def load_stations():
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
 
-# --- ၃။ Sidebar Layout ---
+# --- ၃။ Sidebar Layout (ပုံထဲကအတိုင်း) ---
 st.sidebar.image(dm_header_logo, width=150)
 st.sidebar.markdown("### ⚙️ Dashboard Control")
 
-# Bias Correction - ပထမ
+# (က) Bias Correction - အပေါ်ဆုံး
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 
-# စခန်းရွေးချယ်ရန် - ဒုတိယ (ယခု စခန်းအားလုံး ပေါ်လာပါမည်)
+# (ခ) Select Station (စခန်း ၂၄၇ ခုလုံး ပေါ်လာစေရန်)
 selected_city = st.sidebar.selectbox("🎯 စခန်းအမည်ရွေးချယ်ပါ", city_list)
 
-# ဘာသာစကား - တတိယ
+# (ဂ) Language & Mode
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
-
-# View Mode - စတုတ္ထ
 view_mode = st.sidebar.radio("📊 View Mode", 
                              ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", 
                               "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး )", 
@@ -72,8 +73,7 @@ view_mode = st.sidebar.radio("📊 View Mode",
 # --- ၄။ API Data Fetching ---
 @st.cache_data(ttl=600)
 def fetch_weather(city):
-    if city not in MYANMAR_CITIES or "❌" in city or "⚠️" in city: 
-        return None, None
+    if city not in MYANMAR_CITIES or "❌" in city: return None, None
     loc = MYANMAR_CITIES[city]
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
@@ -103,7 +103,7 @@ st.info(f"📍 စခန်း: **{selected_city}** | 🕒 အချိန်: *
 h_data, d_data = fetch_weather(selected_city)
 
 if h_data is not None:
-    # Bias Correction Apply
+    # Bias Correction အသုံးပြုခြင်း
     d_data['Tmax'] += bias
     d_data['Tmin'] += bias
     h_data['Temp'] += bias
@@ -143,7 +143,7 @@ if h_data is not None:
                 if d_tmp is not None:
                     d_tmp['Station'] = city
                     all_list.append(d_tmp)
-                bar.progress((i+1)/len(city_list))
+                bar.progress((i+1)/len(city_names) if 'city_names' in locals() else (i+1)/len(city_list))
             if all_list:
                 st.session_state['master_csv'] = pd.concat(all_list)
                 st.success("✅ စုစည်းမှု အောင်မြင်ပါသည်။")
