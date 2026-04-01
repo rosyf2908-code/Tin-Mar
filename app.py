@@ -1,4 +1,5 @@
 import streamlit as st
+import pd as pd
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -28,11 +29,11 @@ LANG_DATA = {
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
         "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လားရာ", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"],
-        "impact_list": ["အလွန်စိုးရိမ်ရသော အခြေအနေ!အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", "ပုံမှန်အခြေအနေ!သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"],
+        "impact_list": ["အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"],
         "recom_list": ["အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။", "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။", "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။", "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"]
     },
     "English": {
-        "title": "DMH AI Weather Forecast System"သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။,
+        "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Day Detailed Analysis", "Heatwave Monitoring (IBF-Health)", "Climate Change (2100)"],
@@ -91,7 +92,7 @@ def fetch_weather(city):
             "WindDir": h_data['winddirection_10m'],
             "Vis": [v/1000 for v in h_data['visibility']],
             "Humid": h_data['relative_humidity_2m'],
-            "Cloud_Oktas": [round((c / 100) * 8) for c in h_data['cloud_cover']], # Oktas သို့ ပြောင်းခြင်း
+            "Cloud_Oktas": [round((c / 100) * 8) for c in h_data['cloud_cover']],
             "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in h_data.get('cape', [])]
         })
         df_d = pd.DataFrame({
@@ -117,12 +118,9 @@ if df_h is not None:
     st.warning(T["dmh_alert"])
 
     if view_mode == T["modes"][0]:
-        # ၁။ အပူချိန်
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T["charts"][0], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
-        # ၂။ မိုးရေချိန်
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
         
-        # ၃။ လေတိုက်နှုန်း
         fig_wind = go.Figure()
         fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='black', width=1)))
         df_arrow = df_h.iloc[::6, :] 
@@ -134,17 +132,13 @@ if df_h is not None:
         fig_wind.update_layout(title=T["charts"][2], yaxis_title="mph")
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        # ၄။ အဝေးမြင်တာ
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
-        # ၅။ စိုထိုင်းဆ
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
         
-        # ၆။ တိမ်ဖုံးမှု (Oktas)
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', title=T["charts"][5], 
                                range_y=[0, 8], color_continuous_scale='Blues', 
                                labels={'Cloud_Oktas':'Oktas'}), use_container_width=True)
         
-        # ၇။ မိုးတိမ်တောင် (Thunderstorm %)
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], 
                                color_discrete_sequence=['#e67e22'], 
