@@ -20,23 +20,29 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 @st.cache_data
 def load_stations():
     file_path = "Station.csv"
-    # ဖိုင်ရှိမရှိ အရင်စစ်ဆေးခြင်း
+    
+    # ၁။ ဖိုင်ရှိမရှိ အရင်စစ်ဆေးခြင်း
     if not os.path.exists(file_path):
-        return {"⚠️ Station.csv ဖိုင် မတွေ့ပါ": {"lat": 19.7633, "lon": 96.0785}}
+        # ဖိုင်မရှိပါက အနီရောင်စာသားဖြင့် ပြသမည်
+        return {"❌ Station.csv ဖိုင် မတွေ့ပါ": {"lat": 19.7633, "lon": 96.0785}}
     
     try:
-        # UTF-8-SIG ကိုသုံးပြီး မြန်မာစာ Font Error ကင်းအောင်ဖတ်ခြင်း
+        # UTF-8-SIG ကိုသုံးပြီး ဖတ်ခြင်း
         df = pd.read_csv(file_path, encoding='utf-8-sig')
-        # Column names ထဲက Space တွေကို ဖယ်ခြင်း
+        
+        # Column names ထဲက ရှေ့နောက် Space တွေကို အကုန်ဖယ်ခြင်း
         df.columns = [c.strip() for c in df.columns]
         
-        # City သို့မဟုတ် Station column တစ်ခုခုကို အသုံးပြုခြင်း
-        name_col = 'City' if 'City' in df.columns else 'Station'
+        # City, Lat, Lon Column အမည်များကို Case-insensitive (စာလုံးအကြီးအသေးမရွေး) ရှာခြင်း
+        cols = {c.lower(): c for c in df.columns}
+        name_key = cols.get('city', cols.get('station', df.columns[0]))
+        lat_key = cols.get('lat', df.columns[1] if len(df.columns) > 1 else 'Lat')
+        lon_key = cols.get('lon', df.columns[2] if len(df.columns) > 2 else 'Lon')
         
         station_dict = {}
         for _, row in df.iterrows():
-            city_name = str(row[name_col]).strip()
-            station_dict[city_name] = {'lat': row['Lat'], 'lon': row['Lon']}
+            city_name = str(row[name_key]).strip()
+            station_dict[city_name] = {'lat': float(row[lat_key]), 'lon': float(row[lon_key])}
         return station_dict
     except Exception as e:
         return {f"⚠️ Error: {str(e)}": {"lat": 19.7633, "lon": 96.0785}}
@@ -51,7 +57,7 @@ st.sidebar.markdown("### ⚙️ Dashboard Control")
 # Bias Correction - ပထမ
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 
-# စခန်းရွေးချယ်ရန် - ဒုတိယ (ယခု ၂၄၇ ခုလုံး ပေါ်လာပါမည်)
+# စခန်းရွေးချယ်ရန် - ဒုတိယ (ယခု စခန်းအားလုံး ပေါ်လာပါမည်)
 selected_city = st.sidebar.selectbox("🎯 စခန်းအမည်ရွေးချယ်ပါ", city_list)
 
 # ဘာသာစကား - တတိယ
@@ -66,7 +72,8 @@ view_mode = st.sidebar.radio("📊 View Mode",
 # --- ၄။ API Data Fetching ---
 @st.cache_data(ttl=600)
 def fetch_weather(city):
-    if city not in MYANMAR_CITIES or "⚠️" in city: return None, None
+    if city not in MYANMAR_CITIES or "❌" in city or "⚠️" in city: 
+        return None, None
     loc = MYANMAR_CITIES[city]
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
@@ -128,7 +135,6 @@ if h_data is not None:
         st.warning("📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလ သတင်းများကိုစောင့်ကြည့်ပါ။")
         st.plotly_chart(px.bar(d_data, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-        # Batch Export
         if st.button("🚀 စခန်းအားလုံး၏ Data စုစည်းမည်"):
             all_list = []
             bar = st.progress(0)
