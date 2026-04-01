@@ -203,7 +203,7 @@ if df_h is not None:
                 st.session_state['master_df'] = pd.DataFrame(all_data)
                 st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။")
 
-      # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
+     # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download (Box ပြန်ဖော်ခြင်း) ---
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
             
@@ -214,26 +214,30 @@ if df_h is not None:
             # ရွေးထားတဲ့ နေ့စွဲနဲ့ ကိုက်ညီတဲ့ ဒေတာကို စစ်ထုတ်ခြင်း
             final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
             
-            # နောက်ဆုံး Column ကို ဖယ်ထုတ်ပြီး ၄ ခုပဲ ပြသခြင်း
+            # လိုချင်တဲ့ column ၄ ခုကိုပဲ သတ်မှတ်ခြင်း
             display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']
             
+            # ဇယားနဲ့ ခလုတ်ကို ဒေတာရှိမှသာ ပြသရန် logic
             if not final_df.empty:
                 st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
-                # ဇယားတွင် ပြသခြင်း
+                
+                # ဇယားထုတ်ခြင်း
                 st.dataframe(final_df[display_cols], use_container_width=True)
                 
-                # ဒေတာကို CSV အဖြစ် ပြောင်းလဲခြင်း
-                csv_data = final_df[display_cols].to_csv(index=False).encode('utf-8-sig')
-                
-                # Download ခလုတ်
-                st.download_button(
-                    label=f"📥 Download {sel_date} Report (CSV)",
-                    data=csv_data,
-                    fileName=f"DMH_Report_{sel_date}.csv",
-                    mime='text/csv'
-                )
+                # CSV format သို့ သေချာစွာ ပြောင်းလဲခြင်း
+                try:
+                    csv_output = final_df[display_cols].to_csv(index=False).encode('utf-8-sig')
+                    
+                    st.download_button(
+                        label=f"📥 Download {sel_date} Report (CSV)",
+                        data=csv_output,
+                        fileName=f"DMH_Report_{sel_date}.csv",
+                        mime='text/csv'
+                    )
+                except Exception as e:
+                    st.error(f"CSV ထုတ်ယူရာတွင် အမှားအယွင်းရှိနေပါသည် - {e}")
             else:
-                st.info("ရွေးချယ်ထားသော နေ့စွဲအတွက် ဒေတာမရှိသေးပါ။")
+                st.info("ရွေးချယ်ထားသော နေ့စွဲအတွက် ဒေတာမရှိသေးပါ။ 'Export All Stations Data' ကို အရင်နှိပ်ပေးပါ။")
 
     # Climate Change View Mode
     elif view_mode == T["modes"][2]:
