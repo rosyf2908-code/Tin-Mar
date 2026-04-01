@@ -169,9 +169,7 @@ if df_h is not None:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
         
-        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
-        st.plotly_chart(fig_ibf, use_container_width=True)
-
+      
         if st.button("🚀 Export All Stations Data"):
             all_data = []
             p_bar = st.progress(0)
