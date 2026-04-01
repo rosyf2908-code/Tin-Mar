@@ -203,7 +203,7 @@ if df_h is not None:
                 st.session_state['master_df'] = pd.DataFrame(all_data)
                 st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။")
 
-        # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
+      # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
             
@@ -213,16 +213,19 @@ if df_h is not None:
             
             # ရွေးထားတဲ့ နေ့စွဲနဲ့ ကိုက်ညီတဲ့ ဒေတာကို စစ်ထုတ်ခြင်း
             final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
-            display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm', 'Forecast_Generated_At']
             
-            # ဒေတာရှိမှသာ ဇယားနဲ့ ခလုတ်ကို ပြပါမယ်
+            # နောက်ဆုံး Column ကို ဖယ်ထုတ်ပြီး ၄ ခုပဲ ပြသခြင်း
+            display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']
+            
             if not final_df.empty:
                 st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
+                # ဇယားတွင် ပြသခြင်း
                 st.dataframe(final_df[display_cols], use_container_width=True)
                 
                 # ဒေတာကို CSV အဖြစ် ပြောင်းလဲခြင်း
                 csv_data = final_df[display_cols].to_csv(index=False).encode('utf-8-sig')
                 
+                # Download ခလုတ်
                 st.download_button(
                     label=f"📥 Download {sel_date} Report (CSV)",
                     data=csv_data,
@@ -232,7 +235,7 @@ if df_h is not None:
             else:
                 st.info("ရွေးချယ်ထားသော နေ့စွဲအတွက် ဒေတာမရှိသေးပါ။")
 
-    # အောက်က else က view_mode == T["modes"][2] (Climate Change) အတွက်ပါ
+    # Climate Change View Mode
     elif view_mode == T["modes"][2]:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
@@ -240,13 +243,13 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'y':'Temp (°C)', 'x':'Year'}), use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
-# Footer အားလုံးအတွက် ပေါ်အောင် အပြင်မှာ ထားပါမယ်
+# Footer Section
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
-    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (Combining ECMWF IFS, GFS, ICON, and JMA global models).</p>
-    <p><b>Heatwave Analysis:</b> Based on Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
-    <p><b>Climate Data:</b> IPCC AR6 Assessment Report and CMIP6 Global Climate Models (SSP scenarios).</p>
+    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (ECMWF, GFS, ICON, JMA models).</p>
+    <p><b>Rainfall Cycle:</b> 24-hour total from 09:30 AM (Yesterday) to 09:30 AM (Today).</p>
+    <p><b>Heatwave Analysis:</b> Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
