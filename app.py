@@ -121,7 +121,7 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
         
         fig_wind = go.Figure()
-        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='green', width=1)))
+        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='black', width=1)))
         df_arrow = df_h.iloc[::6, :] 
         fig_wind.add_trace(go.Scatter(
             x=df_arrow['Time'], y=df_arrow['Wind'], mode='markers',
@@ -136,7 +136,11 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T["charts"][5], color_continuous_scale='Blues'), use_container_width=True)
         
         st.error(T["storm_note"])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['#e67e22']), use_container_width=True)
+       st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', 
+                       title=T["charts"][5], 
+                       range_y=[0, 8], # Y-axis ကို 0 မှ 8 အထိ ကန့်သတ်ရန်
+                       color_continuous_scale='Blues'), 
+                use_container_width=True)
 
     elif view_mode == T["modes"][1]:
         max_t = df_d['Tmax'].max()
