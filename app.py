@@ -27,7 +27,7 @@ LANG_DATA = {
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"],
+        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လားရာ", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"],
         "impact_list": ["အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke ဖြစ်နိုင်သည်။", "အန္တရာယ်ရှိသော အခြေအနေ! ပင်ပန်းနွမ်းနယ်နိုင်သည်။", "သတိပြုရန် အခြေအနေ! ကြာရှည်နေပါက ပင်ပန်းနိုင်ပါသည်။", "ပုံမှန်အခြေအနေ!"],
         "recom_list": ["အိမ်ထဲတွင်နေပါ။ ရေများများသောက်ပါ။", "နံနက်/ညနေသာ အပြင်ထွက်ပါ။ ထီးဆောင်းပါ။", "ပေါ့ပါးသောအဝတ်ဝတ်ပါ။ အရိပ်တွင်နားပါ။", "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။"]
     },
@@ -40,7 +40,7 @@ LANG_DATA = {
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm Probability (%)"],
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
         "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
         "recom_list": ["Stay indoors. Drink 3-4L water.", "Work morning/evening only. Use umbrella.", "Wear light clothes. Rest in shade.", "Stay hydrated and follow updates."]
     }
@@ -91,7 +91,7 @@ def fetch_weather(city):
             "WindDir": h_data['winddirection_10m'],
             "Vis": [v/1000 for v in h_data['visibility']],
             "Humid": h_data['relative_humidity_2m'],
-            "Cloud": h_data['cloud_cover'],
+            "Cloud_Oktas": [round((c / 100) * 8) for c in h_data['cloud_cover']], # Oktas သို့ ပြောင်းခြင်း
             "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in h_data.get('cape', [])]
         })
         df_d = pd.DataFrame({
@@ -117,9 +117,12 @@ if df_h is not None:
     st.warning(T["dmh_alert"])
 
     if view_mode == T["modes"][0]:
+        # ၁။ အပူချိန်
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T["charts"][0], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+        # ၂။ မိုးရေချိန်
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
         
+        # ၃။ လေတိုက်နှုန်း
         fig_wind = go.Figure()
         fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='black', width=1)))
         df_arrow = df_h.iloc[::6, :] 
@@ -128,19 +131,24 @@ if df_h is not None:
             marker=dict(symbol='arrow', size=15, angle=df_arrow['WindDir'], color='darkgreen', line=dict(width=1, color='white')),
             name='Wind Direction'
         ))
-        fig_wind.update_layout(title=T["charts"][2])
+        fig_wind.update_layout(title=T["charts"][2], yaxis_title="mph")
         st.plotly_chart(fig_wind, use_container_width=True)
 
+        # ၄။ အဝေးမြင်တာ
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
+        # ၅။ စိုထိုင်းဆ
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T["charts"][5], color_continuous_scale='Blues'), use_container_width=True)
         
+        # ၆။ တိမ်ဖုံးမှု (Oktas)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', title=T["charts"][5], 
+                               range_y=[0, 8], color_continuous_scale='Blues', 
+                               labels={'Cloud_Oktas':'Oktas'}), use_container_width=True)
+        
+        # ၇။ မိုးတိမ်တောင် (Thunderstorm %)
         st.error(T["storm_note"])
-       st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', 
-                       title=T["charts"][5], 
-                       range_y=[0, 8], # Y-axis ကို 0 မှ 8 အထိ ကန့်သတ်ရန်
-                       color_continuous_scale='Blues'), 
-                use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], 
+                               color_discrete_sequence=['#e67e22'], 
+                               labels={'Storm':'Thunderstorm %'}), use_container_width=True)
 
     elif view_mode == T["modes"][1]:
         max_t = df_d['Tmax'].max()
@@ -183,7 +191,7 @@ if df_h is not None:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend), use_container_width=True)
+        st.plotly_chart(px.line(x=years, y=trend, labels={'y':'Temp (°C)'}), use_container_width=True)
 
 st.markdown("---")
 st.markdown(f"""
