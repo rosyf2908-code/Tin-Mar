@@ -184,15 +184,24 @@ if df_h is not None:
         if st.button("🚀 Export All Stations Data"):
             all_data = []
             p_bar = st.progress(0)
+            
+            # ဒေတာထုတ်ယူသည့်အချိန်ကို မှတ်သားထားခြင်း
+            generation_time = formatted_now 
+
             for i, c in enumerate(city_list):
                 _, d_tmp = fetch_weather(c)
                 if d_tmp is not None:
-                    d_tmp['Station'] = c
-                    all_data.append(d_tmp)
+                    # ၁။ အမြင့်ဆုံးအပူချိန်၊ ၂။ အနိမ့်ဆုံးအပူချိန်၊ ၃။ မိုးရေချိန် တို့ကို သီးသန့်ရွေးထုတ်ခြင်း
+                    # Column အမည်များကို ရှင်းလင်းအောင် ပြောင်းလဲခြင်း
+                    export_df = d_tmp[['Date', 'Tmax', 'Tmin', 'Rain']].copy()
+                    export_df.columns = ['Date', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_mm']
+                    
+                    # စခန်းအမည်နှင့် ဒေတာထုတ်သည့်အချိန် (Generated Time) ထည့်သွင်းခြင်း
+                    export_df['Station'] = c
+                    export_df['Forecast_Generated_At'] = generation_time
+                    
+                    all_data.append(export_df)
                 p_bar.progress((i+1)/len(city_list))
-            if all_data:
-                st.session_state['master_df'] = pd.concat(all_data)
-                st.success("✅ Collected!")
 
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
