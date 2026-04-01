@@ -9,7 +9,7 @@ from datetime import datetime
 import pytz
 
 # --- ၁။ Layout Setup ---
-st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide")
+st.set_page_config(page_title="DMH AI Weather Dashboard", layout="wide",page_icon="🌤️")
 
 mm_tz = pytz.timezone('Asia/Yangon')
 now = datetime.now(mm_tz)
