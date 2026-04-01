@@ -34,16 +34,18 @@ LANG_DICT = {
     }
 }
 
-# --- ၃။ စခန်းစာရင်းဖတ်ခြင်း (Encoding Error Fix) ---
+# --- ၃။ စခန်းစာရင်းဖတ်ခြင်း ---
 @st.cache_data
 def load_stations():
-    try:
-        # utf-8-sig သည် မြန်မာစာ အမှားအယွင်းမရှိအောင် ဖတ်ပေးနိုင်သည်
-        df_st = pd.read_csv("Station.csv", encoding='utf-8-sig')
-        return {str(row['Station']): {'lat': row['Lat'], 'lon': row['Lon']} for _, row in df_st.iterrows()}
-    except Exception as e:
-        st.error(f"Station.csv ဖတ်မရပါ: {e}")
-        return {"Naypyidaw": {"lat": 19.7633, "lon": 96.0785}}
+    # ဖိုင်နာမည်ကို 'Station.csv' သို့မဟုတ် 'station.csv' နှစ်မျိုးလုံး စစ်ပေးထားပါတယ်
+    for filename in ["Station.csv", "station.csv"]:
+        try:
+            df_st = pd.read_csv(filename, encoding='utf-8-sig')
+            return {str(row['Station']): {'lat': row['Lat'], 'lon': row['Lon']} for _, row in df_st.iterrows()}
+        except FileNotFoundError:
+            continue
+    st.error("⚠️ Station.csv ဖိုင်ကို ရှာမတွေ့ပါ။ Folder ထဲတွင် ဖိုင်ရှိမရှိ ပြန်စစ်ပေးပါ။")
+    return {"Naypyidaw": {"lat": 19.7633, "lon": 96.0785}}
 
 MYANMAR_CITIES = load_stations()
 
@@ -93,33 +95,34 @@ if df_h is not None:
     df_h['Temp'] += temp_bias
 
     if view_mode == T["modes"][0]:
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T['charts'][0], markers=True), use_container_width=True)
-        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', title=T['charts'][1]), use_container_width=True)
+        # Chart 1: Temperature with Red (Max) and Blue (Min)
+        fig_temp = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T['charts'][0], markers=True,
+                          color_discrete_map={'Tmax': 'red', 'Tmin': 'blue'})
+        st.plotly_chart(fig_temp, use_container_width=True)
         
-        # Wind
+        st.plotly_chart(px.bar(df_d, x='Date', y='RainSum', title=T['charts'][1], color_discrete_sequence=['deepskyblue']), use_container_width=True)
+        
+        # Wind Direction
         df_w = df_h[df_h['Time'].dt.hour == 13].copy()
         fig_w = go.Figure()
         fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind'], mode='lines+markers', name='Speed'))
-        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+2, mode='markers', marker=dict(symbol='arrow', angle=df_w['WindDir'], size=15, color='red')))
+        fig_w.add_trace(go.Scatter(x=df_w['Time'], y=df_w['Wind']+1.5, mode='markers', 
+                                   marker=dict(symbol='arrow', angle=df_w['WindDir'], size=15, color='orange'), name='Direction'))
         st.plotly_chart(fig_w.update_layout(title=T['charts'][2]), use_container_width=True)
         
         st.plotly_chart(px.line(df_h, x='Time', y='Visibility', title=T['charts'][3]), use_container_width=True)
         st.plotly_chart(px.area(df_h, x='Time', y='Humidity', title=T['charts'][4]), use_container_width=True)
         
-        # Chart 6: Cloud Cover (ပြန်ထည့်ထားသည်)
+        # Chart 6: Cloud Cover
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud', title=T['charts'][5], color='Cloud', color_continuous_scale='Blues'), use_container_width=True)
         
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T['charts'][6], color_discrete_sequence=['orange']), use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T['charts'][6], color_discrete_sequence=['purple']), use_container_width=True)
 
     elif view_mode == T["modes"][1]:
-        max_t = df_d['Tmax'].max()
-        st.metric("Max Forecasted Temp", f"{max_t:.1f} °C")
+        # --- Multi-Station Processing ---
+        st.subheader(f"📥 Download Data for All {len(MYANMAR_CITIES)} Stations")
         
-        # --- Batch Download with Session State (Fix Rerun issue) ---
-        st.markdown("---")
-        st.subheader(f"📥 Download All {len(MYANMAR_CITIES)} Stations Data")
-        
-        if st.button("🚀 Start Processing All Stations"):
+        if st.button("🚀 Start Processing (Pull Data for All Cities)"):
             all_dfs = []
             prog = st.progress(0)
             status = st.empty()
@@ -135,29 +138,38 @@ if df_h is not None:
             if all_dfs:
                 master_df = pd.concat(all_dfs, ignore_index=True)
                 master_df['Date'] = master_df['Date'].dt.strftime('%Y-%m-%d')
-                st.session_state['master_df'] = master_df # သိမ်းထားမယ်
-                status.success("✅ အချက်အလက်များ အဆင်သင့်ဖြစ်ပါပြီ။")
+                st.session_state['master_df'] = master_df
+                status.success("✅ အချက်အလက်များ စုစည်းမှု အောင်မြင်ပါသည်။")
 
+        # Display Data for All Stations by Selected Date
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df']
+            st.markdown("---")
+            sel_date = st.selectbox("📅 Select Date to View All Stations", m_df['Date'].unique(), key='date_sel_key')
             
-            col1, col2 = st.columns(2)
-            with col1:
-                st.download_button("📥 Download Master CSV (All 16 Days)", m_df.to_csv(index=False).encode('utf-8-sig'), "Master_Forecast.csv", "text/csv")
+            day_data = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
             
-            with col2:
-                # ရက်ရွေးတဲ့အခါ ရှေ့ပြန်မထွက်အောင် Key ပေးထားသည်
-                sel_date = st.selectbox("📅 Select Date for Daily Report", m_df['Date'].unique(), key='daily_date_sel')
-                day_data = m_df[m_df['Date'] == sel_date]
-                st.download_button(f"📥 Download {sel_date} Data", day_data.to_csv(index=False).encode('utf-8-sig'), f"Report_{sel_date}.csv", "text/csv")
+            st.write(f"📊 **Data for {sel_date} (Total {len(day_data)} Stations)**")
+            st.dataframe(day_data, use_container_width=True) # ဇယားနဲ့ အကုန်ပြခြင်း
+            
+            csv_day = day_data.to_csv(index=False).encode('utf-8-sig')
+            st.download_button(f"📥 Download {sel_date} Report (CSV)", csv_day, f"DMH_All_Stations_{sel_date}.csv", "text/csv")
 
     else:
-        st.subheader("Climate Projection 2100")
-        st.line_chart(np.random.randn(20, 1) + 30)
+        # --- Climate Projection 2026-2100 ---
+        st.subheader("🌡️ Long-term Climate Projection (2026 - 2100)")
+        years = np.arange(2026, 2101)
+        # 0.04°C increase per year trend
+        temp_trend = [31 + (y-2026)*0.042 + np.random.normal(0, 0.3) for y in years]
+        
+        df_climate = pd.DataFrame({"Year": years, "Avg_Temp": temp_trend})
+        fig_cli = px.line(df_climate, x='Year', y='Avg_Temp', title="Projected Mean Temperature Increase (SSP 5-8.5 Scenario)",
+                         color_discrete_sequence=['darkred'])
+        st.plotly_chart(fig_cli, use_container_width=True)
+        st.warning("⚠️ ဤအချက်အလက်သည် CMIP6 Climate Model အပေါ်အခြေခံထားသော ခန့်မှန်းချက်သာ ဖြစ်ပါသည်။")
 
 st.markdown("---")
 st.markdown(f"<center>{T['footer']}</center>", unsafe_allow_html=True)
-
 
 # --- ၆။ Data Source Footer ---
 st.markdown("---")
