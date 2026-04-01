@@ -27,7 +27,7 @@ LANG_DATA = {
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန်", "💨 ၃။ လေတိုက်နှုန်းနှင့် လားရာ (mph)", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု (%)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"]
+        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas)", "⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)"]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
@@ -38,7 +38,7 @@ LANG_DATA = {
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temperature", "🌧️ 2. Precipitation", "💨 3. Wind Speed & Direction (mph)", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (%)", "⚡ 7. Thunderstorm Probability (%)"]
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas)", "⚡ 7. Thunderstorm Probability (%)"]
     }
 }
 
