@@ -203,28 +203,44 @@ if df_h is not None:
                 st.session_state['master_df'] = pd.DataFrame(all_data)
                 st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။")
 
+        # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
+            
+            # Date အလိုက် ရွေးချယ်ရန်
             unique_dates = sorted(m_df['Date'].unique())
             sel_date = st.selectbox("📅 Report ထုတ်လိုသည့် နေ့စွဲကို ရွေးပါ", unique_dates)
+            
+            # ရွေးထားတဲ့ နေ့စွဲနဲ့ ကိုက်ညီတဲ့ ဒေတာကို စစ်ထုတ်ခြင်း
             final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
             display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm', 'Forecast_Generated_At']
-            st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
-            st.dataframe(final_df[display_cols], use_container_width=True)
-            st.download_button(
-                label=f"📥 Download {sel_date} Report (CSV)",
-                data=final_df[display_cols].to_csv(index=False).encode('utf-8-sig'),
-                fileName=f"DMH_Report_{sel_date}.csv",
-                mime='text/csv'
-            )
+            
+            # ဒေတာရှိမှသာ ဇယားနဲ့ ခလုတ်ကို ပြပါမယ်
+            if not final_df.empty:
+                st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
+                st.dataframe(final_df[display_cols], use_container_width=True)
+                
+                # ဒေတာကို CSV အဖြစ် ပြောင်းလဲခြင်း
+                csv_data = final_df[display_cols].to_csv(index=False).encode('utf-8-sig')
+                
+                st.download_button(
+                    label=f"📥 Download {sel_date} Report (CSV)",
+                    data=csv_data,
+                    fileName=f"DMH_Report_{sel_date}.csv",
+                    mime='text/csv'
+                )
+            else:
+                st.info("ရွေးချယ်ထားသော နေ့စွဲအတွက် ဒေတာမရှိသေးပါ။")
 
-    else:
+    # အောက်က else က view_mode == T["modes"][2] (Climate Change) အတွက်ပါ
+    elif view_mode == T["modes"][2]:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'y':'Temp (°C)', 'x':'Year'}), use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
+# Footer အားလုံးအတွက် ပေါ်အောင် အပြင်မှာ ထားပါမယ်
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
