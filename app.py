@@ -15,41 +15,44 @@ now = datetime.now(mm_tz)
 formatted_now = now.strftime('%I:%M %p, %d %b %Y')
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
-# --- ၂။ စခန်းစာရင်းဖတ်ခြင်း (Robust Reading) ---
+# --- ၂။ စခန်းစာရင်းဖတ်ခြင်း (Dropdown အတွက် မြို့ ၂၄၇ ခုလုံး ဖတ်ရန်) ---
 @st.cache_data
 def load_stations():
     try:
         # GitHub root folder ထဲက Station.csv ကို ဖတ်ခြင်း
         df = pd.read_csv("Station.csv", encoding='utf-8-sig')
-        # Column names တွေကို Clean လုပ်ခြင်း (Space တွေပါရင် ဖယ်ထုတ်ရန်)
         df.columns = [c.strip() for c in df.columns]
         
-        # ပုံထဲကအတိုင်း City, Lat, Lon column တွေကို အသုံးပြုခြင်း
-        # Dictionary အဖြစ်ပြောင်းလဲခြင်း (Dropdown မှာ အကုန်ပေါ်စေရန်)
+        # Column အမည် City သို့မဟုတ် Station ကို ရှာခြင်း
+        name_col = 'City' if 'City' in df.columns else 'Station'
+        
         station_dict = {}
         for _, row in df.iterrows():
-            city_name = str(row['City']).strip()
+            city_name = str(row[name_col]).strip()
             station_dict[city_name] = {'lat': row['Lat'], 'lon': row['Lon']}
         return station_dict
     except Exception as e:
-        # CSV ဖတ်မရပါက Default အဖြစ် နေပြည်တော်ကို ပြခြင်း
-        return {"Naypyidaw (Default)": {"lat": 19.7633, "lon": 96.0785}}
+        # ဖိုင်ဖတ်မရလျှင် Error ပြပြီး Default နေပြည်တော်ကို သုံးမည်
+        st.sidebar.error(f"⚠️ Station.csv ဖတ်မရပါ: {e}")
+        return {"Naypyidaw": {"lat": 19.7633, "lon": 96.0785}}
 
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
 
-# --- ၃။ Sidebar (ပုံထဲကအတိုင်း Bias ကို အပေါ်တင်ထားသည်) ---
+# --- ၃။ Sidebar (ပုံထဲက Layout အတိုင်း စီစဉ်ထားသည်) ---
 st.sidebar.image(dm_header_logo, width=150)
-st.sidebar.markdown("### ⚙️ Settings")
+st.sidebar.markdown("### ⚙️ Control Panel")
 
-# ၁။ Select Station (စခန်းရွေးချယ်ရန် - ၂၄၇ ခုလုံး ပါဝင်မည်)
-selected_city = st.sidebar.selectbox("🎯 စခန်းအမည်ရွေးချယ်ပါ", city_list)
-
-# ၂။ Bias Correction Slider
+# (က) Bias Correction Slider - အပေါ်ဆုံးတွင် ထားပါသည်
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 
-# ၃။ Language & View Mode
+# (ခ) Select Station (စခန်းအားလုံးပေါ်ရန်)
+selected_city = st.sidebar.selectbox("🎯 စခန်းအမည်ရွေးချယ်ပါ", city_list)
+
+# (ဂ) Language Selection
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
+
+# (ဃ) View Mode
 view_mode = st.sidebar.radio("📊 View Mode", 
                              ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", 
                               "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး )", 
@@ -58,15 +61,15 @@ view_mode = st.sidebar.radio("📊 View Mode",
 # --- ၄။ API Data Fetching ---
 @st.cache_data(ttl=600)
 def fetch_weather(city):
+    if city not in MYANMAR_CITIES: return None, None
     loc = MYANMAR_CITIES[city]
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,winddirection_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,cloud_cover,visibility,precipitation,windspeed_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=10).json()
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(r['hourly']['time']), 
             "Temp": r['hourly']['temperature_2m'],
             "Wind": r['hourly']['windspeed_10m'],
-            "WindDir": r['hourly']['winddirection_10m'],
             "Vis": [v/1000 for v in r['hourly']['visibility']],
             "Humid": r['hourly']['relative_humidity_2m'],
             "Cloud": r['hourly']['cloud_cover'],
@@ -81,9 +84,9 @@ def fetch_weather(city):
         return df_h, df_d
     except: return None, None
 
-# --- ၅။ Main Content ---
+# --- ၅။ Main Display ---
 st.title("DMH AI Weather Forecast System")
-st.info(f"📍 စခန်း: **{selected_city}** | 🕒 အချိန်: **{formatted_now}**")
+st.info(f"📍 Selected: **{selected_city}** | 🕒 Time: **{formatted_now}**")
 
 h_data, d_data = fetch_weather(selected_city)
 
@@ -94,11 +97,8 @@ if h_data is not None:
     h_data['Temp'] += bias
 
     if "၁၆ ရက်စာ" in view_mode:
-        # Charts ၁ မှ ၇ ထိ အစဉ်လိုက်ပြသခြင်း
         st.plotly_chart(px.line(d_data, x='Date', y=['Tmax', 'Tmin'], title="🌡️ ၁။ အပူချိန်ခန့်မှန်းချက်", markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         st.plotly_chart(px.bar(d_data, x='Date', y='RainSum', title="🌧️ ၂။ မိုးရေချိန်ခန့်မှန်းချက်"), use_container_width=True)
-        
-        # Wind Direction & Speed
         st.plotly_chart(px.line(h_data, x='Time', y='Wind', title="💨 ၃။ လေတိုက်နှုန်း (mph)"), use_container_width=True)
         st.plotly_chart(px.line(h_data, x='Time', y='Vis', title="🔭 ၄။ အဝေးမြင်တာ (km)"), use_container_width=True)
         st.plotly_chart(px.area(h_data, x='Time', y='Humid', title="💧 ၅။ စိုထိုင်းဆ (%)"), use_container_width=True)
@@ -108,52 +108,51 @@ if h_data is not None:
         st.plotly_chart(px.bar(h_data, x='Time', y='Storm', title="⚡ ၇။ မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ (%)", color_discrete_sequence=['purple']), use_container_width=True)
 
     elif "အပူချိန်စောင့်ကြည့်ခြင်း" in view_mode:
-        # Heatwave IBF (ပုံထဲကအတိုင်း Risk Level များ)
         max_t = d_data['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
-        levels = ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"]
+        levels = ["အလွန်အန္တရာယ်ရှိ (Extreme Risk)", "အန္တရာယ်ရှိ (High Risk)", "သတိပြုရန် (Moderate Risk)", "ပုံမှန် (Low Risk)"]
         colors = ['#800000','#d00000','#ffaa00','#008000']
         
         st.markdown(f"""
             <div style="background-color:{colors[idx]}; padding:30px; border-radius:15px; text-align:center; color:white;">
                 <h1 style="margin:0;">{levels[idx]}</h1>
-                <h2 style="margin:0;">အမြင့်ဆုံးအပူချိန်: {max_t:.1f} °C</h2>
+                <h2 style="margin:0;">{max_t:.1f} °C</h2>
             </div>
             """, unsafe_allow_html=True)
         
-        st.markdown("### 🏥 ကျန်းမာရေးကဏ္ဍ အကြံပြုချက်")
+        st.subheader("🏥 ကျန်းမာရေးဆိုင်ရာ အကြံပြုချက်များ")
         st.warning("📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလ သတင်းများကိုစောင့်ကြည့်ပါ။")
         st.plotly_chart(px.bar(d_data, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-        # ၂၄၇ စခန်းလုံး တစ်ခါတည်း Download လုပ်ရန်
-        st.markdown("---")
+        # ၂၄၇ စခန်းလုံး Export
         if st.button("🚀 ၂၄၇ စခန်းလုံး၏ Data စုစည်းမည်"):
-            all_dfs = []
+            all_list = []
             bar = st.progress(0)
             for i, city in enumerate(city_list):
                 _, d_tmp = fetch_weather(city)
                 if d_tmp is not None:
                     d_tmp['Station'] = city
-                    all_dfs.append(d_tmp)
+                    all_list.append(d_tmp)
                 bar.progress((i+1)/len(city_list))
-            if all_dfs:
-                st.session_state['master_csv'] = pd.concat(all_dfs)
-                st.success("✅ အကုန်လုံး အဆင်သင့်ဖြစ်ပါပြီ။")
+            if all_list:
+                st.session_state['master_csv'] = pd.concat(all_list)
+                st.success("✅ စုစည်းမှု အောင်မြင်ပါသည်။")
 
         if 'master_csv' in st.session_state:
             m_df = st.session_state['master_csv']
             m_df['Date'] = m_df['Date'].dt.strftime('%Y-%m-%d')
             sel_d = st.selectbox("နေ့စွဲရွေးပါ", m_df['Date'].unique())
-            day_data = m_df[m_df['Date'] == sel_d]
-            st.download_button(f"📥 {sel_d} အတွက် စခန်းအားလုံး၏ Report (CSV) ရယူရန်", day_data.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_d}.csv")
+            day_data = m_df[m_df['Date'] == sel_d].sort_values(by='Station')
+            st.dataframe(day_data, use_container_width=True)
+            st.download_button(f"📥 Download {sel_d} Report", day_data.to_csv(index=False).encode('utf-8-sig'), f"DMH_Full_Report_{sel_d}.csv")
 
     else:
-        # Climate Mode
+        # ၂၁၀၀ ခန့်မှန်းချက် (ပုံထဲက စာသားအတိုင်း)
         st.subheader("🌡️ Climate Projection (2026-2100)")
         st.markdown("> **⚠️ Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}), use_container_width=True)
+        st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year','y':'Temp (°C)'}, title="SSP 5-8.5 Scenario Projection"), use_container_width=True)
 
 st.markdown("---")
 st.markdown("<center>တရားဝင်စနစ်: မိုးလေဝသနှင့်ဇလဗေဒညွှန်ကြားမှုဦးစီးဌာန</center>", unsafe_allow_html=True)
