@@ -181,61 +181,72 @@ if df_h is not None:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
+       # --- ဒေတာများကို Export လုပ်သည့်အပိုင်း ---
         if st.button("🚀 Export All Stations Data"):
             all_data = []
             p_bar = st.progress(0)
             generation_time = formatted_now 
 
             for i, c in enumerate(city_list):
-                _, d_tmp = fetch_weather(c)
-                if d_tmp is not None:
-                    export_df = d_tmp[['Date', 'Tmax', 'Tmin', 'Rain']].copy()
-                    export_df.columns = ['Date', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_mm']
-                    export_df['Station'] = c
-                    export_df['Forecast_Generated_At'] = generation_time
-                    all_data.append(export_df)
+                df_h_tmp, df_d_tmp = fetch_weather(c)
+                if df_h_tmp is not None:
+                    daily_records = []
+                    # API ကရတဲ့ ရက်စွဲတစ်ခုချင်းစီအတွက် တွက်ချက်မယ်
+                    for d in df_d_tmp['Date']:
+                        # --- မိုးရေချိန်တွက်ချက်မှု (မနေ့က 09:30 မှ ဒီနေ့ 09:30 အထိ) ---
+                        today_930 = d + pd.Timedelta(hours=9, minutes=30)
+                        yesterday_930 = today_930 - pd.Timedelta(days=1)
+                        
+                        # Hourly data ထဲကနေ အဲဒီအချိန်အပိုင်းအခြားကို ရှာတယ်
+                        mask = (df_h_tmp['Time'] > yesterday_930) & (df_h_tmp['Time'] <= today_930)
+                        rain_24h = df_h_tmp.loc[mask, 'precipitation'].sum() if 'precipitation' in df_h_tmp else 0
+                        
+                        # အပူချိန် (တစ်ရက်တာအတွင်း အမြင့်ဆုံး/အနိမ့်ဆုံး)
+                        # API daily data ကပေးတဲ့ Tmax/Tmin ကိုပဲ bias correction ပေါင်းပြီး သုံးပါမယ်
+                        tmax_val = df_d_tmp.loc[df_d_tmp['Date'] == d, 'Tmax'].values[0]
+                        tmin_val = df_d_tmp.loc[df_d_tmp['Date'] == d, 'Tmin'].values[0]
+
+                        daily_records.append({
+                            'Date': d.strftime('%Y-%m-%d'),
+                            'Max_Temp_C': tmax_val,
+                            'Min_Temp_C': tmin_val,
+                            'Rainfall_24h_mm': round(rain_24h, 2),
+                            'Station': c,
+                            'Forecast_Generated_At': generation_time
+                        })
+                    
+                    all_data.extend(daily_records)
                 p_bar.progress((i+1)/len(city_list))
             
             if all_data:
-                # ဇယားအားလုံးကို ပေါင်းပြီး Session ထဲ သိမ်းလိုက်တာပါ
-                st.session_state['master_df'] = pd.concat(all_data, ignore_index=True)
-                st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။ အောက်တွင် နေ့စွဲရွေးချယ်၍ ဒေါင်းလော့ဆွဲပါ။")
+                st.session_state['master_df'] = pd.DataFrame(all_data)
+                st.success("✅ ဒေတာများ စုစည်းပြီးပါပြီ။")
 
-        # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download Button ---
+        # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download (Box ပြန်ဖော်ခြင်း) ---
         if 'master_df' in st.session_state:
             m_df = st.session_state['master_df'].copy()
             
-            # Error တက်နေတဲ့ နေရာကို ဒီလို ပြင်လိုက်ပါတယ် (စာကြောင်း ၁၇၈-၁၈၀ ဝန်းကျင်)
-            m_df['Date'] = pd.to_datetime(m_df['Date']) # Datetime ဖြစ်အောင် အရင်ပြောင်းတယ်
-            m_df['Date_Str'] = m_df['Date'].dt.strftime('%Y-%m-%d')
-            
-            unique_dates = sorted(m_df['Date_Str'].unique())
+            # Date_Str အပို column မပါအောင် ရှင်းထုတ်ခြင်း
+            unique_dates = sorted(m_df['Date'].unique())
             sel_date = st.selectbox("📅 Report ထုတ်လိုသည့် နေ့စွဲကို ရွေးပါ", unique_dates)
             
-            # ရွေးချယ်ထားတဲ့ နေ့စွဲအတိုင်း ဒေတာကို စစ်ထုတ်ခြင်း
-            final_df = m_df[m_df['Date_Str'] == sel_date].sort_values(by='Station')
+            # ရွေးချယ်ထားတဲ့ နေ့စွဲအတိုင်း filter လုပ်ခြင်း
+            final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
             
-            # လိုအပ်တဲ့ Column တွေကိုပဲ အစဉ်လိုက်ပြခြင်း
-            display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_mm', 'Forecast_Generated_At']
+            # လိုချင်တဲ့ column ၅ ခုကိုပဲ အစဉ်လိုက်ပြသခြင်း
+            display_cols = ['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm', 'Forecast_Generated_At']
+            
+            st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ်")
             st.dataframe(final_df[display_cols], use_container_width=True)
             
             st.download_button(
-                label="📥 Download Daily CSV Report",
+                label=f"📥 Download {sel_date} Report (CSV)",
                 data=final_df[display_cols].to_csv(index=False).encode('utf-8-sig'),
-                fileName=f"DMH_Weather_Report_{sel_date}.csv",
+                fileName=f"DMH_Report_{sel_date}.csv",
                 mime='text/csv'
             )
 
-        if 'master_df' in st.session_state:
-            m_df = st.session_state['master_df'].copy()
-            m_df['Date'] = pd.to_datetime(m_df['Date'])
-            m_df['Date_Str'] = m_df['Date'].dt.strftime('%Y-%m-%d')
-            sel_date = st.selectbox("Date Selector", m_df['Date_Str'].unique())
-            final_df = m_df[m_df['Date_Str'] == sel_date].sort_values(by='Station')
-            st.dataframe(final_df, use_container_width=True)
-            st.download_button("📥 Download Report", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv")
-
-    else:
+        else:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
@@ -251,4 +262,3 @@ st.markdown(f"""
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
-
