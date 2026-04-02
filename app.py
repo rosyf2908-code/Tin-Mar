@@ -189,7 +189,7 @@ if df_h is not None and df_d is not None:
         for val, color, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
-        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title="Temperature Forecast Trend"), use_container_width=True)
+       
 
     # --- Mode 2: Climate Change ---
     elif mode_index == 2:
