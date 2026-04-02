@@ -226,7 +226,7 @@ if df_h is not None:
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
-        st.warning("⚠️ **Note:** Under the SSP5-8.5 scenario, significant warming is expected by 2100.")
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
 # --- ၅။ Export Report ---
 st.markdown("---")
