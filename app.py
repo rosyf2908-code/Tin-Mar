@@ -93,11 +93,11 @@ mode_index = T["modes"].index(view_mode_choice)
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=15).json()
+        # Dictionary ကို သေချာပိတ်ထားပါတယ်
         df_h = pd.DataFrame({
-            df_h = pd.DataFrame({
             "Time": pd.to_datetime(r['hourly']['time']), 
             "Temp": r['hourly']['temperature_2m'],
             "precipitation": r['hourly']['precipitation'],
@@ -107,7 +107,7 @@ def fetch_weather(city):
             "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
             "Thunderstorm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in r['hourly'].get('cape', [])]
         })
-            
+        
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(r['daily']['time']), 
             "Tmax": r['daily']['temperature_2m_max'],
@@ -115,7 +115,11 @@ def fetch_weather(city):
             "Rain": r['daily']['precipitation_sum']
         })
         return df_h, df_d
-    except: return None, None@st.cache_data(ttl=600)
+    except Exception as e:
+        st.error(f"Error: {e}")
+        return None, None
+        
+@st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
