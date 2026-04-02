@@ -18,7 +18,7 @@ dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 # --- ၂။ ဘာသာစကားနှင့် စာသားများ ---
 LANG_DATA = {
-    "မြန်မာ": {
+     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသခန့်မှန်းစနစ်",
         "station_label": "🎯 စခန်းအမည်ရွေးချယ်ပါ",
         "view_mode_label": "📊 View Mode",
@@ -28,38 +28,42 @@ LANG_DATA = {
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["Extreme Risk (အလွန်အန္တရာယ်ရှိ)", "High Risk (အန္တရာယ်ရှိ)", "Moderate Risk (သတိပြုရန်)", "Low Risk (ပုံမှန်)"],
         "charts": [
-            "🌡️ ၁။ အပူချိန်(°C)", "🌧️ ၂။ မိုးရေချိန်(mm)", "💨 ၃။ လေတိုက်နှုန်း(mph)", 
-            "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု (Oktas)", 
-            "⚡ ၇။ မိုးတိမ်တောင် (%)"
+            "🌡️  ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", 
+            "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", 
+            "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", 
+            "🔭 ၄။ အဝေးမြင်တာ (km)", 
+            "💧  ၅။ စိုထိုင်းဆ (%)", 
+            "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", 
+            "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
-        "impact_list": [
-            "အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke အန္တရာယ်ရှိသည်။", 
-            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်နိုင်သည်။", 
-            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်မနေပါနှင့်။", 
-            "ပုံမှန်အခြေအနေ! သိသာသော ထိခိုက်မှုမရှိပါ။"
+        "y_storm": "မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (%)",
+         "impact_list": [
+            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", 
+            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", 
+            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", 
+            "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
         ],
         "recom_list": [
-            "အိမ်ထဲတွင်သာနေပါ။ ရေများများသောက်ပါ။ ဆေးရုံသို့ အမြန်သွားပါ။", 
-            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာလုပ်ပါ။ ထီးဆောင်းပါ။", 
-            "ပေါ့ပါးသောအဝတ်များဝတ်ပါ။ အရိပ်တွင်နားပါ။", 
-            "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းပါ။"
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။", 
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။", 
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။", 
+            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"
         ]
     },
     "English": {
-        "title": "DMH AI Weather System",
+        "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
-        "modes": ["16-Day Analysis", "Heatwave (IBF)", "Climate Change"],
-        "dmh_alert": "📢 Tip: Follow DMH news updates.",
-        "storm_note": "📝 Note: Beware of lightning if > 60%.",
-        "ibf_header": "🏥 Health Impacts & Recommendations",
+        "modes": ["16-Day Detailed Analysis", "Heatwave Monitoring (IBF-Health)", "Climate Change (2100-SSP5-8.5)"],
+        "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
+        "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
+        "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temp", "🌧️ 2. Rain", "💨 3. Wind", "🔭 4. Vis", "💧 5. Humid", "☁️ 6. Cloud", "⚡ 7. Storm"],
-        "impact_list": ["Extreme danger! Heatstroke.", "High danger! Fatigue.", "Caution! Exposure risk.", "Normal."],
-        "recom_list": ["Stay indoors. Drink water.", "Avoid noon sun. Use umbrella.", "Wear light clothes.", "Stay hydrated."]
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
+        "recom_list": ["Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."]
     }
 }
-
 # --- ၃။ ဒေတာဖတ်ခြင်းနှင့် API ---
 @st.cache_data
 def load_stations():
