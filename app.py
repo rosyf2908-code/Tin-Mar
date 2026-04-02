@@ -84,7 +84,10 @@ T = LANG_DATA[lang]
 
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
+
+# View Mode ကို Index နဲ့ ဖမ်းဖို့ ပြင်ထားပါတယ်
 view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
+mode_index = T["modes"].index(view_mode)
 
 # --- ၅။ Weather API Logic ---
 @st.cache_data(ttl=600)
@@ -126,8 +129,8 @@ if df_h is not None:
     
     st.warning(T["dmh_alert"])
 
-    # ဂရပ်များအားလုံး ပြသရန် Logic
-    if view_mode == T["modes"][0]:
+    # ဂရပ်များအားလုံး ပြသရန် (Index check စနစ်သစ်)
+    if mode_index == 0: # ၁၆ ရက်စာ အသေးစိတ်
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
@@ -152,7 +155,7 @@ if df_h is not None:
         st.subheader(T["charts"][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    elif view_mode == T["modes"][1]:
+    elif mode_index == 1: # IBF-ကျန်းမာရေး
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
@@ -162,7 +165,7 @@ if df_h is not None:
         st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-    elif view_mode == T["modes"][2]:
+    elif mode_index == 2: # ရာသီဥတုပြောင်းလဲမှု
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
