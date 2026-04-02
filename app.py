@@ -136,8 +136,17 @@ if df_h is not None and df_d is not None:
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
         # 3. Wind
-        st.subheader(T["charts"][2])
-        st.plotly_chart(px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['green']), use_container_width=True)
+        fig_wind = go.Figure()
+        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='blue', width=1)))
+        df_arrow = df_h.iloc[::6, :] 
+        fig_wind.add_trace(go.Scatter(
+            x=df_arrow['Time'], y=df_arrow['Wind'], mode='markers',
+            marker=dict(symbol='arrow', size=15, angle=df_arrow['WindDir'], color='darkgreen', line=dict(width=1, color='white')),
+            name='Wind Direction'
+        ))
+        fig_wind.update_layout(title=T["charts"][2], yaxis_title="mph")
+        st.plotly_chart(fig_wind, use_container_width=True)
+
         # 4. Visibility
         st.subheader(T["charts"][3])
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
