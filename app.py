@@ -194,7 +194,7 @@ if df_h is not None and df_d is not None:
 
         # 6. Cloud Cover
         st.subheader(T["charts"][5])
-        fig6 = px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgray'])
+        fig6 = px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen'])
         fig6.update_layout(yaxis_title="တိမ်ဖုံးမှု (Oktas)" if lang == "မြန်မာ" else "Cloud (Oktas)")
         st.plotly_chart(fig6, use_container_width=True)
 
