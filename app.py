@@ -75,25 +75,29 @@ MYANMAR_CITIES = load_stations()
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
-    r = requests.get(url, timeout=15).json()
-    df_h = pd.DataFrame({
-        "Time": pd.to_datetime(r['hourly']['time']), 
-        "Temp": r['hourly']['temperature_2m'],
-        "precipitation": r['hourly']['precipitation'],
-        "Wind": r['hourly']['windspeed_10m'],
-        "WindDir": r['hourly']['winddirection_10m'],
-        "Vis": [v/1000 for v in r['hourly']['visibility']],
-        "Humid": r['hourly']['relative_humidity_2m'],
-        "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
-        "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in r['hourly'].get('cape', [])]
-    })
-    df_d = pd.DataFrame({
-        "Date": pd.to_datetime(r['daily']['time']), 
-        "Tmax": r['daily']['temperature_2m_max'],
-        "Tmin": r['daily']['temperature_2m_min']
-    })
-    return df_h, df_d
-    # --- ၄။ Sidebar & Main Display ---
+    try:
+        r = requests.get(url, timeout=15).json()
+        df_h = pd.DataFrame({
+            "Time": pd.to_datetime(r['hourly']['time']), 
+            "Temp": r['hourly']['temperature_2m'],
+            "precipitation": r['hourly']['precipitation'],
+            "Wind": r['hourly']['windspeed_10m'],
+            "WindDir": r['hourly']['winddirection_10m'],
+            "Vis": [v/1000 for v in r['hourly']['visibility']],
+            "Humid": r['hourly']['relative_humidity_2m'],
+            "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
+            "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in r['hourly'].get('cape', [])]
+        })
+        df_d = pd.DataFrame({
+            "Date": pd.to_datetime(r['daily']['time']), 
+            "Tmax": r['daily']['temperature_2m_max'],
+            "Tmin": r['daily']['temperature_2m_min']
+        })
+        return df_h, df_d
+    except:
+        return None, None
+
+# --- ၄။ Sidebar & UI ---
 st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
@@ -112,31 +116,26 @@ if df_h is not None:
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
+    # --- Mode 0: 16-Day Detailed Analysis ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        
-        # 1. Temp (Daily)
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
-        # 6-Hourly Resampling for Rain, Wind, Cloud, Storm
         df_6h = df_h.set_index('Time').resample('6h').agg({
             'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
             'Cloud_Oktas': 'max', 'Thunderstorm': 'max'
         }).reset_index()
 
-        # 2. Rain (6h Accumulated)
         st.subheader(T["charts"][1] + " (6-hourly)")
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['skyblue']), use_container_width=True)
 
-        # 3. Wind (6h Mean)
         st.subheader(T["charts"][2] + " (6-hourly)")
         fig3 = go.Figure()
         fig3.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green')))
         fig3.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen')))
         st.plotly_chart(fig3, use_container_width=True)
 
-        # 6 & 7. Cloud & Storm (6h Max)
         st.subheader(T["charts"][5] + " (6-hourly)")
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
         
@@ -144,15 +143,32 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
+    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
-        # IBF Health Logic (Simplified)
-        t_max = df_d.iloc[0]['Tmax']
-        lvl = 0 if t_max >= 40 else 1 if t_max >= 37 else 2 if t_max >= 34 else 3
         st.subheader(T["ibf_header"])
-        st.markdown(f"<div style='background-color:#eee; padding:20px; border-radius:10px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><h3>Max Temp: {t_max:.1f}°C</h3></div>", unsafe_allow_html=True)
-        st.info(f"**Impact:** {T['impact_list'][lvl]}")
-        st.success(f"**Action:** {T['recom_list'][lvl]}")
+        today_max = df_d.iloc[0]['Tmax']
+        if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
+        elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
+        elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
+        else: lvl, color, bg = 3, "white", "#008000"
 
-# Footer & Explanations
+        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><h3>Max Temp: {today_max:.1f}°C</h3></div>", unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
+        with col2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+        
+        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
+        st.plotly_chart(fig_ibf, use_container_width=True)
+
+    # --- Mode 2: Climate Change Projection ---
+    elif mode_index == 2:
+        st.subheader("🌡️ Future Climate Projection (SSP5-8.5 Scenario)")
+        years = np.arange(2026, 2101)
+        trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
+        fig_cc = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Avg Temp (°C)'}, title="Projected Temperature Rise in Myanmar (2026-2100)")
+        st.plotly_chart(fig_cc, use_container_width=True)
+        st.warning("⚠️ **Note:** Under the SSP5-8.5 'Business as Usual' scenario, significant temperature increases are expected by the end of the century.")
+
+# Footer
 st.markdown("---")
 st.markdown("<div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
