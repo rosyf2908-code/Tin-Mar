@@ -148,14 +148,23 @@ if df_h is not None:
         fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen')))
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        # Visibility & Humidity
-        c1, c2 = st.columns(2)
-        with c1:
-            st.subheader(T["charts"][3])
-            st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
-        with c2:
-            st.subheader(T["charts"][4])
-            st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
+       # --- Visibility (အပေါ်) ---
+        st.subheader(T["charts"][3])
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(
+            yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Vis (km)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig4, use_container_width=True)
+
+        # --- Humidity (အောက်) ---
+        st.subheader(T["charts"][4])
+        fig5 = px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
+        fig5.update_layout(
+            yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig5, use_container_width=True)
 
         # Cloud & Storm
         st.subheader(T["charts"][5])
