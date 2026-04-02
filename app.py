@@ -164,30 +164,35 @@ if st.button("🚀 Export All Stations Data"):
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
     unique_dates = sorted(m_df['Date'].unique())
+    
+    # ၁။ Date ရွေးခိုင်းပါ
     sel_date = st.selectbox("📅 Report ထုတ်လိုသည့် နေ့စွဲကို ရွေးပါ", unique_dates)
-    final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     
-    st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ် (Bias +{bias}°C ပေါင်းပြီး)")
-    st.dataframe(final_df[['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']], use_container_width=True)
-    
-    csv = final_df.to_csv(index=False).encode('utf-8-sig')
-    st.download_button(
-        label=f"📥 Download {sel_date} Report (CSV)",
-        data=csv,
-        file_name=f"DMH_Report_{sel_date}.csv",
-        mime='text/csv'
-    )
+    # ၂။ sel_date ရှိမှသာ အောက်က code တွေကို run ဖို့ logic ခံထားပါတယ်
+    if sel_date:
+        final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+        
+        st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ် (Bias +{bias}°C ပေါင်းပြီး)")
+        st.dataframe(final_df[['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']], use_container_width=True)
+        
+        csv = final_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label=f"📥 Download {sel_date} Report (CSV)",
+            data=csv,
+            file_name=f"DMH_Report_{sel_date}.csv",
+            mime='text/csv'
+        )
 
-    st.markdown(f"""
-    <div style='background-color: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top: 15px;'>
-        <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
-        <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
-            <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
-            <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
-            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='background-color: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top: 15px;'>
+            <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
+            <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
+                <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
+                <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
+                <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Footer Section
 st.markdown("---")
