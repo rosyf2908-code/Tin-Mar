@@ -75,7 +75,7 @@ st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
 
-bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 2.0, step=0.1)
+bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
 
@@ -115,7 +115,6 @@ if df_h is not None:
     if view_mode == T["modes"][0]:
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], title=T["charts"][0], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', title=T["charts"][1]), use_container_width=True)
-        # Wind & Other charts...
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', title=T["charts"][3]), use_container_width=True)
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['#e67e22']), use_container_width=True)
@@ -138,7 +137,7 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'y':'Temp (°C)', 'x':'Year'}), use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** High risk of extreme heat in SSP 5-8.5 scenario.")
 
-# --- ၇။ Global Export Section (Mode အားလုံးတွင် ပေါ်နေရန်) ---
+# --- ၇။ Global Export Section ---
 st.markdown("---")
 if st.button("🚀 Export All Stations Data"):
     all_data = []
@@ -164,34 +163,31 @@ if st.button("🚀 Export All Stations Data"):
 
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
-    sel_date = st.selectbox("📅 Report Date", sorted(m_df['Date'].unique()))
-    final_df = m_df[m_df['Date'] == sel_date]
+    unique_dates = sorted(m_df['Date'].unique())
+    sel_date = st.selectbox("📅 Report ထုတ်လိုသည့် နေ့စွဲကို ရွေးပါ", unique_dates)
+    final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+    
+    st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ် (Bias +{bias}°C ပေါင်းပြီး)")
     st.dataframe(final_df[['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']], use_container_width=True)
-    st.download_button("📥 Download CSV", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
-    # --- ဒေတာများကို ဇယားဖြင့်ပြသခြင်းနှင့် Download ---
-        st.write(f"### {sel_date} ရက်နေ့အတွက် ခန့်မှန်းချက် အနှစ်ချုပ် (Bias +{bias}°C ပေါင်းပြီး)")
-        st.dataframe(final_df[['Station', 'Max_Temp_C', 'Min_Temp_C', 'Rainfall_24h_mm']], use_container_width=True)
-        
-        # Download Button
-        csv = final_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label=f"📥 Download {sel_date} Report (CSV)",
-            data=csv,
-            file_name=f"DMH_Report_{sel_date}.csv",
-            mime='text/csv'
-        )
+    
+    csv = final_df.to_csv(index=False).encode('utf-8-sig')
+    st.download_button(
+        label=f"📥 Download {sel_date} Report (CSV)",
+        data=csv,
+        file_name=f"DMH_Report_{sel_date}.csv",
+        mime='text/csv'
+    )
 
-        # 📝 ရှင်းလင်းချက် Box (ဒါလေးကို Download button ရဲ့ အောက်မှာ ကပ်လျက်ထားပေးထားပါတယ်)
-        st.markdown(f"""
-        <div style='background-color: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top: 15px;'>
-            <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
-            <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
-                <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
-                <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
-                <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='background-color: #f0f7ff; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top: 15px;'>
+        <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
+        <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
+            <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
+            <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Bias {bias}°C ပေါင်းပြီး)</li>
+            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Footer Section
 st.markdown("---")
