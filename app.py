@@ -93,21 +93,19 @@ def fetch_weather(city):
         return df_h, df_d
     except: return None, None
 
-# --- ၆။ Main Page Display (ဂရပ်များပြသခြင်း) ---
+# --- ၆။ Main Page Display ---
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 df_h, df_d = fetch_weather(selected_city)
 
 if df_h is not None:
-    # Apply Bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
     df_h['Temp'] += bias
     
     st.warning(T["dmh_alert"])
 
-    # ၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက် Mode
     if view_mode == T["modes"][0]:
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
@@ -119,7 +117,6 @@ if df_h is not None:
         st.subheader(T["charts"][3])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # IBF Heatwave Mode
     elif view_mode == T["modes"][1]:
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
@@ -130,12 +127,48 @@ if df_h is not None:
         st.success(f"💡 Recommendations: {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-    # Climate Change Mode
     elif view_mode == T["modes"][2]:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend, labels={'y':'Temp (°
+        # Line 138 Error ပြင်ထားသည့်နေရာ
+        fig = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
+        st.plotly_chart(fig, use_container_width=True)
+
+# --- ၇။ Export Section ---
+st.markdown("---")
+st.subheader("🚀 Data Export (All Stations)")
+
+if st.button("Generate Downloadable Data"):
+    all_data = []
+    p_bar = st.progress(0)
+    for i, c in enumerate(city_list):
+        dh, dd = fetch_weather(c)
+        if dh is not None:
+            for d in dd['Date']:
+                t930 = d + pd.Timedelta(hours=9, minutes=30)
+                y930 = t930 - pd.Timedelta(days=1)
+                rain = dh.loc[(dh['Time'] > y930) & (dh['Time'] <= t930), 'precipitation'].sum()
+                all_data.append({
+                    'Date': d.strftime('%Y-%m-%d'), 'Station': c,
+                    'Max_Temp_C': round(dd.loc[dd['Date']==d, 'Tmax'].values[0] + bias, 1),
+                    'Min_Temp_C': round(dd.loc[dd['Date']==d, 'Tmin'].values[0] + bias, 1),
+                    'Rainfall_24h_mm': round(rain, 2)
+                })
+        p_bar.progress((i + 1) / len(city_list))
+    st.session_state['master_df'] = pd.DataFrame(all_data)
+    st.success("✅ ဒေတာများ ပြင်ဆင်ပြီးပါပြီ။")
+
+if 'master_df' in st.session_state:
+    m_df = st.session_state['master_df']
+    sel_date = st.selectbox("📅 Download ပြုလုပ်လိုသည့် နေ့စွဲကိုရွေးပါ", sorted(m_df['Date'].unique()))
+    final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+    st.dataframe(final_df, use_container_width=True)
+    st.download_button(f"📥 Download {sel_date} Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv", "text/csv")
+
+# Footer
+st.markdown("---")
+st.markdown("<div style='text-align: center; color: #666;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
 
 # Footer Section
 st.markdown("---")
