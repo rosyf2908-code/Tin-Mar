@@ -54,13 +54,13 @@ LANG_DATA = {
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Day Analysis", "Heatwave Monitoring (IBF)", "Climate Change"],
-        "dmh_alert": "📢 Tip: Follow DMH for updates.",
+        "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
         "storm_note": "📝 Note: High storm risk warning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Danger", "Danger", "Caution", "Normal"],
         "charts": ["Temp", "Rain", "Wind", "Visibility", "Humidity", "Cloud", "Storm"],
-        "impact_list": ["Extreme Heatstroke risk!", "Danger of fatigue!", "Caution needed!", "Normal conditions."],
-        "recom_list": ["Stay indoors!", "Avoid peak sun.", "Wear light clothes.", "Stay hydrated."]
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
+        "recom_list": ["Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."]
     }
 }
 
