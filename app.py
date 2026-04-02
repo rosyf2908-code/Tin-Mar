@@ -106,6 +106,7 @@ def fetch_weather(city):
             "Humid": r['hourly']['relative_humidity_2m'],
             "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
             "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in r['hourly'].get('cape', [])]
+            "Thunderstorm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in r['hourly'].get('cape', [])]
         })
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(r['daily']['time']), 
@@ -169,9 +170,15 @@ if df_h is not None and df_d is not None:
         # 7. Thunderstorm Prob
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
-        fig7 = px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange'])
-        fig7.update_layout(yaxis_title="မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (%)" if lang == "မြန်မာ" else "Thunderstorm Prob (%)")
-        st.plotly_chart(fig7, use_container_width=True)
+        
+        # Column ရှိမရှိ စစ်ဆေးပြီးမှ ဂရပ်ဆွဲပါ
+        if 'Thunderstorm' in df_h.columns:
+            fig7 = px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange'])
+            y_title = "မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (%)" if lang == "မြန်မာ" else "Thunderstorm Prob (%)"
+            fig7.update_layout(yaxis_title=y_title)
+            st.plotly_chart(fig7, use_container_width=True)
+        else:
+            st.warning("Thunderstorm data is currently unavailable.")
         
 
     # --- Mode 1: IBF Health Risk Level ---
