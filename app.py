@@ -126,8 +126,8 @@ if df_h is not None:
     
     st.warning(T["dmh_alert"])
 
+    # ဂရပ်များအားလုံး ပြသရန် Logic
     if view_mode == T["modes"][0]:
-        # Charts 1 to 7
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
@@ -169,7 +169,7 @@ if df_h is not None:
         fig = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
         st.plotly_chart(fig, use_container_width=True)
 
-# --- ၇။ Export Section (Data Explanation Box ပါဝင်သည်) ---
+# --- ၇။ Export Section ---
 st.markdown("---")
 st.subheader("🚀 Data Export (All Stations)")
 
@@ -200,7 +200,6 @@ if 'master_df' in st.session_state:
     st.dataframe(final_df, use_container_width=True)
     st.download_button(f"📥 Download {sel_date} Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv", "text/csv")
     
-    # --- ဒေတာများရှင်းလင်းချက် Box (Download အောက်တွင် ထည့်သွင်းထားသည်) ---
     st.markdown("---")
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
