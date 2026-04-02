@@ -207,8 +207,7 @@ if df_h is not None and df_d is not None:
             y_storm_label = "မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (6-hr Max %)" if lang == "မြန်မာ" else "6-hr Max Thunderstorm (%)"
             fig7.update_layout(yaxis_title=y_storm_label)
             st.plotly_chart(fig7, use_container_width=True)
-       else:
-            st.warning("Thunderstorm data is currently unavailable.")
+       
         
 
     # --- Mode 1: IBF Health Risk Level ---
