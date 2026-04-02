@@ -131,6 +131,7 @@ def fetch_weather(city):
             "Temp": r['hourly']['temperature_2m'],
             "precipitation": r['hourly']['precipitation'],
             "Wind": r['hourly']['windspeed_10m'],
+            "WindDir": r['hourly']['winddirection_10m'],
             "Vis": [v/1000 for v in r['hourly']['visibility']],
             "Humid": r['hourly']['relative_humidity_2m'],
             "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
@@ -174,37 +175,25 @@ if df_h is not None and df_d is not None:
         fig2.update_layout(yaxis_title="မိုးရေချိန် (mm)" if lang == "မြန်မာ" else "Rain (mm)")
         st.plotly_chart(fig2, use_container_width=True)
 
-      # 3. Wind Speed & Direction
+     # 3. Wind Speed & Direction (Fixed with Arrows)
         st.subheader(T["charts"][2])
-        
         fig3 = go.Figure()
-        # လေတိုက်နှုန်း Line
-        fig3.add_trace(go.Scatter(
-            x=df_h['Time'], y=df_h['Wind'],
-            mode='lines',
-            name='Wind Speed',
-            line=dict(color='green', width=2)
-        ))
+        fig3.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='green', width=2)))
         
-        # လေတိုက်ရာအရပ် Arrow Markers (၆ နာရီခြားတစ်ခါပြပါမည်)
-        df_arrows = df_h.iloc[::6] 
-        fig3.add_trace(go.Scatter(
-            x=df_arrows['Time'],
-            y=df_arrows['Wind'],
-            mode='markers',
-            name='Direction',
-            marker=dict(
-                symbol='triangle-up',
-                size=12,
-                angle=df_arrows['WindDir'],
-                color='darkgreen'
-            ),
-            hovertemplate="Direction: %{marker.angle}°"
-        ))
-        
-        y_wind_title = "လေတိုက်နှုန်း (mph)" if lang == "မြန်မာ" else "Wind Speed (mph)"
-        fig3.update_layout(yaxis_title=y_wind_title, showlegend=False)
+        if 'WindDir' in df_h.columns:
+            df_arrows = df_h.iloc[::6] 
+            fig3.add_trace(go.Scatter(
+                x=df_arrows['Time'], y=df_arrows['Wind'], mode='markers', name='Direction',
+                marker=dict(symbol='triangle-up', size=12, angle=df_arrows['WindDir'], color='darkgreen')
+            ))
+        fig3.update_layout(yaxis_title="လေတိုက်နှုန်း (mph)" if lang == "မြန်မာ" else "Wind Speed (mph)", showlegend=False)
         st.plotly_chart(fig3, use_container_width=True)
+
+        # 4. Visibility
+        st.subheader(T["charts"][3])
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Vis (km)")
+        st.plotly_chart(fig4, use_container_width=True)
 
         # 4. Visibility
         st.subheader(T["charts"][3])
