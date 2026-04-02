@@ -197,6 +197,7 @@ if df_h is not None and df_d is not None:
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
 # --- ၇။ Export & Footer (အရင်အတိုင်း) ---
 st.markdown("---")
@@ -225,7 +226,7 @@ if 'master_df' in st.session_state:
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
     st.download_button(label="📥 Download Report (CSV)", data=final_df.to_csv(index=False).encode('utf-8-sig'), file_name=f"DMH_{sel_date}.csv", mime='text/csv')
-    st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+    
     
     # Data Description Box
     st.markdown("""
