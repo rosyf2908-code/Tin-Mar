@@ -85,7 +85,6 @@ T = LANG_DATA[lang]
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 
-# View Mode selection
 view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
 mode_index = T["modes"].index(view_mode_choice)
 
@@ -123,14 +122,12 @@ st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 df_h, df_d = fetch_weather(selected_city)
 
 if df_h is not None and df_d is not None:
-    # Apply Bias Correction
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
     df_h['Temp'] += bias
     
     st.warning(T["dmh_alert"])
 
-    # ဂရပ်များပေါ်အောင် ဤနေရာတွင် logic ကို သေချာခွဲထားပါသည်
     if mode_index == 0: 
         # Detailed Graphs
         st.subheader(T["charts"][0])
@@ -175,9 +172,9 @@ if df_h is not None and df_d is not None:
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         fig_clm = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
         st.plotly_chart(fig_clm, use_container_width=True)
-        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat by the end of the century.")
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 
-# --- ၇။ Export Section (Always at the bottom) ---
+# --- ၇။ Export Section ---
 st.markdown("---")
 st.subheader("🚀 Data Export (All Stations)")
 
@@ -217,9 +214,11 @@ if 'master_df' in st.session_state:
                 <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
                 <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
             </ul>
+            <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
+                *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
+            </p>
         </div>
         """, unsafe_allow_html=True)
-
 
 # Footer Section
 st.markdown("---")
