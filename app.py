@@ -1,5 +1,5 @@
 import streamlit as st
-import pandas as pd
+import pd as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -68,9 +68,9 @@ def load_stations():
     if not os.path.exists(file_path):
         return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
     try:
-        df = pd.read_csv(file_path, encoding='utf-8-sig')
-        df.columns = [c.strip() for c in df.columns]
-        s_dict = {str(row.iloc[0]).strip(): {'lat': float(row['Lat']), 'lon': float(row['Lon'])} for _, row in df.iterrows()}
+        df_csv = pd.read_csv(file_path, encoding='utf-8-sig')
+        df_csv.columns = [c.strip() for c in df_csv.columns]
+        s_dict = {str(row.iloc[0]).strip(): {'lat': float(row['Lat']), 'lon': float(row['Lon'])} for _, row in df_csv.iterrows()}
         return s_dict
     except: return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
@@ -85,9 +85,9 @@ T = LANG_DATA[lang]
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 
-# View Mode ကို Index နဲ့ ဖမ်းဖို့ ပြင်ထားပါတယ်
-view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
-mode_index = T["modes"].index(view_mode)
+# အရေးကြီးသောအပိုင်း - စာသားနဲ့ မစစ်ဘဲ Index (0, 1, 2) နဲ့ စစ်ဖို့ ပြင်လိုက်ပါပြီ
+view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
+mode_index = T["modes"].index(view_mode_choice)
 
 # --- ၅။ Weather API Logic ---
 @st.cache_data(ttl=600)
@@ -129,33 +129,40 @@ if df_h is not None:
     
     st.warning(T["dmh_alert"])
 
-    # ဂရပ်များအားလုံး ပြသရန် (Index check စနစ်သစ်)
-    if mode_index == 0: # ၁၆ ရက်စာ အသေးစိတ်
+    # ဂရပ်များအားလုံး ပြသရန် Logic (Index ပေါ်အခြေခံထားသည်)
+    if mode_index == 0: 
+        # ၁။ အပူချိန် ဂရပ်
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
+        # ၂။ မိုးရေချိန် ဂရပ်
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
         
+        # ၃။ လေတိုက်နှုန်း ဂရပ်
         st.subheader(T["charts"][2])
         fig_wind = px.line(df_h, x='Time', y='Wind', title="Wind Speed (mph)")
         fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='markers', name='Direction', hovertext=df_h['WindDir']))
         st.plotly_chart(fig_wind, use_container_width=True)
 
+        # ၄။ အဝေးမြင်တာ ဂရပ်
         st.subheader(T["charts"][3])
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['purple']), use_container_width=True)
 
+        # ၅။ စိုထိုင်းဆ ဂရပ်
         st.subheader(T["charts"][4])
         st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['teal']), use_container_width=True)
 
+        # ၆။ တိမ်ဖုံးမှု ဂရပ်
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['gray']), use_container_width=True)
         
+        # ၇။ မိုးတိမ်တောင် ဂရပ်
         st.error(T["storm_note"])
         st.subheader(T["charts"][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    elif mode_index == 1: # IBF-ကျန်းမာရေး
+    elif mode_index == 1: # Heatwave Monitoring
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
@@ -165,7 +172,7 @@ if df_h is not None:
         st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-    elif mode_index == 2: # ရာသီဥတုပြောင်းလဲမှု
+    elif mode_index == 2: # Climate Change
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
@@ -185,12 +192,12 @@ if st.button("Generate Downloadable Data"):
             for d in dd['Date']:
                 t930 = d + pd.Timedelta(hours=9, minutes=30)
                 y930 = t930 - pd.Timedelta(days=1)
-                rain = dh.loc[(dh['Time'] > y930) & (dh['Time'] <= t930), 'precipitation'].sum()
+                rain_24 = dh.loc[(dh['Time'] > y930) & (dh['Time'] <= t930), 'precipitation'].sum()
                 all_data.append({
                     'Date': d.strftime('%Y-%m-%d'), 'Station': c,
                     'Max_Temp_C': round(dd.loc[dd['Date']==d, 'Tmax'].values[0] + bias, 1),
                     'Min_Temp_C': round(dd.loc[dd['Date']==d, 'Tmin'].values[0] + bias, 1),
-                    'Rainfall_24h_mm': round(rain, 2)
+                    'Rainfall_24h_mm': round(rain_24, 2)
                 })
         p_bar.progress((i + 1) / len(city_list))
     st.session_state['master_df'] = pd.DataFrame(all_data)
