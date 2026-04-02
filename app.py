@@ -165,42 +165,52 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-     # --- Mode 1: IBF Health Risk Level ---
+    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
-        today_max = df_d.iloc[0]['Tmax']
         
-       # --- Mode 1: IBF Health Monitoring (Bro ပေးထားတဲ့ Version) ---
-    elif mode_index == 1:
-        st.subheader(T["ibf_header"])
-        today_max = df_d.iloc[0]['Tmax']
-        
-        # Risk Logic
-        if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000" # အနီ
-        elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
-        elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00" # အဝါ
-        else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
+        # ဒေတာရှိမရှိ အရင်စစ်ဆေးပါ
+        if df_d is not None and not df_d.empty:
+            today_max = df_d.iloc[0]['Tmax']
+            
+            # Risk Logic
+            if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000" # အနီ
+            elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
+            elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00" # အဝါ
+            else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
 
-        # Risk Indicator UI
-        st.markdown(f"""
-            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
-                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
-                <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
-            </div>
-        """, unsafe_allow_html=True)
+            # Risk Indicator UI
+            st.markdown(f"""
+                <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                    <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                    <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
+                </div>
+            """, unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
-        with col2:
-            st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
+            with col2:
+                st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
 
-        # Graph with Threshold Lines
-        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
-        for val, line_col, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
-            fig_ibf.add_hline(y=val, line_dash="dash", line_color=line_col, annotation_text=f"{label} ({val}°C)")
-        
-        st.plotly_chart(fig_ibf, use_container_width=True)
+            # Graph with Threshold Lines
+            fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title="၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်")
+            
+            # Threshold Lines သတ်မှတ်ချက်များ
+            thresholds = [
+                (42, "maroon", "Extreme"), 
+                (40, "red", "High"), 
+                (38, "orange", "Mod")
+            ]
+            
+            for val, line_col, label in thresholds:
+                fig_ibf.add_hline(y=val, line_dash="dash", line_color=line_col, 
+                                 annotation_text=f"{label} ({val}°C)", 
+                                 annotation_position="top left")
+            
+            st.plotly_chart(fig_ibf, use_container_width=True)
+        else:
+            st.error("ဒေတာ ဆွဲယူ၍မရနိုင်ပါ။")
 
     elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
