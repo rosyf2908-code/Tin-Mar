@@ -53,8 +53,8 @@ LANG_DATA = {
         "title": "DMH AI Weather System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
-        "modes": ["16-Day Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
-        "dmh_alert": "📢 Tip: Follow DMH news updates.",
+        "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
+        "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
         "storm_note": "📝 Note: Beware of lightning if > 60%.",
         "ibf_header": "🏥 Health Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
@@ -256,7 +256,7 @@ if 'master_df' in st.session_state:
     st.dataframe(final_df, use_container_width=True)
     st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
- # Data Description Box
+    # Data Description Box
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
