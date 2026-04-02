@@ -150,7 +150,7 @@ if df_h is not None and df_d is not None:
 
         # 4. Visibility
         st.subheader(T["charts"][3])
-        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
+        st.plotly_chart(px.line(df_h, x='Time', y='Visibility', color_discrete_sequence=['gray']), use_container_width=True)
         # 5. Humidity
         st.subheader(T["charts"][4])
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
