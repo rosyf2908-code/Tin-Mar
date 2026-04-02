@@ -152,7 +152,7 @@ if df_h is not None and df_d is not None:
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
         # 5. Humidity
         st.subheader(T["charts"][4])
-        st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['blue']), use_container_width=True)
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
         # 6. Cloud
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightblue']), use_container_width=True)
