@@ -159,7 +159,7 @@ if df_h is not None and df_d is not None:
         # 7. Storm
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['#e67e22']), use_container_width=True)
 
     # --- Mode 1: IBF Health Risk Level ---
     elif mode_index == 1:
