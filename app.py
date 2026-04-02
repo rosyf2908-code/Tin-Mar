@@ -1,5 +1,5 @@
 import streamlit as st
-import pd as pd
+import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -85,7 +85,6 @@ T = LANG_DATA[lang]
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 
-# အရေးကြီးသောအပိုင်း - စာသားနဲ့ မစစ်ဘဲ Index (0, 1, 2) နဲ့ စစ်ဖို့ ပြင်လိုက်ပါပြီ
 view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
 mode_index = T["modes"].index(view_mode_choice)
 
@@ -129,40 +128,32 @@ if df_h is not None:
     
     st.warning(T["dmh_alert"])
 
-    # ဂရပ်များအားလုံး ပြသရန် Logic (Index ပေါ်အခြေခံထားသည်)
     if mode_index == 0: 
-        # ၁။ အပူချိန် ဂရပ်
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
-        # ၂။ မိုးရေချိန် ဂရပ်
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
         
-        # ၃။ လေတိုက်နှုန်း ဂရပ်
         st.subheader(T["charts"][2])
         fig_wind = px.line(df_h, x='Time', y='Wind', title="Wind Speed (mph)")
         fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='markers', name='Direction', hovertext=df_h['WindDir']))
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        # ၄။ အဝေးမြင်တာ ဂရပ်
         st.subheader(T["charts"][3])
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['purple']), use_container_width=True)
 
-        # ၅။ စိုထိုင်းဆ ဂရပ်
         st.subheader(T["charts"][4])
         st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['teal']), use_container_width=True)
 
-        # ၆။ တိမ်ဖုံးမှု ဂရပ်
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['gray']), use_container_width=True)
         
-        # ၇။ မိုးတိမ်တောင် ဂရပ်
         st.error(T["storm_note"])
         st.subheader(T["charts"][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    elif mode_index == 1: # Heatwave Monitoring
+    elif mode_index == 1:
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
@@ -172,7 +163,7 @@ if df_h is not None:
         st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
-    elif mode_index == 2: # Climate Change
+    elif mode_index == 2:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
@@ -209,29 +200,3 @@ if 'master_df' in st.session_state:
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
     st.download_button(f"📥 Download {sel_date} Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv", "text/csv")
-    
-    st.markdown("---")
-    st.markdown("""
-    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
-        <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
-        <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
-            <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Max Temp)</li>
-            <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
-            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
-        </ul>
-        <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-            *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- ၈။ Footer Section ---
-st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
-    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (ECMWF, GFS, ICON, JMA models).</p>
-    <p><b>Rainfall Cycle:</b> 24-hour total from 09:30 AM (Yesterday) to 09:30 AM (Today).</p>
-    <p><b>Heatwave Analysis:</b> Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
-    <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
-</div>
-""", unsafe_allow_html=True)
