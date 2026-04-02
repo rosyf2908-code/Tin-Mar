@@ -170,6 +170,11 @@ if df_h is not None:
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
         
+       # --- Mode 1: IBF Health Monitoring (Bro ပေးထားတဲ့ Version) ---
+    elif mode_index == 1:
+        st.subheader(T["ibf_header"])
+        today_max = df_d.iloc[0]['Tmax']
+        
         # Risk Logic
         if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000" # အနီ
         elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
@@ -189,10 +194,13 @@ if df_h is not None:
             st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
         with col2:
             st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
+
+        # Graph with Threshold Lines
         fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
-        for val, color, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
-            fig_ibf.add_hline(y=val, line_dash="dash", line_color=color, annotation_text=f"{label} ({val}°C)")
-        st.plotly_chart(fig_ibf, use_container_width=True))
+        for val, line_col, label in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
+            fig_ibf.add_hline(y=val, line_dash="dash", line_color=line_col, annotation_text=f"{label} ({val}°C)")
+        
+        st.plotly_chart(fig_ibf, use_container_width=True)
 
     elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
