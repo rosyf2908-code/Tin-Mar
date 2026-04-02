@@ -130,37 +130,49 @@ if df_h is not None and df_d is not None:
     # --- Mode 0: ၁၆ ရက်စာ ဂရပ်အားလုံး (၁ မှ ၇ ထိ) ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        # 1. Temp
+        # 1. Temperature
         st.subheader(T["charts"][0])
-        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
-        # 2. Rain
+        fig1 = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'})
+        fig1.update_layout(yaxis_title=T["y_labels"][0])
+        st.plotly_chart(fig1, use_container_width=True)
+
+        # 2. Rainfall
         st.subheader(T["charts"][1])
-        st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
-        # 3. Wind
-        fig_wind = go.Figure()
-        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='lines', name='Wind Speed', line=dict(color='blue', width=1)))
-        df_arrow = df_h.iloc[::6, :] 
-        fig_wind.add_trace(go.Scatter(
-            x=df_arrow['Time'], y=df_arrow['Wind'], mode='markers',
-            marker=dict(symbol='arrow', size=15, angle=df_arrow['WindDir'], color='darkgreen', line=dict(width=1, color='white')),
-            name='Wind Direction'
-        ))
-        fig_wind.update_layout(title=T["charts"][2], yaxis_title="mph")
-        st.plotly_chart(fig_wind, use_container_width=True)
+        fig2 = px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue'])
+        fig2.update_layout(yaxis_title=T["y_labels"][1])
+        st.plotly_chart(fig2, use_container_width=True)
+
+        # 3. Wind Speed
+        st.subheader(T["charts"][2])
+        fig3 = px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['green'])
+        fig3.update_layout(yaxis_title=T["y_labels"][2])
+        st.plotly_chart(fig3, use_container_width=True)
 
         # 4. Visibility
         st.subheader(T["charts"][3])
-        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(yaxis_title=T["y_labels"][3])
+        st.plotly_chart(fig4, use_container_width=True)
+
         # 5. Humidity
         st.subheader(T["charts"][4])
-        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
-        # 6. Cloud
+        fig5 = px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
+        fig5.update_layout(yaxis_title=T["y_labels"][4])
+        st.plotly_chart(fig5, use_container_width=True)
+
+        # 6. Cloud Cover
         st.subheader(T["charts"][5])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightblue']), use_container_width=True)
-        # 7. Storm
+        fig6 = px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgray'])
+        fig6.update_layout(yaxis_title=T["y_labels"][5])
+        st.plotly_chart(fig6, use_container_width=True)
+
+        # 7. Thunderstorm Prob
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Storm', title=T["charts"][6], color_discrete_sequence=['#e67e22']), use_container_width=True)
+        fig7 = px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange'])
+        fig7.update_layout(yaxis_title=T["y_labels"][6])
+        st.plotly_chart(fig7, use_container_width=True)
+        
 
     # --- Mode 1: IBF Health Risk Level ---
     elif mode_index == 1:
