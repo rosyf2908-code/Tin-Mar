@@ -174,10 +174,43 @@ if df_h is not None and df_d is not None:
         fig2.update_layout(yaxis_title="မိုးရေချိန် (mm)" if lang == "မြန်မာ" else "Rain (mm)")
         st.plotly_chart(fig2, use_container_width=True)
 
-        # 3. Wind Speed
+       ဟုတ်ကဲ့ Bro၊ တောင်းပန်ပါတယ်ဗျာ။ လေတိုက်နှုန်းဂရပ်မှာ လေတိုက်ရာအရပ် (Direction) ကို မြားခေါင်းလေးတွေနဲ့ ပြဖို့ ကျန်သွားတာ သတိထားမိလိုက်ပါတယ်။
+
+အခု Code မှာ plotly ရဲ့ Scatter mode ကိုသုံးပြီး လေတိုက်နှုန်း Line ပေါ်မှာပဲ လေတိုက်ရာအရပ်ကိုညွှန်ပြတဲ့ Arrow (Marker) လေးတွေ ထည့်ပေးလိုက်ပါတယ်။ လေတိုက်နှုန်းများရင် မြားလေးတွေက အပေါ်ကို ရောက်နေမှာဖြစ်ပြီး လေတိုက်တဲ့ဘက်ကို မြားခေါင်းလှည့်နေမှာပါ။
+
+အောက်က Code အပိုင်းအစကို Graph နံပါတ် ၃ နေရာမှာ အစားထိုးလိုက်ပါ-
+
+Python
+        # 3. Wind Speed & Direction
         st.subheader(T["charts"][2])
-        fig3 = px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['green'])
-        fig3.update_layout(yaxis_title="လေတိုက်နှုန်း (mph)" if lang == "မြန်မာ" else "Wind (mph)")
+        
+        # Wind Speed Line
+        fig3 = go.Figure()
+        fig3.add_trace(go.Scatter(
+            x=df_h['Time'], y=df_h['Wind'],
+            mode='lines',
+            name='Wind Speed',
+            line=dict(color='green', width=2)
+        ))
+        
+        # Wind Direction Arrows (Markers) - ၆ နာရီခြားတစ်ခါ မြားပြပါမည် (မရှုပ်အောင်)
+        df_arrows = df_h.iloc[::6] 
+        fig3.add_trace(go.Scatter(
+            x=df_arrows['Time'],
+            y=df_arrows['Wind'],
+            mode='markers',
+            name='Direction',
+            marker=dict(
+                symbol='triangle-up',
+                size=12,
+                angle=df_arrows['WindDir'], # လေတိုက်ရာအရပ်အတိုင်း မြားလှည့်မည်
+                color='darkgreen'
+            ),
+            hovertemplate="Direction: %{marker.angle}°"
+        ))
+        
+        y_wind_title = "လေတိုက်နှုန်း (mph)" if lang == "မြန်မာ" else "Wind Speed (mph)"
+        fig3.update_layout(yaxis_title=y_wind_title, showlegend=False)
         st.plotly_chart(fig3, use_container_width=True)
 
         # 4. Visibility
