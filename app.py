@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import requests
 import os
 from datetime import datetime
@@ -51,7 +52,12 @@ LANG_DATA = {
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
         "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
-        "recom_list": ["Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."]
+        "recom_list": [
+            "Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", 
+            "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", 
+            "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", 
+            "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."
+        ]
     }
 }
 
@@ -84,13 +90,17 @@ view_mode = st.sidebar.radio(T["view_mode_label"], T["modes"])
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,cape,relative_humidity_2m,cloud_cover,visibility&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=15).json()
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(r['hourly']['time']), 
             "Temp": r['hourly']['temperature_2m'],
             "Wind": r['hourly']['windspeed_10m'],
+            "WindDir": r['hourly']['winddirection_10m'],
+            "Humid": r['hourly']['relative_humidity_2m'],
+            "Vis": [v/1000 for v in r['hourly']['visibility']],
+            "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
             "Storm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in r['hourly'].get('cape', [])],
             "precipitation": r['hourly']['precipitation']
         })
@@ -117,14 +127,29 @@ if df_h is not None:
     st.warning(T["dmh_alert"])
 
     if view_mode == T["modes"][0]:
+        # Charts 1 to 7
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
         
-        st.error(T["storm_note"])
+        st.subheader(T["charts"][2])
+        fig_wind = px.line(df_h, x='Time', y='Wind', title="Wind Speed (mph)")
+        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='markers', name='Direction', hovertext=df_h['WindDir']))
+        st.plotly_chart(fig_wind, use_container_width=True)
+
         st.subheader(T["charts"][3])
+        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['purple']), use_container_width=True)
+
+        st.subheader(T["charts"][4])
+        st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['teal']), use_container_width=True)
+
+        st.subheader(T["charts"][5])
+        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['gray']), use_container_width=True)
+        
+        st.error(T["storm_note"])
+        st.subheader(T["charts"][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
     elif view_mode == T["modes"][1]:
@@ -133,19 +158,18 @@ if df_h is not None:
         colors = ['#800000','#d00000','#ffaa00','#008000']
         st.markdown(f"<div style='background-color:{colors[idx]}; padding:30px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
         st.subheader(T['ibf_header'])
-        st.error(f"⚠️ Impact: {T['impact_list'][idx]}")
-        st.success(f"💡 Recommendations: {T['recom_list'][idx]}")
+        st.error(f"⚠️ **Impact:** {T['impact_list'][idx]}")
+        st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
     elif view_mode == T["modes"][2]:
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        # Line 138 Error ပြင်ထားသည့်နေရာ
         fig = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
         st.plotly_chart(fig, use_container_width=True)
 
-# --- ၇။ Export Section ---
+# --- ၇။ Export Section (Data Explanation Box ပါဝင်သည်) ---
 st.markdown("---")
 st.subheader("🚀 Data Export (All Stations)")
 
@@ -168,21 +192,6 @@ if st.button("Generate Downloadable Data"):
         p_bar.progress((i + 1) / len(city_list))
     st.session_state['master_df'] = pd.DataFrame(all_data)
     st.success("✅ ဒေတာများ ပြင်ဆင်ပြီးပါပြီ။")
-    # Download ခလုတ်၏ အောက်တွင် ထည့်ရန်
-                st.markdown("---")
-                st.markdown("""
-                <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
-                    <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
-                    <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
-                        <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Max Temp)</li>
-                        <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
-                        <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
-                    </ul>
-                    <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-                        *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
 
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
@@ -190,12 +199,24 @@ if 'master_df' in st.session_state:
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
     st.download_button(f"📥 Download {sel_date} Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv", "text/csv")
+    
+    # --- ဒေတာများရှင်းလင်းချက် Box (Download အောက်တွင် ထည့်သွင်းထားသည်) ---
+    st.markdown("---")
+    st.markdown("""
+    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
+        <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
+        <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
+            <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Max Temp)</li>
+            <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
+            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
+        </ul>
+        <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
+            *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Footer
-st.markdown("---")
-st.markdown("<div style='text-align: center; color: #666;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
-
-# Footer Section
+# --- ၈။ Footer Section ---
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
