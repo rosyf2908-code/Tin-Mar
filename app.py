@@ -72,8 +72,7 @@ def load_stations():
         df_csv.columns = [c.strip() for c in df_csv.columns]
         s_dict = {str(row.iloc[0]).strip(): {'lat': float(row['Lat']), 'lon': float(row['Lon'])} for _, row in df_csv.iterrows()}
         return s_dict
-    except:
-        return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
+    except: return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
@@ -86,6 +85,7 @@ T = LANG_DATA[lang]
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 
+# View Mode selection
 view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
 mode_index = T["modes"].index(view_mode_choice)
 
@@ -114,8 +114,7 @@ def fetch_weather(city):
             "Rain": r['daily']['precipitation_sum']
         })
         return df_h, df_d
-    except:
-        return None, None
+    except: return None, None
 
 # --- ၆။ Main Page Display ---
 st.title(T["title"])
@@ -123,15 +122,17 @@ st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 df_h, df_d = fetch_weather(selected_city)
 
-if df_h is not None:
+if df_h is not None and df_d is not None:
+    # Apply Bias Correction
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
     df_h['Temp'] += bias
     
     st.warning(T["dmh_alert"])
 
+    # ဂရပ်များပေါ်အောင် ဤနေရာတွင် logic ကို သေချာခွဲထားပါသည်
     if mode_index == 0: 
-        # Detailed Analysis Mode
+        # Detailed Graphs
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
         
@@ -157,7 +158,7 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
     elif mode_index == 1:
-        # IBF Health Mode
+        # IBF Health
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
@@ -168,15 +169,15 @@ if df_h is not None:
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
     elif mode_index == 2:
-        # Climate Projection Mode
+        # Climate Projection
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        fig = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
-        st.plotly_chart(fig, use_container_width=True)
+        fig_clm = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
+        st.plotly_chart(fig_clm, use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat by the end of the century.")
 
-# --- ၇။ Export Section ---
+# --- ၇။ Export Section (Always at the bottom) ---
 st.markdown("---")
 st.subheader("🚀 Data Export (All Stations)")
 
@@ -216,11 +217,9 @@ if 'master_df' in st.session_state:
                 <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
                 <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
             </ul>
-            <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-                *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-            </p>
         </div>
         """, unsafe_allow_html=True)
+
 
 # Footer Section
 st.markdown("---")
