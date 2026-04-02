@@ -183,7 +183,7 @@ if df_h is not None and df_d is not None:
         fig5.update_layout(yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)")
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
 
-        # 6. Cloud Cover
+        
        # 6. Cloud Cover (6-hourly Max)
         st.subheader(T["charts"][5] + " (6-hourly)")
         
@@ -207,7 +207,6 @@ if df_h is not None and df_d is not None:
             y_storm_label = "မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (6-hr Max %)" if lang == "မြန်မာ" else "6-hr Max Thunderstorm (%)"
             fig7.update_layout(yaxis_title=y_storm_label)
             st.plotly_chart(fig7, use_container_width=True)
-        
        else:
             st.warning("Thunderstorm data is currently unavailable.")
         
