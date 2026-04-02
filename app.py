@@ -255,7 +255,7 @@ if 'master_df' in st.session_state:
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
     st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
-    st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+    
     
     # Data Description Box
     st.markdown("""
