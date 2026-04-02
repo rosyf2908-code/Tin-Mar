@@ -53,12 +53,12 @@ LANG_DATA = {
         "title": "DMH AI Weather System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
-        "modes": ["16-Day Analysis", "Heatwave (IBF)", "Climate Change"],
+        "modes": ["16-Day Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
         "dmh_alert": "📢 Tip: Follow DMH news updates.",
         "storm_note": "📝 Note: Beware of lightning if > 60%.",
         "ibf_header": "🏥 Health Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temp", "🌧️ 2. Rain", "💨 3. Wind", "🔭 4. Vis", "💧 5. Humid", "☁️ 6. Cloud", "⚡ 7. Storm"],
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
         "impact_list": ["Extreme danger!", "High danger!", "Caution!", "Normal."],
         "recom_list": ["Stay indoors.", "Avoid sun.", "Drink water.", "Normal."]
     }
