@@ -158,7 +158,7 @@ if df_h is not None and df_d is not None:
         st.subheader(T["charts"][4])
         fig5 = px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
         fig5.update_layout(yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)")
-        st.plotly_chart(fig5, use_container_width=True)
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
 
         # 6. Cloud Cover
         st.subheader(T["charts"][5])
