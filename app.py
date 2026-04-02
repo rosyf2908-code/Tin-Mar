@@ -16,7 +16,7 @@ now = datetime.now(mm_tz)
 formatted_now = now.strftime('%I:%M %p, %d %b %Y')
 dm_header_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
-# --- ၂။ ဘာသာစကားနှင့် စာသားများ (IBF အချက်အလက်များအပါအဝင်) ---
+# --- ၂။ ဘာသာစကားနှင့် စာသားများ ---
 LANG_DATA = {
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသခန့်မှန်းစနစ်",
@@ -27,7 +27,15 @@ LANG_DATA = {
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
-        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"],
+        "charts": [
+            "🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", 
+            "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", 
+            "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", 
+            "🔭 ၄။ အဝေးမြင်တာ (km)", 
+            "💧 ၅။ စိုထိုင်းဆ (%)", 
+            "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", 
+            "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
+        ],
         "impact_list": [
             "အလွန်စိုးရိမ်ရသော အခြေအနေ! Heatstroke နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", 
             "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", 
@@ -56,7 +64,7 @@ LANG_DATA = {
     }
 }
 
-# --- ၃။ ဒေတာဖတ်ခြင်း Function ---
+# --- ၃။ ဒေတာဖတ်ခြင်း ---
 @st.cache_data
 def load_stations():
     file_path = "Station.csv"
@@ -71,7 +79,7 @@ def load_stations():
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
 
-# --- ၄။ Sidebar (Widget များကို Unique Key များပေးထားပါသည်) ---
+# --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True, key="lang_radio")
 T = LANG_DATA[lang]
@@ -118,43 +126,67 @@ if df_h is not None and df_d is not None:
     df_d['Tmin'] += bias
     df_h['Temp'] += bias
     
+    # --- Mode 0: ၁၆ ရက်စာ ဂရပ်အားလုံး (၁ မှ ၇ ထိ) ---
     if mode_index == 0:
-        # ၁၆ ရက်စာ အသေးစိတ်
         st.warning(T["dmh_alert"])
+        # 1. Temp
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
+        # 2. Rain
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
+        # 3. Wind
+        st.subheader(T["charts"][2])
+        st.plotly_chart(px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['green']), use_container_width=True)
+        # 4. Visibility
+        st.subheader(T["charts"][3])
+        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
+        # 5. Humidity
+        st.subheader(T["charts"][4])
+        st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['blue']), use_container_width=True)
+        # 6. Cloud
+        st.subheader(T["charts"][5])
+        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgray']), use_container_width=True)
+        # 7. Storm
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
+    # --- Mode 1: IBF Health Risk Level ---
     elif mode_index == 1:
-        # IBF ကျန်းမာရေး
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
-        if today_max >= 40: lvl, color = 0, "#FF0000"
-        elif today_max >= 37: lvl, color = 1, "#FFA500"
-        elif today_max >= 34: lvl, color = 2, "#FFFF00"
-        else: lvl, color = 3, "#008000"
-
-        c1, c2 = st.columns([1, 2])
-        with c1:
-            st.metric("Max Temperature", f"{today_max:.1f} °C")
-            st.markdown(f"<div style='background-color:{color}; padding:10px; border-radius:5px; text-align:center;'><b>{T['risk_levels'][lvl]}</b></div>", unsafe_allow_html=True)
-        with c2:
-            st.error(f"**Impact:** {T['impact_list'][lvl]}")
-            st.success(f"**Recommendation:** {T['recom_list'][lvl]}")
         
-        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
+        # Risk Logic
+        if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000" # အနီ
+        elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
+        elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00" # အဝါ
+        else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
 
+        # Risk Indicator UI
+        st.markdown(f"""
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
+        with col2:
+            st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
+        
+        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title="Temperature Forecast Trend"), use_container_width=True)
+
+    # --- Mode 2: Climate Change ---
     elif mode_index == 2:
-        st.subheader("🌡️ Climate Future Trend (SSP5-8.5)")
+        st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
-        st.plotly_chart(px.line(x=years, y=trend), use_container_width=True)
+        st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
 
-# --- ၇။ Export Section ---
+# --- ၇။ Export & Footer (အရင်အတိုင်း) ---
 st.markdown("---")
 if st.button("🚀 Export All Stations Report"):
     all_data = []
@@ -167,8 +199,7 @@ if st.button("🚀 Export All Stations Report"):
                 y_930 = t_930 - pd.Timedelta(days=1)
                 rain_24h = dh.loc[(dh['Time'] > y_930) & (dh['Time'] <= t_930), 'precipitation'].sum()
                 all_data.append({
-                    'Date': d.strftime('%Y-%m-%d'),
-                    'Station': city,
+                    'Date': d.strftime('%Y-%m-%d'), 'Station': city,
                     'Max_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmax'].values[0] + bias, 1),
                     'Min_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmin'].values[0] + bias, 1),
                     'Rainfall_24h_mm': round(rain_24h, 2)
@@ -178,40 +209,29 @@ if st.button("🚀 Export All Stations Report"):
 
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
-    sel_date = st.selectbox("📅 Report ထုတ်ရန် နေ့စွဲရွေးပါ", sorted(m_df['Date'].unique(), reverse=True))
+    sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
-    
-    st.download_button(
-        label=f"📥 Download {sel_date} Report (CSV)",
-        data=final_df.to_csv(index=False).encode('utf-8-sig'),
-        file_name=f"DMH_Report_{sel_date}.csv",
-        mime='text/csv'
-    )
+    st.download_button(label="📥 Download Report (CSV)", data=final_df.to_csv(index=False).encode('utf-8-sig'), file_name=f"DMH_{sel_date}.csv", mime='text/csv')
 
-    # --- ဒေတာရှင်းလင်းချက် Box ---
-    st.markdown("---")
+    # Data Description Box
     st.markdown("""
-    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
+    <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
         <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
             <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Max Temp)</li>
             <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
-            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
+            <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
         </ul>
-        <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-            *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-        </p>
     </div>
     """, unsafe_allow_html=True)
 
-# --- ၈။ Footer Section ---
+# Footer
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
-    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (ECMWF, GFS, ICON, JMA models).</p>
-    <p><b>Rainfall Cycle:</b> 24-hour total from 09:30 AM (Yesterday) to 09:30 AM (Today).</p>
-    <p><b>Heatwave Analysis:</b> Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
+    <p><b>Forecast Data Source:</b> Open-Meteo API | <b>Rainfall Cycle:</b> 09:30 AM to 09:30 AM</p>
+    <p><b>Heatwave Analysis:</b> IBF Thresholds & WMO Criteria</p>
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
