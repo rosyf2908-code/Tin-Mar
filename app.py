@@ -28,11 +28,11 @@ LANG_DATA = {
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["အလွန်အန္တရာယ်ရှိ", "အန္တရာယ်ရှိ", "သတိပြုရန်", "ပုံမှန်"],
         "charts": [
-            "🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", 
+            "🌡️  ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", 
             "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)", 
             "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", 
             "🔭 ၄။ အဝေးမြင်တာ (km)", 
-            "💧 ၅။ စိုထိုင်းဆ (%)", 
+            "💧  ၅။ စိုထိုင်းဆ (%)", 
             "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", 
             "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
@@ -53,12 +53,12 @@ LANG_DATA = {
         "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
-        "modes": ["16-Day Analysis", "Heatwave Monitoring (IBF)", "Climate Change"],
+        "modes": ["16-Day Detailed Analysis", "Heatwave Monitoring (IBF-Health)", "Climate Change (2100-SSP5-8.5)"],
         "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
-        "storm_note": "📝 Note: High storm risk warning.",
+        "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
-        "risk_levels": ["Extreme Danger", "Danger", "Caution", "Normal"],
-        "charts": ["Temp", "Rain", "Wind", "Visibility", "Humidity", "Cloud", "Storm"],
+        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
+         "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
         "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
         "recom_list": ["Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."]
     }
