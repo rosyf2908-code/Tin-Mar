@@ -115,7 +115,34 @@ def fetch_weather(city):
             "Rain": r['daily']['precipitation_sum']
         })
         return df_h, df_d
-    except: return None, None
+    except: return None, None@st.cache_data(ttl=600)
+def fetch_weather(city):
+    loc = MYANMAR_CITIES[city]
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    try:
+        r = requests.get(url, timeout=15).json()
+        # --- ဒီအပိုင်းမှာ အပိတ်ကွင်းတွေကို သေချာကြည့်ပေးပါ ---
+        df_h = pd.DataFrame({
+            "Time": pd.to_datetime(r['hourly']['time']), 
+            "Temp": r['hourly']['temperature_2m'],
+            "precipitation": r['hourly']['precipitation'],
+            "Wind": r['hourly']['windspeed_10m'],
+            "Vis": [v/1000 for v in r['hourly']['visibility']],
+            "Humid": r['hourly']['relative_humidity_2m'],
+            "Cloud_Oktas": [round((c/100)*8) for c in r['hourly']['cloud_cover']],
+            "Thunderstorm": [min(round((c/3500)*100), 100) if (c is not None and c >= 0) else 0 for c in r['hourly'].get('cape', [])]
+        }) # <--- ဒီမှာ DataFrame အပိတ်ကွင်း ပါရပါမယ်
+        
+        df_d = pd.DataFrame({
+            "Date": pd.to_datetime(r['daily']['time']), 
+            "Tmax": r['daily']['temperature_2m_max'],
+            "Tmin": r['daily']['temperature_2m_min'], 
+            "Rain": r['daily']['precipitation_sum']
+        })
+        return df_h, df_d
+    except Exception as e:
+        st.error(f"Error fetching data: {e}")
+        return None, None
 
 # --- ၆။ Main Page Display ---
 st.title(T["title"])
