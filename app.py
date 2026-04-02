@@ -155,7 +155,7 @@ if df_h is not None and df_d is not None:
         st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['blue']), use_container_width=True)
         # 6. Cloud
         st.subheader(T["charts"][5])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgray']), use_container_width=True)
+        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightblue']), use_container_width=True)
         # 7. Storm
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
