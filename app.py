@@ -136,6 +136,19 @@ if df_h is not None:
         fig3.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen')))
         st.plotly_chart(fig3, use_container_width=True)
 
+        # 4. Visibility
+        st.subheader(T["charts"][3])
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Vis (km)")
+        st.plotly_chart(fig4, use_container_width=True)
+
+        # 5. Humidity
+        st.subheader(T["charts"][4])
+        fig5 = px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
+        fig5.update_layout(yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)")
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', title=T["charts"][4]), use_container_width=True)
+
+        
         st.subheader(T["charts"][5] + " (6-hourly)")
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
         
