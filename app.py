@@ -35,10 +35,10 @@ LANG_DATA = {
             "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
         ],
         "recom_list": [
-            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။", 
-            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။", 
-            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။", 
-            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။", 
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။", 
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။", 
+            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို စောင့်ကြည့်ပါ။"
         ]
     },
     "English": {
@@ -50,14 +50,9 @@ LANG_DATA = {
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Sector Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm)", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
-        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
-        "recom_list": [
-            "Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", 
-            "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", 
-            "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", 
-            "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."
-        ]
+        "charts": ["🌡️ 1. Temp(°C)", "🌧️ 2. Rain(mm)", "💨 3. Wind (mph)", "🔭 4. Vis (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud (Oktas)", "⚡ 7. Storm Prob (%)"],
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure issues.", "Normal conditions."],
+        "recom_list": ["Stay indoors.", "Avoid peak sun.", "Drink water.", "Standard precautions."]
     }
 }
 
@@ -77,18 +72,16 @@ def load_stations():
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
 
-# --- ၄။ Sidebar Controls ---
+# --- ၄။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
-
 bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0, step=0.1)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
-
 view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
 mode_index = T["modes"].index(view_mode_choice)
 
-# --- ၅။ Weather API Logic ---
+# --- ၅။ Weather API ---
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
@@ -115,7 +108,7 @@ def fetch_weather(city):
         return df_h, df_d
     except: return None, None
 
-# --- ၆။ Main Page Display ---
+# --- ၆။ Main Page Logic ---
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
@@ -128,51 +121,35 @@ if df_h is not None and df_d is not None:
     
     st.warning(T["dmh_alert"])
 
-    if mode_index == 0: 
-        # Detailed Graphs
+    if mode_index == 0:
+        # Mode 1: Detailed
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'}), use_container_width=True)
-        
         st.subheader(T["charts"][1])
-        st.plotly_chart(px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue']), use_container_width=True)
-        
+        st.plotly_chart(px.bar(df_d, x='Date', y='Rain'), use_container_width=True)
         st.subheader(T["charts"][2])
-        fig_wind = px.line(df_h, x='Time', y='Wind', title="Wind Speed (mph)")
-        fig_wind.add_trace(go.Scatter(x=df_h['Time'], y=df_h['Wind'], mode='markers', name='Direction', hovertext=df_h['WindDir']))
-        st.plotly_chart(fig_wind, use_container_width=True)
-
-        st.subheader(T["charts"][3])
-        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['purple']), use_container_width=True)
-
-        st.subheader(T["charts"][4])
-        st.plotly_chart(px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['teal']), use_container_width=True)
-
-        st.subheader(T["charts"][5])
-        st.plotly_chart(px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['gray']), use_container_width=True)
-        
-        st.error(T["storm_note"])
+        st.plotly_chart(px.line(df_h, x='Time', y='Wind'), use_container_width=True)
         st.subheader(T["charts"][6])
         st.plotly_chart(px.bar(df_h, x='Time', y='Storm', color_discrete_sequence=['orange']), use_container_width=True)
 
     elif mode_index == 1:
-        # IBF Health
+        # Mode 2: IBF Health
         max_t = df_d['Tmax'].max()
         idx = 0 if max_t >= 42 else 1 if max_t >= 40 else 2 if max_t >= 38 else 3
         colors = ['#800000','#d00000','#ffaa00','#008000']
         st.markdown(f"<div style='background-color:{colors[idx]}; padding:30px; border-radius:15px; text-align:center;'><h1 style='color:white;'>{T['risk_levels'][idx]}: {max_t:.1f} °C</h1></div>", unsafe_allow_html=True)
-        st.subheader(T['ibf_header'])
         st.error(f"⚠️ **Impact:** {T['impact_list'][idx]}")
         st.success(f"💡 **Recommendations:** {T['recom_list'][idx]}")
         st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
 
     elif mode_index == 2:
-        # Climate Projection
+        # Mode 3: Climate Change
         st.subheader("🌡️ Climate Projection (2026-2100)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         fig_clm = px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'})
         st.plotly_chart(fig_clm, use_container_width=True)
-        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+        st.warning("⚠️ SSP 5-8.5 Scenario: Projected extreme heat increase.")
 
 # --- ၇။ Export Section ---
 st.markdown("---")
@@ -196,29 +173,16 @@ if st.button("Generate Downloadable Data"):
                 })
         p_bar.progress((i + 1) / len(city_list))
     st.session_state['master_df'] = pd.DataFrame(all_data)
-    st.success("✅ ဒေတာများ ပြင်ဆင်ပြီးပါပြီ။")
+    st.success("✅ Data Prepared.")
 
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
-    sel_date = st.selectbox("📅 Download ပြုလုပ်လိုသည့် နေ့စွဲကိုရွေးပါ", sorted(m_df['Date'].unique()))
-    final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
-    st.dataframe(final_df, use_container_width=True)
-    st.download_button(f"📥 Download {sel_date} Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv", "text/csv")
-    
-    st.markdown("---")
-    st.markdown("""
-        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff;'>
-            <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
-            <ul style='list-style-type: none; padding-left: 0; line-height: 1.8;'>
-                <li><b>၁။ အမြင့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အမြင့်ဆုံးအပူချိန် (Max Temp)</li>
-                <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
-                <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
-            </ul>
-            <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-                *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+    if not m_df.empty:
+        sel_date = st.selectbox("📅 Select Date to Download", sorted(m_df['Date'].unique()))
+        final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+        st.dataframe(final_df, use_container_width=True)
+        st.download_button(f"📥 Download {sel_date} CSV", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
+
 
 # Footer Section
 st.markdown("---")
