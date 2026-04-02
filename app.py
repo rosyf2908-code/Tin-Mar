@@ -130,47 +130,47 @@ if df_h is not None and df_d is not None:
     # --- Mode 0: ၁၆ ရက်စာ ဂရပ်အားလုံး (၁ မှ ၇ ထိ) ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        # 1. Temperature
+       # 1. Temperature
         st.subheader(T["charts"][0])
         fig1 = px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True, color_discrete_map={'Tmax':'red','Tmin':'blue'})
-        fig1.update_layout(yaxis_title=T["y_labels"][0])
+        fig1.update_layout(yaxis_title="အပူချိန် (°C)" if lang == "မြန်မာ" else "Temp (°C)")
         st.plotly_chart(fig1, use_container_width=True)
 
         # 2. Rainfall
         st.subheader(T["charts"][1])
         fig2 = px.bar(df_d, x='Date', y='Rain', color_discrete_sequence=['skyblue'])
-        fig2.update_layout(yaxis_title=T["y_labels"][1])
+        fig2.update_layout(yaxis_title="မိုးရေချိန် (mm)" if lang == "မြန်မာ" else "Rain (mm)")
         st.plotly_chart(fig2, use_container_width=True)
 
         # 3. Wind Speed
         st.subheader(T["charts"][2])
         fig3 = px.line(df_h, x='Time', y='Wind', color_discrete_sequence=['green'])
-        fig3.update_layout(yaxis_title=T["y_labels"][2])
+        fig3.update_layout(yaxis_title="လေတိုက်နှုန်း (mph)" if lang == "မြန်မာ" else "Wind (mph)")
         st.plotly_chart(fig3, use_container_width=True)
 
         # 4. Visibility
         st.subheader(T["charts"][3])
         fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
-        fig4.update_layout(yaxis_title=T["y_labels"][3])
+        fig4.update_layout(yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Vis (km)")
         st.plotly_chart(fig4, use_container_width=True)
 
         # 5. Humidity
         st.subheader(T["charts"][4])
         fig5 = px.line(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
-        fig5.update_layout(yaxis_title=T["y_labels"][4])
+        fig5.update_layout(yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)")
         st.plotly_chart(fig5, use_container_width=True)
 
         # 6. Cloud Cover
         st.subheader(T["charts"][5])
         fig6 = px.bar(df_h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgray'])
-        fig6.update_layout(yaxis_title=T["y_labels"][5])
+        fig6.update_layout(yaxis_title="တိမ်ဖုံးမှု (Oktas)" if lang == "မြန်မာ" else "Cloud (Oktas)")
         st.plotly_chart(fig6, use_container_width=True)
 
         # 7. Thunderstorm Prob
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
         fig7 = px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange'])
-        fig7.update_layout(yaxis_title=T["y_labels"][6])
+        fig7.update_layout(yaxis_title="မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (%)" if lang == "မြန်မာ" else "Thunderstorm Prob (%)")
         st.plotly_chart(fig7, use_container_width=True)
         
 
