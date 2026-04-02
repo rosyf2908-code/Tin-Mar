@@ -243,12 +243,13 @@ if 'master_df' in st.session_state:
          </div>
          """, unsafe_allow_html=True)
 
-# Footer
+# Footer Section
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
-    <p><b>Forecast Data Source:</b> Open-Meteo API | <b>Rainfall Cycle:</b> 09:30 AM to 09:30 AM</p>
-    <p><b>Heatwave Analysis:</b> IBF Thresholds & WMO Criteria</p>
+    <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (ECMWF, GFS, ICON, JMA models).</p>
+    <p><b>Rainfall Cycle:</b> 24-hour total from 09:30 AM (Yesterday) to 09:30 AM (Today).</p>
+    <p><b>Heatwave Analysis:</b> Impact-Based Forecasting (IBF) thresholds and WMO criteria.</p>
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
