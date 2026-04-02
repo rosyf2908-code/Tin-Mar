@@ -208,13 +208,7 @@ if df_h is not None and df_d is not None:
             fig7.update_layout(yaxis_title=y_storm_label)
             st.plotly_chart(fig7, use_container_width=True)
         
-        # Column ရှိမရှိ စစ်ဆေးပြီးမှ ဂရပ်ဆွဲပါ
-        if 'Thunderstorm' in df_h.columns:
-            fig7 = px.bar(df_h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange'])
-            y_title = "မိုးတိမ်တောင်ဖြစ်နိုင်ခြေ (%)" if lang == "မြန်မာ" else "Thunderstorm Prob (%)"
-            fig7.update_layout(yaxis_title=y_title)
-            st.plotly_chart(fig7, use_container_width=True)
-        else:
+       else:
             st.warning("Thunderstorm data is currently unavailable.")
         
 
