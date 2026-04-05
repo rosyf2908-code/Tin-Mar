@@ -121,6 +121,7 @@ st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 with st.spinner('Data များကို ရယူနေပါသည်...'):
     df_h, df_d = fetch_weather(selected_city)
 
+# --- Logic စစ်ဆေးခြင်း ---
 if df_h is not None:
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
@@ -189,6 +190,7 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
         st.warning("⚠️ SSP 5-8.5 Scenario အရ အပူချိန်နှင့် မိုးလေဝသ ပြောင်းလဲမှုများကို သတိပြုရန်။")
 
+    # --- Export & Download (If data is present) ---
     st.markdown("---")
     if st.button("🚀 Export All Stations Report"):
         all_data = []
@@ -216,6 +218,7 @@ if df_h is not None:
         st.dataframe(final_df, use_container_width=True)
         st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
+    # Data Description Box
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
@@ -231,8 +234,10 @@ if df_h is not None:
     """, unsafe_allow_html=True)
 
 else:
+    # API data မရခဲ့ရင် ပြမည့် Error Message (Indentation is now aligned with 'if df_h')
     st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
+# Footer (Always Visible)
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
