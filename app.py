@@ -119,12 +119,31 @@ st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 df_h, df_d = fetch_weather(selected_city)
-if df_h is not None and not df_h.empty:
-    # လက်ရှိရှိနေတဲ့ Chart code များကို ဒီထဲမှာ ထည့်ပါ
-    # ...
-else:
-    st.warning("⚠️ အချက်အလက်များကို ဆွဲယူနေဆဲဖြစ်သည် သို့မဟုတ် ယခုအချိန်တွင် API ချိတ်ဆက်မှု မရနိုင်သေးပါ။ ခဏအကြာတွင် Refresh ပြုလုပ်ပေးပါ။")
+# --- ၄။ Sidebar & UI အပိုင်း ---
+df_h, df_d = fetch_weather(selected_city)
 
+if df_h is not None:  # Line 122 (ဒီအောက်က line အားလုံး Tab ခြားရပါမယ်)
+    df_h['Temp'] += bias
+    df_d['Tmax'] += bias
+    df_d['Tmin'] += bias
+
+    if mode_index == 0:
+        st.warning(T["dmh_alert"])
+        # ... (Chart code များ)
+        
+    elif mode_index == 1:  # ဒါက if df_h is not None ရဲ့ အထဲမှာ ရှိရပါမယ်
+        st.subheader(T["ibf_header"])
+        if df_d is not None and not df_d.empty:
+            # ... (IBF code များ)
+        else:
+            st.error("ဒေတာ ဆွဲယူ၍မရနိုင်ပါ။")
+
+    elif mode_index == 2:  # ဒါကလည်း if df_h is not None ရဲ့ အထဲမှာ ရှိရပါမယ်
+        st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
+        # ... (Climate code များ)
+
+else:  # Line 125 ဝန်းကျင် (API ကနေ data မလာခဲ့ရင်)
+    st.error("⚠️ မိုးလေဝသ အချက်အလက်များ ရယူ၍မရနိုင်ပါ။ အင်တာနက်ချိတ်ဆက်မှုကို စစ်ဆေးပေးပါ။")
 if df_h is not None:
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
