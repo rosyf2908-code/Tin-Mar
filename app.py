@@ -74,7 +74,7 @@ def load_stations():
         return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
 MYANMAR_CITIES = load_stations()
-city_list = sorted(list(MYANMAR_CITIES.keys())) # Export အတွက် ဒီ Variable က အရေးကြီးပါတယ်
+city_list = sorted(list(MYANMAR_CITIES.keys()))
 
 @st.cache_data(ttl=600)
 def fetch_weather(city):
@@ -82,7 +82,7 @@ def fetch_weather(city):
     loc = MYANMAR_CITIES[city]
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     
-    for _ in range(3): # API Timeout ဖြစ်ရင် ၃ ကြိမ်အထိ ထပ်ကျိုးစားမယ်
+    for _ in range(3):
         try:
             r = requests.get(url, timeout=15).json()
             df_h = pd.DataFrame({
@@ -118,21 +118,16 @@ mode_index = T["modes"].index(view_mode_choice)
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
-# API မှ ဒေတာရယူခြင်း
 with st.spinner('Data များကို ရယူနေပါသည်...'):
     df_h, df_d = fetch_weather(selected_city)
 
-# ဒေတာရှိမှသာ အောက်ပါ Chart များကို ပြသမည်
 if df_h is not None:
-    # Bias Correction ထည့်သွင်းခြင်း
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- Mode 0: ၁၆ ရက်စာ အသေးစိတ် ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
@@ -163,11 +158,9 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
-        
         if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
         elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
         elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
@@ -189,7 +182,6 @@ if df_h is not None:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=col, annotation_text=f"{lab} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    # --- Mode 2: Climate Change ---
     elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
@@ -197,7 +189,6 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
         st.warning("⚠️ SSP 5-8.5 Scenario အရ အပူချိန်နှင့် မိုးလေဝသ ပြောင်းလဲမှုများကို သတိပြုရန်။")
 
-    # --- ၅။ Export & Download Section (if df_h is not None ရဲ့ အောက်မှာပဲ ရှိရပါမယ်) ---
     st.markdown("---")
     if st.button("🚀 Export All Stations Report"):
         all_data = []
@@ -218,14 +209,13 @@ if df_h is not None:
             p_bar.progress((i + 1) / len(city_list))
         st.session_state['master_df'] = pd.DataFrame(all_data)
 
-   if 'master_df' in st.session_state:
+    if 'master_df' in st.session_state:
         m_df = st.session_state['master_df']
         sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
         final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
         st.dataframe(final_df, use_container_width=True)
         st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
-    # --- ၆။ Data Description Box (ဒေတာရှိမှ ပြရန် indentation ကို ညှိထားပါသည်) ---
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
@@ -241,10 +231,8 @@ if df_h is not None:
     """, unsafe_allow_html=True)
 
 else:
-    # API data မရခဲ့ရင် ပြမည့် Error Message
     st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
-# Footer Section
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
@@ -255,4 +243,3 @@ st.markdown(f"""
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
-st.markdown("<br><div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
