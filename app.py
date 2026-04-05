@@ -218,20 +218,14 @@ if df_h is not None:
             p_bar.progress((i + 1) / len(city_list))
         st.session_state['master_df'] = pd.DataFrame(all_data)
 
-    if 'master_df' in st.session_state:
+   if 'master_df' in st.session_state:
         m_df = st.session_state['master_df']
         sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
         final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
         st.dataframe(final_df, use_container_width=True)
         st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
-else:
-    # ဒေတာဆွဲလို့မရရင် ပြမယ့် error (Indentation ကို if df_h နဲ့ တန်းညှိထားပါတယ်)
-    st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
-
-
-
-    # Data Description Box
+    # --- ၆။ Data Description Box (ဒေတာရှိမှ ပြရန် indentation ကို ညှိထားပါသည်) ---
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
@@ -242,9 +236,13 @@ else:
         </ul>
         <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
             *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-         </p>
-         </div>
-         """, unsafe_allow_html=True)
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+else:
+    # API data မရခဲ့ရင် ပြမည့် Error Message
+    st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
 # Footer Section
 st.markdown("---")
