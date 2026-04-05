@@ -28,24 +28,24 @@ LANG_DATA = {
         "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
         "risk_levels": ["Extreme Risk (အလွန်အန္တရာယ်ရှိ)", "High Risk (အန္တရာယ်ရှိ)", "Moderate Risk (သတိပြုရန်)", "Low Risk (ပုံမှန်)"],
         "charts": [
-            "🌡️  ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", 
-            "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ)  ၆ နာရီအတွင်းရွာသွန်းသောပမာဏ", 
-            "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", 
-            "🔭 ၄။ အဝေးမြင်တာ (km)", 
-            "💧  ၅။ စိုထိုင်းဆ (%)", 
-            "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", 
+            "🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)",
+            "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ) ၆ နာရီအတွင်းရွာသွန်းသောပမာဏ",
+            "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်",
+            "🔭 ၄။ အဝေးမြင်တာ (km)",
+            "💧 ၅။ စိုထိုင်းဆ (%)",
+            "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)",
             "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
         "impact_list": [
-            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", 
-            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", 
-            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", 
+            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။",
+            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။",
+            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။",
             "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
         ],
         "recom_list": [
-            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။", 
-            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။", 
-            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။", 
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။",
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။",
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။",
             "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"
         ]
     },
@@ -54,7 +54,7 @@ LANG_DATA = {
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
-        "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
+        "dmh_alert": "📢 Tip: Follow DMH news for the latest weather updates.",
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
@@ -86,7 +86,7 @@ def fetch_weather(city):
         try:
             r = requests.get(url, timeout=15).json()
             df_h = pd.DataFrame({
-                "Time": pd.to_datetime(r['hourly']['time']), 
+                "Time": pd.to_datetime(r['hourly']['time']),
                 "Temp": r['hourly']['temperature_2m'],
                 "precipitation": r['hourly']['precipitation'],
                 "Wind": r['hourly']['windspeed_10m'],
@@ -97,7 +97,7 @@ def fetch_weather(city):
                 "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in r['hourly'].get('cape', [])]
             })
             df_d = pd.DataFrame({
-                "Date": pd.to_datetime(r['daily']['time']), 
+                "Date": pd.to_datetime(r['daily']['time']),
                 "Tmax": r['daily']['temperature_2m_max'],
                 "Tmin": r['daily']['temperature_2m_min']
             })
@@ -132,7 +132,7 @@ if df_h is not None:
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
         df_6h = df_h.set_index('Time').resample('6h').agg({
-            'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
+            'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean',
             'Cloud_Oktas': 'max', 'Thunderstorm': 'max', 'Vis': 'mean', 'Humid': 'mean'
         }).reset_index()
 
