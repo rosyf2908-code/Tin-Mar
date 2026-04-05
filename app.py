@@ -122,77 +122,82 @@ st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 with st.spinner('Data များကို ရယူနေပါသည်...'):
     df_h, df_d = fetch_weather(selected_city)
 
-# ၁။ ဒေတာရှိမှသာ အောက်ပါ Chart များနှင့် Mode များကို ပြသမည်
+# ဒေတာရှိမှသာ အောက်ပါ Chart များကို ပြသမည်
 if df_h is not None:
-    # Bias Correction
+    # Bias Correction ထည့်သွင်းခြင်း
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- Mode 0: ၁၆ ရက်စာ Forecast ---
+    # --- Mode 0: ၁၆ ရက်စာ အသေးစိတ် ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
         
-        # Chart (1) Temperature
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
-        # 6h Resampling (Chart 2, 3, 6, 7 အတွက်)
         df_6h = df_h.set_index('Time').resample('6h').agg({
             'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
             'Cloud_Oktas': 'max', 'Thunderstorm': 'max', 'Vis': 'mean', 'Humid': 'mean'
         }).reset_index()
 
-        # Chart (2) Rainfall
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['skyblue']), use_container_width=True)
 
-        # Chart (3) Wind
         st.subheader(T["charts"][2])
         fig_wind = go.Figure()
         fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green')))
         fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen')))
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        # Chart (4) Visibility
         st.subheader(T["charts"][3])
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
 
-        # Chart (5) Humidity
         st.subheader(T["charts"][4])
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
 
-        # Chart (6) Cloud
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
         
-        # Chart (7) Thunderstorm
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # --- Mode 1: IBF Health ---
+    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
+        
         if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
         elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
         elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><p>Max Temp: {today_max:.1f} °C</p></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
+            </div>
+        """, unsafe_allow_html=True)
+
         c1, c2 = st.columns(2)
-        with c1: st.info(f"### Impact\n{T['impact_list'][lvl]}")
-        with c2: st.success(f"### Action\n{T['recom_list'][lvl]}")
+        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
+        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+
+        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
+        for val, col, lab in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
+            fig_ibf.add_hline(y=val, line_dash="dash", line_color=col, annotation_text=f"{lab} ({val}°C)")
+        st.plotly_chart(fig_ibf, use_container_width=True)
 
     # --- Mode 2: Climate Change ---
     elif mode_index == 2:
-        st.subheader("Future Climate Projection")
+        st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
+        st.warning("⚠️ SSP 5-8.5 Scenario အရ အပူချိန်နှင့် မိုးလေဝသ ပြောင်းလဲမှုများကို သတိပြုရန်။")
 
-    # --- ၅။ Export & Download Section (Data ရှိမှသာ ပြမည်) ---
+    # --- ၅။ Export & Download Section (if df_h is not None ရဲ့ အောက်မှာပဲ ရှိရပါမယ်) ---
     st.markdown("---")
     if st.button("🚀 Export All Stations Report"):
         all_data = []
@@ -213,7 +218,6 @@ if df_h is not None:
             p_bar.progress((i + 1) / len(city_list))
         st.session_state['master_df'] = pd.DataFrame(all_data)
 
-    # Download Box logic ကို if df_h is not None ရဲ့ အောက်မှာပဲ ထားရပါမယ်
     if 'master_df' in st.session_state:
         m_df = st.session_state['master_df']
         sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
@@ -222,12 +226,10 @@ if df_h is not None:
         st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
 else:
-    # API data မရခဲ့ရင် ပြမယ့် Error Message
-    st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ အင်တာနက်ကို စစ်ဆေးပါ။")
+    # ဒေတာဆွဲလို့မရရင် ပြမယ့် error (Indentation ကို if df_h နဲ့ တန်းညှိထားပါတယ်)
+    st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
-# Footer (အမြဲတမ်းပြမည်)
-st.markdown("---")
-st.markdown("<div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
+
 
     # Data Description Box
     st.markdown("""
