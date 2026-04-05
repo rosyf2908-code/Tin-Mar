@@ -119,6 +119,11 @@ st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 df_h, df_d = fetch_weather(selected_city)
+if df_h is not None and not df_h.empty:
+    # လက်ရှိရှိနေတဲ့ Chart code များကို ဒီထဲမှာ ထည့်ပါ
+    # ...
+else:
+    st.warning("⚠️ အချက်အလက်များကို ဆွဲယူနေဆဲဖြစ်သည် သို့မဟုတ် ယခုအချိန်တွင် API ချိတ်ဆက်မှု မရနိုင်သေးပါ။ ခဏအကြာတွင် Refresh ပြုလုပ်ပေးပါ။")
 
 if df_h is not None:
     df_h['Temp'] += bias
