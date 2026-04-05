@@ -121,16 +121,13 @@ st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 with st.spinner('Data များကို ရယူနေပါသည်...'):
     df_h, df_d = fetch_weather(selected_city)
 
-# ဒေတာရှိမှသာ အောက်ပါ Chart များကို ပြသမည်
 if df_h is not None:
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- Mode 0: ၁၆ ရက်စာ အသေးစိတ် ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
@@ -161,11 +158,9 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
-        
         if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
         elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
         elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
@@ -187,7 +182,6 @@ if df_h is not None:
             fig_ibf.add_hline(y=val, line_dash="dash", line_color=col, annotation_text=f"{lab} ({val}°C)")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
-    # --- Mode 2: Climate Change ---
     elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
@@ -195,7 +189,6 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
         st.warning("⚠️ SSP 5-8.5 Scenario အရ အပူချိန်နှင့် မိုးလေဝသ ပြောင်းလဲမှုများကို သတိပြုရန်။")
 
-    # --- ၅။ Export & Download Section ---
     st.markdown("---")
     if st.button("🚀 Export All Stations Report"):
         all_data = []
@@ -223,7 +216,6 @@ if df_h is not None:
         st.dataframe(final_df, use_container_width=True)
         st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
-    # Data Description Box
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
         <h4 style='color: #007bff; margin-top: 0;'>📝 ဇယားတွင် ပါဝင်သည့် ဒေတာများရှင်းလင်းချက်</h4>
@@ -241,7 +233,6 @@ if df_h is not None:
 else:
     st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
-# Footer Section
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
