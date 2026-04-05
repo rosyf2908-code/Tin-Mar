@@ -195,7 +195,7 @@ if df_h is not None:
         p_bar = st.progress(0)
         for i, city in enumerate(city_list):
             dh, dd = fetch_weather(city)
-            if dh is not None:
+            if dh is not None and dd is not None:
                 for d in dd['Date']:
                     t_930 = d + pd.Timedelta(hours=9, minutes=30)
                     y_930 = t_930 - pd.Timedelta(days=1)
@@ -207,14 +207,21 @@ if df_h is not None:
                         'Rainfall_24h_mm': round(rain_24h, 2)
                     })
             p_bar.progress((i + 1) / len(city_list))
-        st.session_state['master_df'] = pd.DataFrame(all_data)
+        
+        if all_data:
+            st.session_state['master_df'] = pd.DataFrame(all_data)
+            st.success("✅ ဒေတာများ အောင်မြင်စွာ ရယူပြီးပါပြီ။")
+        else:
+            st.error("⚠️ ဒေတာရယူ၍ မရနိုင်ပါ။ Internet Connection စစ်ဆေးပါ။")
 
+    # --- ဇယားပြသခြင်း အပိုင်း (Error Fix) ---
     if 'master_df' in st.session_state:
         m_df = st.session_state['master_df']
-        sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
-        final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
-        st.dataframe(final_df, use_container_width=True)
-        st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
+        if not m_df.empty and 'Date' in m_df.columns:
+            sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
+            final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+            st.dataframe(final_df, use_container_width=True)
+            st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
 
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
@@ -224,21 +231,22 @@ if df_h is not None:
             <li><b>၂။ အနိမ့်ဆုံးအပူချိန်:</b> နေ့တစ်နေ့၏ ဖြစ်ပေါ်နိုင်သော အနိမ့်ဆုံးအပူချိန် (Min Temp)</li>
             <li><b>၃။ မိုးရေချိန် (၂၄ နာရီ):</b> ယခင်နေ့ နံနက် ၀၉:၃၀ နာရီမှ ယနေ့နံနက် ၀၉:၃၀ နာရီအထိ ၂၄ နာရီအတွင်း ရွာသွန်းသော စုစုပေါင်းမိုးရေချိန်</li>
         </ul>
-        <p style='font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px;'>
-            *မှတ်ချက်။ ။ အထက်ပါဒေတာများသည် DMH ၏ စံသတ်မှတ်ချက်များနှင့်အညီ တွက်ချက်ဖော်ပြထားခြင်း ဖြစ်ပါသည်။
-        </p>
     </div>
     """, unsafe_allow_html=True)
 
 else:
     st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
 
+# Footer Section
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; font-size: 0.85em; color: #666; line-height: 1.6;'>
     <p><b>Forecast Data Source (16-Day):</b> Open-Meteo API (ECMWF, GFS, ICON, JMA models).</p>
     <p><b>Rainfall Cycle:</b> 24-hour total from 09:30 AM (Yesterday) to 09:30 AM (Today).</p>
     <p><b>Heatwave Analysis:</b> Based on Impact-Based Forecasting (IBF) thresholds (P90, P95, P99) and WMO criteria.</p>
+    <p><b>Climate Data:</b> IPCC AR6 Assessment Report and CMIP6 Global Climate Models (SSP scenarios).</p>
     <p style='margin-top: 10px; font-weight: bold;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</p>
 </div>
 """, unsafe_allow_html=True)
+st.markdown("<br><div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
+    
