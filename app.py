@@ -118,82 +118,61 @@ mode_index = T["modes"].index(view_mode_choice)
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
-df_h, df_d = fetch_weather(selected_city)
-# --- ၄။ Sidebar & UI အပိုင်း ---
-df_h, df_d = fetch_weather(selected_city)
+# API မှ ဒေတာရယူခြင်း
+with st.spinner('Data များကို ရယူနေပါသည်...'):
+    df_h, df_d = fetch_weather(selected_city)
 
-if df_h is not None:  # Line 122 (ဒီအောက်က line အားလုံး Tab ခြားရပါမယ်)
-    df_h['Temp'] += bias
-    df_d['Tmax'] += bias
-    df_d['Tmin'] += bias
-
-    if mode_index == 0:
-        st.warning(T["dmh_alert"])
-        # ... (Chart code များ)
-        
-    elif mode_index == 1:  # ဒါက if df_h is not None ရဲ့ အထဲမှာ ရှိရပါမယ်
-        st.subheader(T["ibf_header"])
-        if df_d is not None and not df_d.empty:
-            # ... (IBF code များ)
-        else:
-            st.error("ဒေတာ ဆွဲယူ၍မရနိုင်ပါ။")
-
-    elif mode_index == 2:  # ဒါကလည်း if df_h is not None ရဲ့ အထဲမှာ ရှိရပါမယ်
-        st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
-        # ... (Climate code များ)
-
-else:  # Line 125 ဝန်းကျင် (API ကနေ data မလာခဲ့ရင်)
-    st.error("⚠️ မိုးလေဝသ အချက်အလက်များ ရယူ၍မရနိုင်ပါ။ အင်တာနက်ချိတ်ဆက်မှုကို စစ်ဆေးပေးပါ။")
+# ဒေတာရှိမှသာ အောက်ပါ Chart များကို ပြသမည်
 if df_h is not None:
+    # Bias Correction ထည့်သွင်းခြင်း
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
+    # --- Mode 0: ၁၆ ရက်စာ အသေးစိတ် ဆန်းစစ်ချက် ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
-        # Temp Chart
+        
+        # ၁။ အပူချိန် Chart (Daily)
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
-        # Resampling 6h
+        # 6-hourly resampling (Chart ၂၊ ၃၊ ၆၊ ၇ အတွက် ဒေတာစုစည်းမှု)
         df_6h = df_h.set_index('Time').resample('6h').agg({
-            'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
-            'Cloud_Oktas': 'max', 'Thunderstorm': 'max'
+            'precipitation': 'sum', 
+            'Wind': 'mean', 
+            'WindDir': 'mean', 
+            'Cloud_Oktas': 'max', 
+            'Thunderstorm': 'max', 
+            'Vis': 'mean', 
+            'Humid': 'mean'
         }).reset_index()
 
-        # Rainfall
+        # ၂။ မိုးရေချိန် Chart
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['skyblue']), use_container_width=True)
 
-        # Wind
+        # ၃။ လေတိုက်နှုန်းနှင့် လေတိုက်ရာအရပ် Chart
         st.subheader(T["charts"][2])
         fig_wind = go.Figure()
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green')))
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen')))
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green'), name="Wind Speed"))
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', 
+                                    marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='darkgreen'), name="Direction"))
         st.plotly_chart(fig_wind, use_container_width=True)
 
-       # --- Visibility (အပေါ်) ---
+        # ၄။ အဝေးမြင်တာ Chart (Visibility)
         st.subheader(T["charts"][3])
-        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
-        fig4.update_layout(
-            yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Vis (km)",
-            xaxis_title="အချိန် (Time)"
-        )
-        st.plotly_chart(fig4, use_container_width=True)
+        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
 
-        # --- Humidity (အောက်) ---
+        # ၅။ စိုထိုင်းဆ Chart (Humidity)
         st.subheader(T["charts"][4])
-        fig5 = px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
-        fig5.update_layout(
-            yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)",
-            xaxis_title="အချိန် (Time)"
-        )
-        st.plotly_chart(fig5, use_container_width=True)
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
 
-        # Cloud & Storm
+        # ၆။ တိမ်ဖုံးမှု Chart
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
         
+        # ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးဖြစ်နိုင်ခြေ Chart
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
@@ -201,86 +180,68 @@ if df_h is not None:
     # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
+        today_max = df_d.iloc[0]['Tmax']
         
-        # ဒေတာရှိမရှိ အရင်စစ်ဆေးပါ
-        if df_d is not None and not df_d.empty:
-            today_max = df_d.iloc[0]['Tmax']
-            
-            # Risk Logic
-            if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000" # အနီ
-            elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
-            elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00" # အဝါ
-            else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
+        if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
+        elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
+        elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
+        else: lvl, color, bg = 3, "white", "#008000"
 
-            # Risk Indicator UI
-            st.markdown(f"""
-                <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
-                    <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
-                    <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
-                </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
+            </div>
+        """, unsafe_allow_html=True)
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
-            with col2:
-                st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
+        c1, c2 = st.columns(2)
+        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
+        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
 
-            # Graph with Threshold Lines
-            fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title="၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်")
-            
-            # Threshold Lines သတ်မှတ်ချက်များ
-            thresholds = [
-                (42, "maroon", "Extreme"), 
-                (40, "red", "High"), 
-                (38, "orange", "Mod")
-            ]
-            
-            for val, line_col, label in thresholds:
-                fig_ibf.add_hline(y=val, line_dash="dash", line_color=line_col, 
-                                 annotation_text=f"{label} ({val}°C)", 
-                                 annotation_position="top left")
-            
-            st.plotly_chart(fig_ibf, use_container_width=True)
-        else:
-            st.error("ဒေတာ ဆွဲယူ၍မရနိုင်ပါ။")
+        fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd')
+        for val, col, lab in [(42, "maroon", "Extreme"), (40, "red", "High"), (38, "orange", "Mod")]:
+            fig_ibf.add_hline(y=val, line_dash="dash", line_color=col, annotation_text=f"{lab} ({val}°C)")
+        st.plotly_chart(fig_ibf, use_container_width=True)
 
+    # --- Mode 2: Climate Change ---
     elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
-        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+        st.warning("⚠️ SSP 5-8.5 Scenario အရ အပူချိန်မြင့်တက်မှုနှင့် မိုးလေဝသပြောင်းလဲမှုများကို သတိပြုရန်။")
 
-# --- ၅။ Export Report ---
-st.markdown("---")
-if st.button("🚀 Export All Stations Report"):
-    all_data = []
-    p_bar = st.progress(0)
-    for i, city in enumerate(city_list):
-        dh, dd = fetch_weather(city)
-        if dh is not None:
-            for d in dd['Date']:
-                t_930 = d + pd.Timedelta(hours=9, minutes=30)
-                y_930 = t_930 - pd.Timedelta(days=1)
-                rain_24h = dh.loc[(dh['Time'] > y_930) & (dh['Time'] <= t_930), 'precipitation'].sum()
-                all_data.append({
-                    'Date': d.strftime('%Y-%m-%d'), 'Station': city,
-                    'Max_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmax'].values[0] + bias, 1),
-                    'Min_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmin'].values[0] + bias, 1),
-                    'Rainfall_24h_mm': round(rain_24h, 2)
-                })
-        p_bar.progress((i + 1) / len(city_list))
-    st.session_state['master_df'] = pd.DataFrame(all_data)
+    # --- ၅။ Export Report ---
+    st.markdown("---")
+    if st.button("🚀 Export All Stations Report"):
+        all_data = []
+        p_bar = st.progress(0)
+        for i, city in enumerate(city_list):
+            dh, dd = fetch_weather(city)
+            if dh is not None:
+                for d in dd['Date']:
+                    t_930 = d + pd.Timedelta(hours=9, minutes=30)
+                    y_930 = t_930 - pd.Timedelta(days=1)
+                    rain_24h = dh.loc[(dh['Time'] > y_930) & (dh['Time'] <= t_930), 'precipitation'].sum()
+                    all_data.append({
+                        'Date': d.strftime('%Y-%m-%d'), 'Station': city,
+                        'Max_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmax'].values[0] + bias, 1),
+                        'Min_Temp_C': round(dd.loc[dd['Date'] == d, 'Tmin'].values[0] + bias, 1),
+                        'Rainfall_24h_mm': round(rain_24h, 2)
+                    })
+            p_bar.progress((i + 1) / len(city_list))
+        st.session_state['master_df'] = pd.DataFrame(all_data)
 
-if 'master_df' in st.session_state:
-    m_df = st.session_state['master_df']
-    sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
-    final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
-    st.dataframe(final_df, use_container_width=True)
-    st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
-    
-    
+    if 'master_df' in st.session_state:
+        m_df = st.session_state['master_df']
+        sel_date = st.selectbox("📅 နေ့စွဲရွေးချယ်ပါ", sorted(m_df['Date'].unique(), reverse=True))
+        final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
+        st.dataframe(final_df, use_container_width=True)
+        st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_{sel_date}.csv", "text/csv")
+
+else:
+    st.error("⚠️ အချက်အလက်များကို ဆွဲယူ၍မရနိုင်ပါ။ Internet Connection ကို စစ်ဆေးပါ။")
+
     # Data Description Box
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
