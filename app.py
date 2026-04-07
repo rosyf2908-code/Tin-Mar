@@ -182,17 +182,45 @@ if df_h is not None:
             else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
 
 
-        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><h3>{today_max:.1f} °C</h3></div>", unsafe_allow_html=True)
-        c1, c2 = st.columns(2)
-        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
-        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
-        st.plotly_chart(px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd'), use_container_width=True)
+        # Risk Indicator UI
+            st.markdown(f"""
+                <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                    <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                    <p style='font-size:1.2em; margin-top:10px;'>ယနေ့ခန့်မှန်းအမြင့်ဆုံးအပူချိန်: <b>{today_max:.1f} °C</b></p>
+                </div>
+            """, unsafe_allow_html=True)
 
-    elif mode_index == 2: # Climate Change
+            col1, col2 = st.columns(2)
+            with col1:
+                st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
+            with col2:
+                st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
+
+            # Graph with Threshold Lines
+            fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title="၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်")
+            
+            # Threshold Lines သတ်မှတ်ချက်များ
+            thresholds = [
+                (42, "maroon", "Extreme"), 
+                (40, "red", "High"), 
+                (38, "orange", "Mod")
+            ]
+            
+            for val, line_col, label in thresholds:
+                fig_ibf.add_hline(y=val, line_dash="dash", line_color=line_col, 
+                                 annotation_text=f"{label} ({val}°C)", 
+                                 annotation_position="top left")
+            
+            st.plotly_chart(fig_ibf, use_container_width=True)
+        else:
+            st.error("ဒေတာ ဆွဲယူ၍မရနိုင်ပါ။")
+             elif mode_index == 2:
         st.subheader("🌡️ Future Climate Projection (SSP5-8.5)")
         years = np.arange(2026, 2101)
         trend = [31 + (y-2026)*0.045 + np.random.normal(0, 0.4) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
+        st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
+
 
     # --- 5. Export Feature ---
     st.markdown("---")
