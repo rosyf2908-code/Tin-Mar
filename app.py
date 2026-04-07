@@ -167,13 +167,20 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    elif mode_index == 1: # IBF Monitoring
+     # --- Mode 1: IBF Health Monitoring ---
+    elif mode_index == 1:
         st.subheader(T["ibf_header"])
-        today_max = df_d.iloc[0]['Tmax']
-        if today_max >= 40: lvl, color, bg = 0, "white", "#FF0000"
-        elif today_max >= 37: lvl, color, bg = 1, "black", "#FFA500"
-        elif today_max >= 34: lvl, color, bg = 2, "black", "#FFFF00"
-        else: lvl, color, bg = 3, "white", "#008000"
+        
+        # ဒေတာရှိမရှိ အရင်စစ်ဆေးပါ
+        if df_d is not None and not df_d.empty:
+            today_max = df_d.iloc[0]['Tmax']
+            
+            # Risk Logic
+            if today_max >= 42: lvl, color, bg = 0, "white", "#FF0000" # အနီ
+            elif today_max >= 40: lvl, color, bg = 1, "black", "#FFA500" # လိမ္မော်
+            elif today_max >= 38: lvl, color, bg = 2, "black", "#FFFF00" # အဝါ
+            else: lvl, color, bg = 3, "white", "#008000" # အစိမ်း
+
 
         st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><h3>{today_max:.1f} °C</h3></div>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
