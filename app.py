@@ -133,16 +133,54 @@ if df_h is not None:
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- MODE 0: Detailed Analysis ---
     if mode_index == 0:
-        st.info(T["dmh_alert"])
-        col1, col2 = st.columns(2)
-        with col1:
-            fig_temp = px.line(df_h, x='Time', y='Temp', title="Temperature Forecast (°C)")
-            st.plotly_chart(fig_temp, use_container_width=True)
-        with col2:
-            fig_rain = px.bar(df_h, x='Time', y='Rain', title="Precipitation (mm)")
-            st.plotly_chart(fig_rain, use_container_width=True)
+        st.warning(T["dmh_alert"])
+        # Temp Chart
+        st.subheader(T["charts"][0])
+        st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
+
+        # Resampling 6h
+        df_6h = df_h.set_index('Time').resample('6h').agg({
+            'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
+            'Cloud_Oktas': 'max', 'Thunderstorm': 'max'
+        }).reset_index()
+
+        # Rainfall
+        st.subheader(T["charts"][1])
+        st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['green']), use_container_width=True)
+
+        # Wind
+        st.subheader(T["charts"][2])
+        fig_wind = go.Figure()
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='darkgreen')))
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
+        st.plotly_chart(fig_wind, use_container_width=True)
+
+       # --- Visibility (အပေါ်) ---
+        st.subheader(T["charts"][3])
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(
+            yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Visibility (km)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig4, use_container_width=True)
+
+        # --- Humidity (အောက်) ---
+        st.subheader(T["charts"][4])
+        fig5 = px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
+        fig5.update_layout(
+            yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig5, use_container_width=True)
+
+        # Cloud & Storm
+        st.subheader(T["charts"][5])
+        st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
+        
+        st.subheader(T["charts"][6])
+        st.error(T["storm_note"])
+        st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
     # --- MODE 1: Heatwave Monitoring (IBF) ---
     elif mode_index == 1:
