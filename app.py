@@ -94,7 +94,7 @@ def fetch_weather(city):
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(res['hourly']['time']), 
             "Temp": res['hourly']['temperature_2m'],
-            "Rain": res['hourly']['precipitation'],
+            "precipitation": res['hourly']['precipitation'],
             "Wind": res['hourly']['windspeed_10m'],
             "WindDir": res['hourly']['winddirection_10m'],
             "Vis": [v/1000 for v in res['hourly']['visibility']],
