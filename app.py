@@ -166,38 +166,50 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # --- Mode 1: IBF Health Monitoring (With HI, WBGT, UTCI) ---
+   # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         
-        # Index Selector
-        idx_choice = st.radio("🌡️ Select Heat Stress Index to Monitor", ["Heat Index", "WBGT", "UTCI"], horizontal=True)
+        # Index Selector (အမြင့်ဆုံးအပူချိန် Bullet အသစ် ထည့်ထားပါတယ်)
+        idx_choice = st.radio(
+            "🌡️ Select Heat Stress Index to Monitor", 
+            ["အမြင့်ဆုံးအပူချိန်", "Heat Index", "WBGT", "UTCI"], 
+            horizontal=True
+        )
         
-        # Get Today's Average values for index calculation display
         t_now = df_h.iloc[0]
+        # Today's values
+        tmax_val = df_d.iloc[0]['Tmax']
         hi_val, wbgt_val, utci_val = t_now['HI'], t_now['WBGT'], t_now['UTCI']
 
-        # Thresholds Setup
-        if idx_choice == "Heat Index": 
+        # Thresholds & Display Logic
+        if idx_choice == "အမြင့်ဆုံးအပူချိန်":
+            val, th = tmax_val, [40, 38, 36] # Temp Thresholds
+            col_name = 'Temp' # Hourly temp column
+            plot_data = 'Temp'
+        elif idx_choice == "Heat Index": 
             val, th = hi_val, [41, 38, 35]
             col_name = 'HI'
+            plot_data = 'HI'
         elif idx_choice == "WBGT": 
             val, th = wbgt_val, [32, 30, 28]
             col_name = 'WBGT'
+            plot_data = 'WBGT'
         else: 
             val, th = utci_val, [38, 32, 26]
             col_name = 'UTCI'
+            plot_data = 'UTCI'
 
-        # Risk Logic
-        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
-        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
-        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
-        else: lvl, color, bg = 3, "white", "#008000"
+        # Risk Logic (Color coding)
+        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000" # Extreme
+        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500" # High
+        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00" # Moderate
+        else: lvl, color, bg = 3, "white", "#008000" # Low
 
         st.markdown(f"""
             <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
                 <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
-                <p style='font-size:1.5em; margin-top:10px;'>Current {idx_choice}: <b>{val:.1f} °C</b></p>
+                <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
             </div>
         """, unsafe_allow_html=True)
 
@@ -205,10 +217,9 @@ if df_h is not None:
         with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
         with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
 
-        # Trend Chart
-        fig_idx = px.line(df_h, x='Time', y=col_name, title=f"16-Day Forecast for {idx_choice}")
-        fig_idx.add_hline(y=th[0], line_dash="dash", line_color="red", annotation_text="Extreme")
-        fig_idx.add_hline(y=th[1], line_dash="dash", line_color="orange", annotation_text="High")
+        # Trend Chart (Hourly trend of selected index)
+        fig_idx = px.line(df_h, x='Time', y=plot_data, title=f"16-Day Hourly Trend for {idx_choice}")
+        fig_idx.add_hline(y=th[0], line_dash="dash", line_color="red", annotation_text="Extreme Threshold")
         st.plotly_chart(fig_idx, use_container_width=True)
 
     # --- Mode 2: Climate Change ---
