@@ -192,11 +192,16 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-   # --- Mode 1: IBF Health Monitoring ---
+  ဟုတ်ကဲ့ပါဗျာ၊ အခုပြင်ဆင်ပေးလိုက်တဲ့ Code မှာ အမြင့်ဆုံးအပူချိန် (Temperature Max) ကို ရွေးချယ်ရင် နဂိုအတိုင်း Bar Chart နဲ့ Threshold မျဉ်းတွေပြပေးမှာဖြစ်ပြီး၊ ကျန်တဲ့ Heat Index, WBGT, UTCI တွေကို ရွေးရင်တော့ Line Chart နဲ့ အသေးစိတ် ပြသပေးသွားမှာ ဖြစ်ပါတယ်။
+
+ဒါ့အပြင် နဂိုက ကျန်ခဲ့တဲ့ အချက်အလက်တွေ (ဥပမာ- Threshold line annotations တွေ) ကိုလည်း ပြန်ဖြည့်စွက်ပေးထားပါတယ်ဗျ။
+
+Python
+    # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         
-        # Index Selector (အမြင့်ဆုံးအပူချိန် Bullet အသစ် ထည့်ထားပါတယ်)
+        # Index Selector
         idx_choice = st.radio(
             "🌡️ Select Heat Stress Index to Monitor", 
             ["အမြင့်ဆုံးအပူချိန်", "Heat Index", "WBGT", "UTCI"], 
@@ -205,33 +210,30 @@ if df_h is not None:
         
         t_now = df_h.iloc[0]
         # Today's values
-        tmax_val = df_d.iloc[0]['Tmax']
-        hi_val, wbgt_val, utci_val = t_now['HI'], t_now['WBGT'], t_now['UTCI']
+        tmax_today = df_d.iloc[0]['Tmax']
+        hi_today, wbgt_today, utci_today = t_now['HI'], t_now['WBGT'], t_now['UTCI']
 
-        # Thresholds & Display Logic
+        # Thresholds & Logic Setup
         if idx_choice == "အမြင့်ဆုံးအပူချိန်":
-            val, th = tmax_val, [40, 38, 36] # Temp Thresholds
-            col_name = 'Temp' # Hourly temp column
-            plot_data = 'Temp'
+            val, th = tmax_today, [42, 40, 38]
+            display_title = "၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်"
         elif idx_choice == "Heat Index": 
-            val, th = hi_val, [41, 38, 35]
-            col_name = 'HI'
-            plot_data = 'HI'
+            val, th = hi_today, [41, 38, 35]
+            display_title = "၁၆ ရက်စာ Heat Index (ခံစားရသောအပူချိန်) ခန့်မှန်းချက်"
         elif idx_choice == "WBGT": 
-            val, th = wbgt_val, [32, 30, 28]
-            col_name = 'WBGT'
-            plot_data = 'WBGT'
+            val, th = wbgt_today, [32, 30, 28]
+            display_title = "၁၆ ရက်စာ WBGT (လုပ်ငန်းခွင်အပူဒဏ်) ခန့်မှန်းချက်"
         else: 
-            val, th = utci_val, [38, 32, 26]
-            col_name = 'UTCI'
-            plot_data = 'UTCI'
+            val, th = utci_today, [38, 32, 26]
+            display_title = "၁၆ ရက်စာ UTCI (မြို့ပြအပူစီးဆင်းမှု) ခန့်မှန်းချက်"
 
-        # Risk Logic (Color coding)
-        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000" # Extreme
-        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500" # High
-        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00" # Moderate
-        else: lvl, color, bg = 3, "white", "#008000" # Low
+        # Risk Color Coding
+        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
+        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
+        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
+        else: lvl, color, bg = 3, "white", "#008000"
 
+        # Risk Indicator Display
         st.markdown(f"""
             <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
                 <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
@@ -239,14 +241,34 @@ if df_h is not None:
             </div>
         """, unsafe_allow_html=True)
 
-        c1, c2 = st.columns(2)
-        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
-        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+        col1, col2 = st.columns(2)
+        with col1: st.info(f"### ⚠️ အကျိုးသက်ရောက်မှု (Impact)\n{T['impact_list'][lvl]}")
+        with col2: st.success(f"### ✅ အကြံပြုချက် (Action)\n{T['recom_list'][lvl]}")
 
-        # Trend Chart (Hourly trend of selected index)
-        fig_idx = px.line(df_h, x='Time', y=plot_data, title=f"16-Day Hourly Trend for {idx_choice}")
-        fig_idx.add_hline(y=th[0], line_dash="dash", line_color="red", annotation_text="Extreme Threshold")
-        st.plotly_chart(fig_idx, use_container_width=True)
+        # --- Visualization Logic ---
+        if idx_choice == "အမြင့်ဆုံးအပူချိန်":
+            # အမြင့်ဆုံးအပူချိန်အတွက် Bar Chart
+            fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', 
+                             color_continuous_scale='YlOrRd', title=display_title)
+            
+            # Threshold Lines (Extreme, High, Moderate)
+            th_labels = ["Extreme", "High", "Moderate"]
+            th_colors = ["maroon", "red", "orange"]
+            for i in range(3):
+                fig_ibf.add_hline(y=th[i], line_dash="dash", line_color=th_colors[i], 
+                                 annotation_text=f"{th_labels[i]} ({th[i]}°C)", 
+                                 annotation_position="top left")
+        else:
+            # တခြား Index များအတွက် Line Chart (Hourly Trend)
+            col_map = {"Heat Index": "HI", "WBGT": "WBGT", "UTCI": "UTCI"}
+            fig_ibf = px.line(df_h, x='Time', y=col_map[idx_choice], 
+                              markers=True, title=display_title)
+            
+            # Threshold Lines for Indices
+            fig_ibf.add_hline(y=th[0], line_dash="dash", line_color="red", annotation_text="Extreme Risk")
+            fig_ibf.add_hline(y=th[1], line_dash="dash", line_color="orange", annotation_text="High Risk")
+
+        st.plotly_chart(fig_ibf, use_container_width=True)
 
     # --- Mode 2: Climate Change ---
     elif mode_index == 2:
