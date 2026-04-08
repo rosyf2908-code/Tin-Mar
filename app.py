@@ -192,11 +192,6 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-  ဟုတ်ကဲ့ပါဗျာ၊ အခုပြင်ဆင်ပေးလိုက်တဲ့ Code မှာ အမြင့်ဆုံးအပူချိန် (Temperature Max) ကို ရွေးချယ်ရင် နဂိုအတိုင်း Bar Chart နဲ့ Threshold မျဉ်းတွေပြပေးမှာဖြစ်ပြီး၊ ကျန်တဲ့ Heat Index, WBGT, UTCI တွေကို ရွေးရင်တော့ Line Chart နဲ့ အသေးစိတ် ပြသပေးသွားမှာ ဖြစ်ပါတယ်။
-
-ဒါ့အပြင် နဂိုက ကျန်ခဲ့တဲ့ အချက်အလက်တွေ (ဥပမာ- Threshold line annotations တွေ) ကိုလည်း ပြန်ဖြည့်စွက်ပေးထားပါတယ်ဗျ။
-
-Python
     # --- Mode 1: IBF Health Monitoring ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
