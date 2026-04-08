@@ -8,7 +8,7 @@ from datetime import datetime
 import pytz
 import time
 
-# --- ၁။ Functions (Error မတက်စေရန် အပေါ်ဆုံးတွင် ထားရမည်) ---
+# --- ၁။ Functions (အပေါ်ဆုံးတွင် ထားရမည်) ---
 
 def calculate_all_indices(temp_c, rh):
     """Heat Indices တွက်ချက်ခြင်း"""
@@ -22,11 +22,9 @@ def calculate_all_indices(temp_c, rh):
         return temp_c, temp_c, temp_c
 
 @st.cache_data(ttl=600)
-def fetch_weather(city, MYANMAR_CITIES):
-    if city not in MYANMAR_CITIES: return None, None
-    loc = MYANMAR_CITIES[city]
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m,winddirection_10m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
-    
+def fetch_weather(lat, lon):
+    """API မှ ဒေတာရယူခြင်း (lat, lon ကိုပဲ pass လုပ်သည်)"""
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m,winddirection_10m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     try:
         r = requests.get(url, timeout=15)
         res = r.json()
@@ -43,7 +41,7 @@ def fetch_weather(city, MYANMAR_CITIES):
             "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
         })
         
-        # Indices တွက်ချက်ခြင်း
+        # Calculate HI, WBGT, UTCI
         hi_l, wbgt_l, utci_l = [], [], []
         for _, row in df_h.iterrows():
             h, w, u = calculate_all_indices(row['Temp'], row['Humid'])
@@ -67,80 +65,81 @@ def load_stations():
     except:
         return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
-# --- ၂။ Setup & Data ---
-st.set_page_config(page_title="DMH AI Weather System", layout="wide", page_icon="🌤️")
-MYANMAR_CITIES = load_stations()
-city_list = sorted(list(MYANMAR_CITIES.keys()))
+# --- ၂။ Setup & Dictionary ---
+st.set_page_config(page_title="DMH AI Weather Forecast", layout="wide")
+STATIONS = load_stations()
+city_list = sorted(list(STATIONS.keys()))
 mm_tz = pytz.timezone('Asia/Yangon')
 formatted_now = datetime.now(mm_tz).strftime('%I:%M %p, %d %b %Y')
-dm_logo = "https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1"
 
 LANG_DATA = {
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသခန့်မှန်းစနစ်",
-        "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး)", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀)"],
+        "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး)", "ရာသီဥတုပြောင်းလဲမှု"],
         "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန်", "💨 ၃။ လေတိုက်နှုန်း", "🔭 ၄။ အဝေးမြင်တာ", "💧 ၅။ စိုထိုင်းဆ", "☁️ ၆။ တိမ်ဖုံးမှု", "⚡ ၇။ မိုးတိမ်တောင်"],
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ကျော်ပါက လေပြင်းနှင့် မိုးကြိုးသတိပြုပါ။"
+        "impacts": ["Heatstroke ဖြစ်နိုင်ခြေ အလွန်များပါသည်။", "ပင်ပန်းနွမ်းနယ်ပြီး မူးဝေနိုင်ပါသည်။", "နေပူထဲကြာရှည်မနေသင့်ပါ။", "ပုံမှန်အတိုင်း အန္တရာယ်မရှိပါ။"],
+        "recoms": ["အိမ်ထဲတွင်သာနေပြီး ရေများများသောက်ပါ။", "ထီး/ဦးထုပ်ဆောင်းပါ။ ပြင်းထန်သောအလုပ်ရှောင်ပါ။", "ပေါ့ပါးသောအဝတ်ဝတ်ပါ။ ရေဓာတ်ဖြည့်ပါ။", "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။"]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
         "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change"],
         "charts": ["🌡️ 1. Temp", "🌧️ 2. Rain", "💨 3. Wind", "🔭 4. Vis", "💧 5. Humid", "☁️ 6. Cloud", "⚡ 7. Storm"],
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "storm_note": "📝 Note: If thunderstorm > 60%, beware of strong winds."
+        "impacts": ["Extreme Heatstroke risk.", "High fatigue risk.", "Caution required.", "Normal conditions."],
+        "recoms": ["Stay indoors. Drink 4L water.", "Use umbrella. Avoid heavy work.", "Wear light clothes.", "Normal activity."]
     }
 }
 
 # --- ၃။ Sidebar ---
-st.sidebar.image(dm_logo, width=100)
+st.sidebar.image("https://www.moezala.gov.mm/themes/custom/dmh/logo.png?v=1.1", width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
 selected_city = st.sidebar.selectbox("🎯 Select Station", city_list)
-view_mode_choice = st.sidebar.radio("📊 View Mode", T["modes"])
-mode_index = T["modes"].index(view_mode_choice)
+view_choice = st.sidebar.radio("📊 View Mode", T["modes"])
+mode_index = T["modes"].index(view_choice)
 bias = st.sidebar.slider("🌡️ Bias Correction", -5.0, 5.0, 0.0)
 
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
-df_h, df_d = fetch_weather(selected_city, MYANMAR_CITIES)
+city_coords = STATIONS[selected_city]
+df_h, df_d = fetch_weather(city_coords['lat'], city_coords['lon'])
 
 if df_h is not None and df_d is not None:
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- MODE 0: ၁၆ ရက်စာ (ဂရပ် ၇ ခု) ---
+    # --- Mode 0: 16-Days Detailed ---
     if mode_index == 0:
+        # Chart 1: Temp
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
         df_6h = df_h.set_index('Time').resample('6h').agg({'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 'Cloud_Oktas': 'max', 'Thunderstorm': 'max'}).reset_index()
 
+        # Chart 2: Rain
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['dodgerblue']), use_container_width=True)
 
+        # Chart 3: Wind
         st.subheader(T["charts"][2])
         fig_w = go.Figure()
         fig_w.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green')))
         fig_w.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
         st.plotly_chart(fig_w, use_container_width=True)
 
-        st.subheader(T["charts"][3])
-        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
+        # Other Charts
+        c1, c2 = st.columns(2)
+        with c1:
+            st.subheader(T["charts"][3]); st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
+            st.subheader(T["charts"][5]); st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
+        with c2:
+            st.subheader(T["charts"][4]); st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
+            st.subheader(T["charts"][6]); st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-        st.subheader(T["charts"][4])
-        st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
-
-        st.subheader(T["charts"][5])
-        st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
-
-        st.subheader(T["charts"][6])
-        st.error(T["storm_note"])
-        st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
-
-    # --- Mode 1: IBF Monitoring (Risk Zones ပါဝင်သော ပုံစံ) ---
+    # --- Mode 1: IBF Health Recommendations ---
     elif mode_index == 1:
         today_max = df_d.iloc[0]['Tmax']
         if today_max >= 42: lvl, bg = 0, "#FF0000"
@@ -149,25 +148,26 @@ if df_h is not None and df_d is not None:
         else: lvl, bg = 3, "#008000"
 
         st.markdown(f"""
-            <div style='background-color:{bg}; padding:20px; border-radius:15px; text-align:center;'>
+            <div style='background-color:{bg}; padding:20px; border-radius:15px; text-align:center; border:2px solid #333;'>
                 <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
-                <p>Forecast Max Temp: <b>{today_max:.1f} °C</b></p>
+                <p style='font-size:1.3em;'>Forecast Max: <b>{today_max:.1f} °C</b></p>
             </div>
         """, unsafe_allow_html=True)
 
-        st.subheader(T["charts"][0])
-        fig_tmax = go.Figure()
-        fig_tmax.add_hrect(y0=42, y1=50, fillcolor="#FF0000", opacity=0.15, annotation_text="Extreme")
-        fig_tmax.add_hrect(y0=40, y1=42, fillcolor="#FFA500", opacity=0.15, annotation_text="High")
-        fig_tmax.add_hrect(y0=38, y1=40, fillcolor="#FFFF00", opacity=0.15, annotation_text="Moderate")
-        fig_tmax.add_hrect(y0=0, y1=38, fillcolor="#008000", opacity=0.08, annotation_text="Low")
-        
-        fig_tmax.add_trace(go.Scatter(x=df_d['Date'], y=df_d['Tmax'], mode='lines+markers+text', 
-                                    text=[f"{v:.1f}" for v in df_d['Tmax']], textposition="top center",
-                                    line=dict(color='black', width=3), marker=dict(size=10, color='red')))
-        st.plotly_chart(fig_tmax, use_container_width=True)
+        col1, col2 = st.columns(2)
+        with col1: st.warning(f"### ⚠️ **Health Impact**\n{T['impacts'][lvl]}")
+        with col2: st.success(f"### ✅ **Recommendation**\n{T['recoms'][lvl]}")
 
-        st.subheader("🔥 Heat Indices (HI, WBGT, UTCI)")
+        st.markdown("---")
+        st.subheader("🌡️ Temperature Forecast with Risk Zones")
+        fig_ibf = go.Figure()
+        fig_ibf.add_hrect(y0=42, y1=50, fillcolor="#FF0000", opacity=0.15, annotation_text="Extreme")
+        fig_ibf.add_hrect(y0=40, y1=42, fillcolor="#FFA500", opacity=0.15, annotation_text="High")
+        fig_ibf.add_hrect(y0=38, y1=40, fillcolor="#FFFF00", opacity=0.15, annotation_text="Moderate")
+        fig_ibf.add_trace(go.Scatter(x=df_d['Date'], y=df_d['Tmax'], mode='lines+markers+text', text=[f"{v:.1f}" for v in df_d['Tmax']], textposition="top center", line=dict(color='black')))
+        st.plotly_chart(fig_ibf, use_container_width=True)
+
+        st.subheader("🔥 Heat Index & Thermal Stress (HI, WBGT, UTCI)")
         st.plotly_chart(px.line(df_h, x='Time', y=['HI', 'WBGT', 'UTCI']), use_container_width=True)
 
     # --- Mode 2: Climate Change ---
@@ -176,6 +176,35 @@ if df_h is not None and df_d is not None:
         years = np.arange(2026, 2101)
         trend = [31.5 + (y-2026)*0.048 + np.random.normal(0, 0.45) for y in years]
         st.plotly_chart(px.line(x=years, y=trend, color_discrete_sequence=['red']), use_container_width=True)
+
+# --- ၄။ Export & Download ---
+st.markdown("---")
+if st.button("🚀 Export All Stations Report"):
+    all_res = []
+    p = st.progress(0)
+    for i, city in enumerate(city_list):
+        coords = STATIONS[city]
+        _, dd = fetch_weather(coords['lat'], coords['lon'])
+        if dd is not None:
+            all_res.append({'Date': dd.iloc[0]['Date'].strftime('%Y-%m-%d'), 'Station': city, 'Tmax': dd.iloc[0]['Tmax'] + bias})
+        p.progress((i + 1) / len(city_list))
+        time.sleep(0.05)
+    st.session_state['report_df'] = pd.DataFrame(all_res)
+    st.success("Export Complete!")
+
+if 'report_df' in st.session_state:
+    df_to_show = st.session_state['report_df']
+    st.dataframe(df_to_show, use_container_width=True)
+    
+    csv_data = df_to_show.to_csv(index=False).encode('utf-8-sig')
+    st.download_button(
+        label="📥 Download CSV Report",
+        data=csv_data,
+        file_name=f"DMH_Weather_Report_{datetime.now().strftime('%Y%m%d')}.csv",
+        mime="text/csv"
+    )
+
+st.markdown("<br><div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
 
 # --- ၄။ Export Section (အောက်ဆုံးတွင်ထားရမည်) ---
 st.markdown("---")
