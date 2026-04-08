@@ -230,36 +230,47 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 # --- ၆။ Export Report ---
+import time # အပေါ်ဆုံးမှာ မပါသေးရင် ဒီမှာ တစ်ခါတည်း import လုပ်ထားပါ
+
+st.markdown("---")
 if st.button("🚀 Export All Stations Report"):
     all_data = []
     p_bar = st.progress(0)
+    status_text = st.empty() # ဘယ်မြို့ကို ဆွဲနေလဲ သိရအောင် status ပြရန်
+    
     for i, city in enumerate(city_list):
+        status_text.text(f"⏳ Fetching data for: {city} ({i+1}/{len(city_list)})")
         dh, dd = fetch_weather(city)
+        
         if dh is not None:
             for d in dd['Date']:
                 t_930 = d + pd.Timedelta(hours=9, minutes=30)
                 y_930 = t_930 - pd.Timedelta(days=1)
                 rain_24h = dh.loc[(dh['Time'] > y_930) & (dh['Time'] <= t_930), 'precipitation'].sum()
                 day_indices = dh[dh['Time'].dt.date == d.date()]
+                
                 all_data.append({
                     'Date': d.strftime('%Y-%m-%d'), 'Station': city,
                     'Max_Temp': round(dd.loc[dd['Date'] == d, 'Tmax'].values[0] + bias, 1),
-                    'Max_HeatIndex': day_indices['HI'].max(),
-                    'Max_WBGT': day_indices['WBGT'].max(),
+                    'Max_HeatIndex': day_indices['HI'].max() if 'HI' in day_indices else 0,
+                    'Max_WBGT': day_indices['WBGT'].max() if 'WBGT' in day_indices else 0,
                     'Rain_24h': round(rain_24h, 2)
                 })
-       # --- ဒီနေရာမှာ ၁ စက္ကန့် စောင့်ခိုင်းလိုက်ပါ ---
-        time.sleep(1) 
         
+        # --- API အနားပေးရန် (၁.၅ စက္ကန့် ခေတ္တရပ်ပါ) ---
+        time.sleep(1.5) 
         p_bar.progress((i + 1) / len(city_list))
+    
+    status_text.success("✅ All stations data fetched successfully!")
     st.session_state['master_df'] = pd.DataFrame(all_data)
 
+# Download Button အပိုင်း (နဂိုအတိုင်း)
 if 'master_df' in st.session_state:
     m_df = st.session_state['master_df']
-    sel_date = st.selectbox("📅 Select Date", sorted(m_df['Date'].unique(), reverse=True))
+    sel_date = st.selectbox("📅 Select Date to Download", sorted(m_df['Date'].unique(), reverse=True))
     final_df = m_df[m_df['Date'] == sel_date].sort_values(by='Station')
     st.dataframe(final_df, use_container_width=True)
-    st.download_button("📥 Download (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv")
+    st.download_button("📥 Download Report (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Full_Report_{sel_date}.csv")
 
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
