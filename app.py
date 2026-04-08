@@ -182,47 +182,21 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    elif mode_index == 1:
+   elif mode_index == 1:
         st.subheader(T["ibf_header"])
         idx_choice = st.radio("🌡️ Select Heat Stress Index to Monitor", ["အမြင့်ဆုံးအပူချိန်", "Heat Index", "WBGT", "UTCI"], horizontal=True)
         
-        # လက်ရှိအချိန်နဲ့ အနီးဆုံး data ကို ယူရန်
         t_now = df_h.iloc[0]
         tmax_today = df_d.iloc[0]['Tmax']
-        
-        # Column mapping ကို သေချာအောင် လုပ်ခြင်း
-        # မှတ်ချက်- fetch_weather function ထဲက column name တွေနဲ့ တူရပါမယ်
-        hi_today = t_now.get('HI', 0)
-        wbgt_today = t_now.get('WBGT', 0)
-        utci_today = t_now.get('UTCI', 0)
 
         if idx_choice == "အမြင့်ဆုံးအပူချိန်":
             val, th = tmax_today, [42, 40, 38]
-            display_title = "၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်"
-            y_col = 'Tmax'
-            plot_df = df_d
-            x_axis = 'Date'
         elif idx_choice == "Heat Index": 
-            val, th = hi_today, [41, 38, 35]
-            display_title = "၁၆ ရက်စာ Heat Index ခန့်မှန်းချက်"
-            y_col = 'HI'
-            plot_df = df_h
-            x_axis = 'Time'
+            val, th = t_now.get('HI', 0), [41, 38, 35]
         elif idx_choice == "WBGT": 
-            val, th = wbgt_today, [32, 30, 28]
-            display_title = "၁၆ ရက်စာ WBGT ခန့်မှန်းချက်"
-            y_col = 'WBGT'
-            plot_df = df_h
-            x_axis = 'Time'
+            val, th = t_now.get('WBGT', 0), [32, 30, 28]
         else: 
-            val, th = utci_today, [38, 32, 26]
-            display_title = "၁၆ ရက်စာ UTCI ခန့်မှန်းချက်"
-            y_col = 'UTCI'
-            plot_df = df_h
-            x_axis = 'Time'
-
-       # --- IBF Display Section ---
-        import textwrap
+            val, th = t_now.get('UTCI', 0), [38, 32, 26]
 
         # Risk Level logic
         if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
@@ -230,14 +204,13 @@ if df_h is not None:
         elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        # Indentation Error မတက်အောင် dedent သုံးပြီး စနစ်တကျ ရေးခြင်း
-        html_content = textwrap.dedent(f"""
+        # HTML Card (Indentation မှန်စေရန် ဤအတိုင်း အစားထိုးပါ)
+        st.markdown(f"""
             <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
                 <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
                 <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
             </div>
-        """)
-        st.markdown(html_content, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
         with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
