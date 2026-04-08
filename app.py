@@ -164,30 +164,65 @@ if df_h is not None:
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
-    # --- MODE 1: IBF (ဂရပ် ၄ ခု) ---
+    # --- Mode 2: IBF Monitoring (ဂရပ် ၄ ခု စလုံးကို ပုံစံသစ်ဖြင့်) ---
     elif mode_index == 1:
         st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
         
+        # ၁။ လက်ရှိအခြေအနေ Risk Card ပြသခြင်း
         if today_max >= 42: lvl, color, bg = 0, "white", "#FF0000"
         elif today_max >= 40: lvl, color, bg = 1, "black", "#FFA500"
         elif today_max >= 38: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><p>Forecast Max Temp: {today_max:.1f} °C</p></div>", unsafe_allow_html=True)
+        st.markdown(f"""
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
+                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+                <p style='font-size:1.2em; margin-top:10px;'>Forecast Max Temp: <b>{today_max:.1f} °C</b></p>
+            </div>
+        """, unsafe_allow_html=True)
         
         c1, c2 = st.columns(2)
         with c1: st.info(f"⚠️ **Impact**\n\n{T['impact_list'][lvl]}")
         with c2: st.success(f"✅ **Action**\n\n{T['recom_list'][lvl]}")
 
-        # 4 Graphs
-        indices = [('Tmax', 'Maximum Temperature (°C)', 40, df_d, 'Date'), ('HI', 'Heat Index (°C)', 41, df_h, 'Time'), ('WBGT', 'WBGT (°C)', 31, df_h, 'Time'), ('UTCI', 'UTCI (°C)', 38, df_h, 'Time')]
+        st.markdown("---")
+
+        # ၂။ ဂရပ် (၄) ခုကို အဆင့်ဆင့်ဆွဲခြင်း
+
+        # (က) Maximum Temperature Graph (Risk Zones ပါဝင်သော ပုံစံ)
+        st.subheader(T["charts"][0]) # 🌡️ ၁။ အပူချိန်
+        fig_tmax = go.Figure()
+        fig_tmax.add_hrect(y0=42, y1=50, fillcolor="#FF0000", opacity=0.15, line_width=0, annotation_text="Extreme Risk", annotation_position="top left")
+        fig_tmax.add_hrect(y0=40, y1=42, fillcolor="#FFA500", opacity=0.15, line_width=0, annotation_text="High Risk", annotation_position="top left")
+        fig_tmax.add_hrect(y0=38, y1=40, fillcolor="#FFFF00", opacity=0.15, line_width=0, annotation_text="Moderate Risk", annotation_position="top left")
+        fig_tmax.add_hrect(y0=0, y1=38, fillcolor="#008000", opacity=0.08, line_width=0, annotation_text="Low Risk", annotation_position="bottom left")
         
-        for col, label, th, data, time_col in indices:
-            st.write(f"### {label}")
-            fig = px.line(data, x=time_col, y=col, markers=True, color_discrete_sequence=['red' if 'Temp' in label or 'Heat' in label else 'orange'])
-            fig.add_hline(y=th, line_dash="dash", line_color="black", annotation_text=f"Risk Threshold ({th})")
-            st.plotly_chart(fig, use_container_width=True)
+        fig_tmax.add_trace(go.Scatter(
+            x=df_d['Date'], y=df_d['Tmax'], mode='lines+markers+text',
+            line=dict(color='black', width=3), marker=dict(size=10, color='red'),
+            text=[f"{v:.1f}" for v in df_d['Tmax']], textposition="top center"
+        ))
+        fig_tmax.update_layout(yaxis_title="Temp (°C)", hovermode="x unified", showlegend=False)
+        st.plotly_chart(fig_tmax, use_container_width=True)
+
+        # (ခ) Heat Index Graph
+        st.subheader("🔥 Heat Index (HI) Forecast")
+        fig_hi = px.line(df_h, x='Time', y='HI', markers=False, color_discrete_sequence=['darkorange'])
+        fig_hi.add_hline(y=41, line_dash="dash", line_color="red", annotation_text="Danger Level (41°C)")
+        st.plotly_chart(fig_hi, use_container_width=True)
+
+        # (ဂ) WBGT Graph
+        st.subheader("🌡️ WBGT (Wet Bulb Globe Temperature)")
+        fig_wbgt = px.line(df_h, x='Time', y='WBGT', markers=False, color_discrete_sequence=['purple'])
+        fig_wbgt.add_hline(y=31, line_dash="dash", line_color="darkred", annotation_text="Extreme Stress (31°C)")
+        st.plotly_chart(fig_wbgt, use_container_width=True)
+
+        # (ဃ) UTCI Graph
+        st.subheader("🚶 UTCI (Thermal Comfort)")
+        fig_utci = px.line(df_h, x='Time', y='UTCI', markers=False, color_discrete_sequence=['blue'])
+        fig_utci.add_hline(y=38, line_dash="dash", line_color="orange", annotation_text="Strong Heat Stress (38°C)")
+        st.plotly_chart(fig_utci, use_container_width=True)
 
     # --- MODE 2: Climate (အနီရောင်ဂရပ်) ---
     elif mode_index == 2:
