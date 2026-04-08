@@ -221,20 +221,23 @@ if df_h is not None:
             plot_df = df_h
             x_axis = 'Time'
 
-       # Risk Level သတ်မှတ်ခြင်း (သေချာအောင် ပြန်စစ်ရန်)
+       # --- IBF Display Section ---
+        import textwrap
+
+        # Risk Level logic
         if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
         elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
         elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        # --- ဒီအပိုင်းမှာ Indentation မှားတတ်လို့ သတိထားပြီး အစားထိုးပါ ---
-        st.markdown(f"""
-<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
-    <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
-    <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
-</div>
-""", unsafe_allow_html=True)
-        # -----------------------------------------------------------
+        # Indentation Error မတက်အောင် dedent သုံးပြီး စနစ်တကျ ရေးခြင်း
+        html_content = textwrap.dedent(f"""
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
+                <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
+                <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
+            </div>
+        """)
+        st.markdown(html_content, unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
         with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
