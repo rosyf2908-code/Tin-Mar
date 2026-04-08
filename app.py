@@ -78,51 +78,40 @@ city_list = sorted(list(MYANMAR_CITIES.keys())) # Export အတွက် ဒီ 
 
 @st.cache_data(ttl=600)
 def fetch_weather(city):
-    if city not in MYANMAR_CITIES: 
-        return None, None
-    
+    if city not in MYANMAR_CITIES: return None, None
     loc = MYANMAR_CITIES[city]
-    
-    # URL ကို အရှေ့မှာ f ခံပြီး variable တွေနဲ့ ချိတ်ဆက်ပါ
-    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m,winddirection_10m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     
     try:
         r = requests.get(url, timeout=15)
-        r.raise_for_status() # 403 သို့မဟုတ် အခြား error ရှိပါက သိရှိရန်
+        r.raise_for_status()
         res = r.json()
-    # df_h ထဲမှာ ရှိနေတဲ့ column name တွေကိုပဲ agg လုပ်ဖို့ aggregation dictionary တည်ဆောက်ခြင်း
-agg_dict = {}
-
-if 'Rain' in df_h.columns: agg_dict['Rain'] = 'sum'
-elif 'precipitation' in df_h.columns: agg_dict['precipitation'] = 'sum'
-
-if 'Wind' in df_h.columns: agg_dict['Wind'] = 'mean'
-if 'WindDir' in df_h.columns: agg_dict['WindDir'] = 'mean'
-if 'Cloud_Oktas' in df_h.columns: agg_dict['Cloud_Oktas'] = 'max'
-if 'Thunderstorm' in df_h.columns: agg_dict['Thunderstorm'] = 'max'
-
-# DataFrame ကို ၆ နာရီတစ်ခါ စုစည်းခြင်း
-df_6h = df_h.set_index('Time').resample('6H').agg(agg_dict).reset_index()    
-    df_h = pd.DataFrame({
-        "Time": pd.to_datetime(res['hourly']['time']),
-        "Temp": res['hourly']['temperature_2m'],
-        "Humid": res['hourly']['relative_humidity_2m'],
-        "Rain": res['hourly']['precipitation'],         # 'Rain' သို့မဟုတ် 'precipitation'
-        "Wind": res['hourly']['windspeed_10m'],
-        "WindDir": res['hourly']['winddirection_10m'],   # ဒီ column ပါမှ agg လုပ်လို့ရပါမယ်
-        "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
-        "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
-    })
         
+        # DataFrame တည်ဆောက်ခြင်း
+        df_h = pd.DataFrame({
+            "Time": pd.to_datetime(res['hourly']['time']),
+            "Temp": res['hourly']['temperature_2m'],
+            "Humid": res['hourly']['relative_humidity_2m'],
+            "Rain": res['hourly']['precipitation'],  # နာမည်ကို 'Rain' ဟု ပေးထားသည်
+            "Wind": res['hourly']['windspeed_10m'],
+            "WindDir": res['hourly']['winddirection_10m'],
+            "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
+            "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
+        })
+        
+        # Heat Indices တွက်ချက်ခြင်း
+        df_h['HI'], df_h['WBGT'], df_h['UTCI'] = zip(*df_h.apply(lambda x: calculate_all_indices(x['Temp'], x['Humid']), axis=1))
+        
+        # Daily Data
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(res['daily']['time']), 
-            "Tmax": res['daily']['temperature_2m_max'],
+            "Tmax": res['daily']['temperature_2m_max'], 
             "Tmin": res['daily']['temperature_2m_min']
         })
         return df_h, df_d
+        
     except Exception as e:
-        # ဘာကြောင့် error တက်လဲဆိုတာ သိရအောင် console မှာ print ထုတ်ကြည့်နိုင်ပါတယ်
-        print(f"Error fetching data: {e}")
+        st.error(f"Error fetching data: {e}")
         return None, None
 
 # --- ၄။ Sidebar & UI ---
