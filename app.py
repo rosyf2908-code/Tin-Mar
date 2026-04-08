@@ -46,35 +46,35 @@ LANG_DATA = {
             "💧  ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)",
             "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"
         ],
-        "impact_list": [
-            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။",
-            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။",
-            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။",
+       "impact_list": [
+            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", 
+            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", 
+            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", 
             "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
         ],
         "recom_list": [
-            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။",
-            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။",
-            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။",
-            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်လိုက်နာပါ။", 
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးဇလခန့်မှန်းချက်များနှင့် သတင်းများကို ဆက်လက်နားထောင်ပါ။",  
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များနှင့် သတင်းများကို နားထောင်ပါ။", 
+            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးဇလခန့်မှန်းချက်များနှင့် သတင်းများကို နားထောင်ပါ။", 
         ]
     },
-    "English": {
+     "English": {
         "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
-        "dmh_alert": "📢 Tip: Follow DMH news for the latest weather updates.",
+        "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
         "ibf_header": "🏥 Health Impacts & Recommendations",
         "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
-        "charts": ["🌡️ 1. Temp(°C)", "🌧️ 2. Rain(mm)", "💨 3. Wind", "🔭 4. Vis(km)", "💧 5. Humid(%)", "☁️ 6. Cloud", "⚡ 7. Storm(%)"],
-        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure fatigue.", "Normal conditions."],
-        "recom_list": ["Stay indoors. Drink 3-4L water.", "Work morning/evening only. Use umbrella.", "Wear light clothes. Rest in shade.", "Stay hydrated."]
+        "charts": ["🌡️ 1. Temperature(°C)", "🌧️ 2. Precipitation(mm) 6 hourly", "💨 3. Wind Speed (mph) & Direction", "🔭 4. Visibility (km)", "💧 5. Humidity (%)", "☁️ 6. Cloud Cover (Oktas: 0-8)", "⚡ 7. Thunderstorm & Lightning Probability (%)"],
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure may cause fatigue.", "Normal conditions."],
+        "recom_list": ["Stay indoors. Drink 3-4L water, Follow DMH news for the latest weather updates.", "Work morning/evening only. Use umbrella, Follow DMH news for the latest weather updates.", "Wear light clothes. Rest in shade, Follow DMH news for the latest weather updates.", "Stay hydrated and follow updates, Follow DMH news for the latest weather updates."]
     }
 }
 
-# --- ၄။ ဒေတာဖတ်ခြင်းနှင့် API ---
+# --- ၃။ ဒေတာဖတ်ခြင်းနှင့် API ---
 @st.cache_data
 def load_stations():
     try:
@@ -84,16 +84,23 @@ def load_stations():
         return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
 MYANMAR_CITIES = load_stations()
-city_list = sorted(list(MYANMAR_CITIES.keys()))
+city_list = sorted(list(MYANMAR_CITIES.keys())) # Export အတွက် ဒီ Variable က အရေးကြီးပါတယ်
 
 @st.cache_data(ttl=600)
 def fetch_weather(city):
-    if city not in MYANMAR_CITIES: return None, None
+    if city not in MYANMAR_CITIES: 
+        return None, None
+    
     loc = MYANMAR_CITIES[city]
+    
+    # URL ကို အရှေ့မှာ f ခံပြီး variable တွေနဲ့ ချိတ်ဆက်ပါ
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,precipitation,windspeed_10m,winddirection_10m,relative_humidity_2m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
+    
     try:
         r = requests.get(url, timeout=15)
+        r.raise_for_status() # 403 သို့မဟုတ် အခြား error ရှိပါက သိရှိရန်
         res = r.json()
+        
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(res['hourly']['time']), 
             "Temp": res['hourly']['temperature_2m'],
@@ -105,8 +112,6 @@ def fetch_weather(city):
             "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
             "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
         })
-        # Calculate Heat Indices for hourly
-        df_h['HI'], df_h['WBGT'], df_h['UTCI'] = zip(*df_h.apply(lambda x: calculate_all_indices(x['Temp'], x['Humid']), axis=1))
         
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(res['daily']['time']), 
@@ -114,9 +119,12 @@ def fetch_weather(city):
             "Tmin": res['daily']['temperature_2m_min']
         })
         return df_h, df_d
-    except: return None, None
+    except Exception as e:
+        # ဘာကြောင့် error တက်လဲဆိုတာ သိရအောင် console မှာ print ထုတ်ကြည့်နိုင်ပါတယ်
+        print(f"Error fetching data: {e}")
+        return None, None
 
-# --- ၅။ Sidebar & UI ---
+# --- ၄။ Sidebar & UI ---
 st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
@@ -129,39 +137,57 @@ st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 df_h, df_d = fetch_weather(selected_city)
+
 if df_h is not None:
     df_h['Temp'] += bias
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
-    # --- Mode 0: 16-Days Forecast ---
     if mode_index == 0:
         st.warning(T["dmh_alert"])
+        # Temp Chart
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
+        # Resampling 6h
         df_6h = df_h.set_index('Time').resample('6h').agg({
             'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
             'Cloud_Oktas': 'max', 'Thunderstorm': 'max'
         }).reset_index()
 
+        # Rainfall
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['green']), use_container_width=True)
 
+        # Wind
         st.subheader(T["charts"][2])
         fig_wind = go.Figure()
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', name="Wind Speed"))
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red'), name="Direction"))
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='darkgreen')))
+        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
         st.plotly_chart(fig_wind, use_container_width=True)
 
-        colA, colB = st.columns(2)
-        with colA:
-            st.subheader(T["charts"][3])
-            st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
-        with colB:
-            st.subheader(T["charts"][4])
-            st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
+       # --- Visibility (အပေါ်) ---
+        st.subheader(T["charts"][3])
+        fig4 = px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray'])
+        fig4.update_layout(
+            yaxis_title="အဝေးမြင်တာ (km)" if lang == "မြန်မာ" else "Visibility (km)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig4, use_container_width=True)
 
+        # --- Humidity (အောက်) ---
+        st.subheader(T["charts"][4])
+        fig5 = px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple'])
+        fig5.update_layout(
+            yaxis_title="စိုထိုင်းဆ (%)" if lang == "မြန်မာ" else "Humidity (%)",
+            xaxis_title="အချိန် (Time)"
+        )
+        st.plotly_chart(fig5, use_container_width=True)
+
+        # Cloud & Storm
+        st.subheader(T["charts"][5])
+        st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
+        
         st.subheader(T["charts"][6])
         st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
