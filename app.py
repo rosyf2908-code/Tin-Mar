@@ -147,7 +147,7 @@ if df_h is not None:
 
         # Rainfall
         st.subheader(T["charts"][1])
-        st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['green']), use_container_width=True)
+        st.plotly_chart(px.bar(df_6h, x='Time', y='Rain', color_discrete_sequence=['green']), use_container_width=True)
 
         # Wind
         st.subheader(T["charts"][2])
