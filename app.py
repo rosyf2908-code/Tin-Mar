@@ -90,18 +90,29 @@ def fetch_weather(city):
         r = requests.get(url, timeout=15)
         r.raise_for_status() # 403 သို့မဟုတ် အခြား error ရှိပါက သိရှိရန်
         res = r.json()
-        
-        df_h = pd.DataFrame({
-            "Time": pd.to_datetime(res['hourly']['time']), 
-            "Temp": res['hourly']['temperature_2m'],
-            "Rain": res['hourly']['precipitation'],
-            "Wind": res['hourly']['windspeed_10m'],
-            "WindDir": res['hourly']['winddirection_10m'],
-            "Vis": [v/1000 for v in res['hourly']['visibility']],
-            "Humid": res['hourly']['relative_humidity_2m'],
-            "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
-            "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
-        })
+    # df_h ထဲမှာ ရှိနေတဲ့ column name တွေကိုပဲ agg လုပ်ဖို့ aggregation dictionary တည်ဆောက်ခြင်း
+agg_dict = {}
+
+if 'Rain' in df_h.columns: agg_dict['Rain'] = 'sum'
+elif 'precipitation' in df_h.columns: agg_dict['precipitation'] = 'sum'
+
+if 'Wind' in df_h.columns: agg_dict['Wind'] = 'mean'
+if 'WindDir' in df_h.columns: agg_dict['WindDir'] = 'mean'
+if 'Cloud_Oktas' in df_h.columns: agg_dict['Cloud_Oktas'] = 'max'
+if 'Thunderstorm' in df_h.columns: agg_dict['Thunderstorm'] = 'max'
+
+# DataFrame ကို ၆ နာရီတစ်ခါ စုစည်းခြင်း
+df_6h = df_h.set_index('Time').resample('6H').agg(agg_dict).reset_index()    
+    df_h = pd.DataFrame({
+        "Time": pd.to_datetime(res['hourly']['time']),
+        "Temp": res['hourly']['temperature_2m'],
+        "Humid": res['hourly']['relative_humidity_2m'],
+        "Rain": res['hourly']['precipitation'],         # 'Rain' သို့မဟုတ် 'precipitation'
+        "Wind": res['hourly']['windspeed_10m'],
+        "WindDir": res['hourly']['winddirection_10m'],   # ဒီ column ပါမှ agg လုပ်လို့ရပါမယ်
+        "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
+        "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
+    })
         
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(res['daily']['time']), 
