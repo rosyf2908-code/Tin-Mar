@@ -8,7 +8,7 @@ from datetime import datetime
 import pytz
 import time
 
-# --- ၁။ Functions (အပေါ်ဆုံးတွင် ထားပါ) ---
+# --- ၁။ Functions ---
 
 def calculate_all_indices(temp_c, rh):
     """Heat Indices တွက်ချက်ခြင်း"""
@@ -60,7 +60,7 @@ def load_stations():
     except:
         return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
-# --- ၂။ Setup ---
+# --- ၂။ Setup & Data Dictionary ---
 st.set_page_config(page_title="DMH AI Weather Forecast System", layout="wide", page_icon="🌤️")
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
@@ -75,16 +75,36 @@ LANG_DATA = {
         "station_label": "🎯 စခန်းအမည်ရွေးချယ်ပါ",
         "view_mode_label": "📊 View Mode",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး )", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀-SSP5-8.5)"],
-        "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန် (၆ နာရီ)", "💨 ၃။ လေတိုက်နှုန်း", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု", "⚡ ၇။ မိုးတိမ်တောင် (%)"],
-        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"]
+        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလ သတင်းများကိုစောင့်ကြည့်ပါ။",
+        "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
+        "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
+        "risk_levels": ["Extreme Risk (အလွန်အန္တရာယ်ရှိ)", "High Risk (အန္တရာယ်ရှိ)", "Moderate Risk (သတိပြုရန်)", "Low Risk (ပုံမှန်)"],
+        "charts": ["🌡️ ၁။ အပူချိန်(ဒီဂရီဆဲလ်စီးယပ်)", "🌧️ ၂။ မိုးရေချိန်(မီလီမီတာ) ၆ နာရီ", "💨 ၃။ လေတိုက်နှုန်း(mph)နှင့်လေတိုက်ရာအရပ်", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှုပမာဏ (Oktas: 0-8)", "⚡ ၇။ မိုးတိမ်တောင်နှင့် လျှပ်စီးလက်နိုင်ခြေ (%)"],
+        "impact_list": [
+            "အလွန်စိုးရိမ်ရသော အခြေအနေ! အပူဒဏ်လျှပ်စီးဖြတ်ခြင်း (Heatstroke) နှင့် ရေဓာတ်ကုန်ခမ်းခြင်းကြောင့် အသက်အန္တရာယ်ရှိနိုင်သည်။", 
+            "အန္တရာယ်ရှိသော အခြေအနေ! အပူဒဏ်ကြောင့် ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်နိုင်ပါသည်။ ကလေးနှင့် လူအိုများ အထူးသတိပြုပါ။", 
+            "သတိပြုရန် အခြေအနေ! နေရောင်အောက်တွင် ကြာရှည်နေပါက ပင်ပန်းနွမ်းနယ်ခြင်း ဖြစ်ပေါ်နိုင်ပါသည်။", 
+            "ပုံမှန်အခြေအနေ! သိသာထင်ရှားသော ကျန်းမာရေးထိခိုက်မှု မရှိနိုင်ပါ။"
+        ],
+        "recom_list": [
+            "အိမ်ထဲတွင်သာ နေပါ။ ရေ (၃-၄) လီတာ သောက်ပါ။ မူးဝေပါက ဆေးရုံသို့ အမြန်သွားပါ။ မိုးလေဝသ သတင်းများကို အချိန်ပြည့် စောင့်ကြည့်ပါ။", 
+            "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာ လုပ်ပါ။ ထီး/ဦးထုပ် ဆောင်းပါ။ ရေဓာတ်ဖြည့်ပါ။ မိုးလေဝသ သတင်းများကို နားထောင်ပါ။", 
+            "ပေါ့ပါးသော အဝတ်များ ဝတ်ပါ။ ရေခဏခဏသောက်ပါ။ အရိပ်တွင် နားပါ။ မိုးဇလခန့်မှန်းချက်များကို နားထောင်ပါ။", 
+            "ပုံမှန်အတိုင်း နေနိုင်ပါသည်။ ရေဓာတ်ဖြည့်တင်းရန်နှင့် မိုးလေဝသ သတင်းများကို ဆက်လက်စောင့်ကြည့်ပါ။"
+        ]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
-        "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection"],
-        "charts": ["🌡️ 1. Temp", "🌧️ 2. Rain", "💨 3. Wind", "🔭 4. Vis", "💧 5. Humid", "☁️ 6. Cloud", "⚡ 7. Storm"],
-        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"]
+        "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
+        "dmh_alert": "📢 Tip: Follow DMH news for updates.",
+        "storm_note": "📝 Note: If thunderstorm > 60%, beware of strong winds.",
+        "ibf_header": "🏥 Health Impacts & Recommendations",
+        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
+        "charts": ["🌡️ 1. Temp(°C)", "🌧️ 2. Rain(mm)", "💨 3. Wind", "🔭 4. Vis(km)", "💧 5. Humidity(%)", "☁️ 6. Cloud(Oktas)", "⚡ 7. Storm(%)"],
+        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure fatigue.", "Normal conditions."],
+        "recom_list": ["Stay indoors. Drink 3-4L water.", "Work morning/evening. Use umbrella.", "Wear light clothes. Rest in shade.", "Stay hydrated."]
     }
 }
 
@@ -109,13 +129,14 @@ if df_h is not None:
 
     # --- MODE 0: ၁၆ ရက်စာ (ဂရပ် ၇ ခု အထက်အောက်) ---
     if mode_index == 0:
-        # 1. Temperature
+        st.warning(T["dmh_alert"])
+        # 1. Temp
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
         df_6h = df_h.set_index('Time').resample('6h').agg({'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 'Cloud_Oktas': 'max', 'Thunderstorm': 'max'}).reset_index()
 
-        # 2. Rainfall
+        # 2. Rain
         st.subheader(T["charts"][1])
         st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['dodgerblue']), use_container_width=True)
 
@@ -126,11 +147,11 @@ if df_h is not None:
         fig_w.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
         st.plotly_chart(fig_w, use_container_width=True)
 
-        # 4. Visibility
+        # 4. Vis
         st.subheader(T["charts"][3])
         st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
 
-        # 5. Humidity
+        # 5. Humid
         st.subheader(T["charts"][4])
         st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
 
@@ -138,44 +159,49 @@ if df_h is not None:
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
 
-        # 7. Thunderstorm
+        # 7. Storm
         st.subheader(T["charts"][6])
+        st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
     # --- MODE 1: IBF (ဂရပ် ၄ ခု) ---
     elif mode_index == 1:
-        st.subheader("🏥 Heatwave Risk Monitoring (IBF)")
-        t_now = df_h.iloc[0]
+        st.subheader(T["ibf_header"])
         today_max = df_d.iloc[0]['Tmax']
         
-        # Color Box Logic
         if today_max >= 42: lvl, color, bg = 0, "white", "#FF0000"
         elif today_max >= 40: lvl, color, bg = 1, "black", "#FFA500"
         elif today_max >= 38: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:20px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><p>Max Temp: {today_max:.1f} °C</p></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><p>Forecast Max Temp: {today_max:.1f} °C</p></div>", unsafe_allow_html=True)
+        
+        c1, c2 = st.columns(2)
+        with c1: st.info(f"⚠️ **Impact**\n\n{T['impact_list'][lvl]}")
+        with c2: st.success(f"✅ **Action**\n\n{T['recom_list'][lvl]}")
 
         # 4 Graphs
-        indices = [('Tmax', 'Max Temp (°C)', 40, df_d, 'Date'), ('HI', 'Heat Index (°C)', 41, df_h, 'Time'), ('WBGT', 'WBGT (°C)', 30, df_h, 'Time'), ('UTCI', 'UTCI (°C)', 38, df_h, 'Time')]
+        indices = [('Tmax', 'Maximum Temperature (°C)', 40, df_d, 'Date'), ('HI', 'Heat Index (°C)', 41, df_h, 'Time'), ('WBGT', 'WBGT (°C)', 31, df_h, 'Time'), ('UTCI', 'UTCI (°C)', 38, df_h, 'Time')]
         
         for col, label, th, data, time_col in indices:
             st.write(f"### {label}")
-            fig = px.line(data, x=time_col, y=col, markers=True)
-            fig.add_hline(y=th, line_dash="dash", line_color="red", annotation_text="Threshold")
+            fig = px.line(data, x=time_col, y=col, markers=True, color_discrete_sequence=['red' if 'Temp' in label or 'Heat' in label else 'orange'])
+            fig.add_hline(y=th, line_dash="dash", line_color="black", annotation_text=f"Risk Threshold ({th})")
             st.plotly_chart(fig, use_container_width=True)
 
-    # --- MODE 2: Climate Change (အနီရောင်ဂရပ်) ---
+    # --- MODE 2: Climate (အနီရောင်ဂရပ်) ---
     elif mode_index == 2:
-        st.subheader("🌡️ Climate Change Projection (2026-2100) SSP5-8.5")
+        st.subheader("🌡️ Future Climate Projection (2026-2100) SSP5-8.5")
         years = np.arange(2026, 2101)
-        # အပူချိန်မြင့်တက်လာမည့် Trend ကို Simulation လုပ်ခြင်း
-        temp_trend = [31.5 + (y-2026)*0.05 + np.random.normal(0, 0.4) for y in years]
-        
+        temp_trend = [31.5 + (y-2026)*0.048 + np.random.normal(0, 0.45) for y in years]
         fig_cc = px.line(x=years, y=temp_trend, labels={'x':'Year', 'y':'Max Temp (°C)'})
-        fig_cc.update_traces(line_color='red', line_width=3) # အနီရောင်ပြောင်းခြင်း
+        fig_cc.update_traces(line_color='red', line_width=3)
         st.plotly_chart(fig_cc, use_container_width=True)
-        st.warning("Under SSP5-8.5 (Fossil-fueled Development), extreme heat events are projected to increase significantly.")
+        st.warning("Under SSP5-8.5 (Fossil-fueled Development), extreme heat events and temperature dynamics in Myanmar are projected to increase significantly by 2100.")
+
+# Footer
+st.markdown("---")
+st.markdown("<div style='text-align: center; color: gray;'>Official System: Department of Meteorology and Hydrology (DMH) Myanmar</div>", unsafe_allow_html=True)
 
 # --- ၅။ Export Section ---
 st.markdown("---")
