@@ -50,7 +50,7 @@ LANG_DATA = {
         ]
     },
     "English": {
-        "title": "DMH AI Weather System",
+        "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection SSP5-8.5"],
@@ -147,7 +147,7 @@ if df_h is not None:
 
         # Rainfall
         st.subheader(T["charts"][1])
-        st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['skyblue']), use_container_width=True)
+        st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['green']), use_container_width=True)
 
         # Wind
         st.subheader(T["charts"][2])
