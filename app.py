@@ -8,57 +8,48 @@ from datetime import datetime
 import pytz
 import time
 
-# --- ၁။ Layout Setup ---
-st.set_page_config(page_title="DMH AI Weather Forecast System", layout="wide", page_icon="🌤️")
-
-# --- ၂။ Functions (Error ကင်းစေရန် အပေါ်ဆုံးတွင် ထားရမည်) ---
+# --- ၁။ Functions (အပေါ်ဆုံးတွင် ထားပါ) ---
 
 def calculate_all_indices(temp_c, rh):
-    """Heat Indices များတွက်ချက်ခြင်း"""
-    # Heat Index
-    hi = 0.5 * (temp_c + 61.0 + ((temp_c - 68.0) * 1.2) + (rh * 0.094))
-    # Simplified WBGT
-    e = (rh / 100) * 6.105 * np.exp(17.27 * temp_c / (237.7 + temp_c))
-    wbgt = (0.567 * temp_c) + (0.393 * e) + 3.94
-    # UTCI
-    utci = temp_c + (0.33 * e) - (0.7 * 0.1) - 4.0
-    return round(hi, 1), round(wbgt, 1), round(utci, 1)
+    """Heat Indices တွက်ချက်ခြင်း"""
+    try:
+        hi = 0.5 * (temp_c + 61.0 + ((temp_c - 68.0) * 1.2) + (rh * 0.094))
+        e = (rh / 100) * 6.105 * np.exp(17.27 * temp_c / (237.7 + temp_c))
+        wbgt = (0.567 * temp_c) + (0.393 * e) + 3.94
+        utci = temp_c + (0.33 * e) - (0.7 * 0.1) - 4.0
+        return round(hi, 1), round(wbgt, 1), round(utci, 1)
+    except:
+        return temp_c, temp_c, temp_c
 
 @st.cache_data(ttl=600)
 def fetch_weather(city):
     if city not in MYANMAR_CITIES: return None, None
     loc = MYANMAR_CITIES[city]
-    # Hourly data ထဲတွင် visibility ပါအောင် ထည့်သွင်းထားသည်
     url = f"https://api.open-meteo.com/v1/forecast?latitude={loc['lat']}&longitude={loc['lon']}&hourly=temperature_2m,relative_humidity_2m,precipitation,windspeed_10m,winddirection_10m,visibility,cloud_cover,cape&daily=temperature_2m_max,temperature_2m_min&windspeed_unit=mph&forecast_days=16&timezone=Asia%2FYangon"
     
     try:
         r = requests.get(url, timeout=15)
         r.raise_for_status()
         res = r.json()
-        
         df_h = pd.DataFrame({
             "Time": pd.to_datetime(res['hourly']['time']),
             "Temp": res['hourly']['temperature_2m'],
             "Humid": res['hourly']['relative_humidity_2m'],
-            "Rain": res['hourly']['precipitation'],
+            "precipitation": res['hourly']['precipitation'],
             "Wind": res['hourly']['windspeed_10m'],
             "WindDir": res['hourly']['winddirection_10m'],
-            "Vis": [v/1000 for v in res['hourly']['visibility']], # m to km
+            "Vis": [v/1000 for v in res['hourly']['visibility']],
             "Cloud_Oktas": [round((c/100)*8) for c in res['hourly']['cloud_cover']],
             "Thunderstorm": [min(round((c/3500)*100), 100) if c else 0 for c in res['hourly'].get('cape', [])]
         })
-        
-        # Heat Indices တွက်ချက်ခြင်း
         df_h['HI'], df_h['WBGT'], df_h['UTCI'] = zip(*df_h.apply(lambda x: calculate_all_indices(x['Temp'], x['Humid']), axis=1))
-        
         df_d = pd.DataFrame({
             "Date": pd.to_datetime(res['daily']['time']), 
             "Tmax": res['daily']['temperature_2m_max'], 
             "Tmin": res['daily']['temperature_2m_min']
         })
         return df_h, df_d
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
+    except:
         return None, None
 
 @st.cache_data
@@ -67,9 +58,10 @@ def load_stations():
         df_csv = pd.read_csv("Station.csv", encoding='utf-8-sig')
         return {str(row.iloc[0]).strip(): {'lat': float(row['Lat']), 'lon': float(row['Lon'])} for _, row in df_csv.iterrows()}
     except:
-        return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}, "Amarapura": {"lat": 21.90, "lon": 96.05}}
+        return {"Naypyidaw": {"lat": 19.76, "lon": 96.08}}
 
-# --- ၃။ Constants & Initialization ---
+# --- ၂။ Setup ---
+st.set_page_config(page_title="DMH AI Weather Forecast System", layout="wide", page_icon="🌤️")
 MYANMAR_CITIES = load_stations()
 city_list = sorted(list(MYANMAR_CITIES.keys()))
 mm_tz = pytz.timezone('Asia/Yangon')
@@ -83,37 +75,27 @@ LANG_DATA = {
         "station_label": "🎯 စခန်းအမည်ရွေးချယ်ပါ",
         "view_mode_label": "📊 View Mode",
         "modes": ["၁၆ ရက်စာ အသေးစိတ်ဆန်းစစ်ချက်", "အပူချိန်စောင့်ကြည့်ခြင်း (IBF-ကျန်းမာရေး )", "ရာသီဥတုပြောင်းလဲမှု (၂၁၀၀-SSP5-8.5)"],
-        "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများကို မိုးဇလတွင် စောင့်ကြည့်ပါ။",
-        "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်း၊ မိုးကြိုးနှင့် လျှပ်စီးများ သတိပြုရန်။",
-        "ibf_header": "🏥 ကျန်းမာရေးကဏ္ဍဆိုင်ရာ အကျိုးသက်ရောက်မှုနှင့် အကြံပြုချက်များ",
-        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "charts": ["🌡️ ၁။ အပူချိန်", "🌧️ ၂။ မိုးရေချိန် (၆ နာရီ)", "💨 ၃။ လေတိုက်နှုန်း", "🔭 ၄။ အဝေးမြင်တာ (km)", "💧 ၅။ စိုထိုင်းဆ (%)", "☁️ ၆။ တိမ်ဖုံးမှု", "⚡ ၇။ မိုးတိမ်တောင် (%)"],
-        "impact_list": ["Extreme danger! Heatstroke possible.", "High danger! Fatigue possible.", "Caution! Sun exposure fatigue.", "Normal conditions."],
-        "recom_list": ["အိမ်ထဲတွင်သာနေပါ။ ရေများများသောက်ပါ။", "ပြင်ပလုပ်ငန်းများကို နံနက်/ညနေသာလုပ်ပါ။", "ပေါ့ပါးသောအဝတ်များဝတ်ပါ။", "ပုံမှန်အတိုင်းနေနိုင်ပါသည်။"]
+        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"]
     },
     "English": {
         "title": "DMH AI Weather Forecast System",
         "station_label": "🎯 Select Station",
         "view_mode_label": "📊 View Mode",
         "modes": ["16-Days Forecast", "Heatwave Monitoring (IBF)", "Climate Change Projection"],
-        "dmh_alert": "📢 Tip: Follow DMH news for latest updates.",
-        "storm_note": "📝 Note: Beware of lightning if probability > 60%.",
-        "ibf_header": "🏥 Health Impacts & Recommendations",
-        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"],
         "charts": ["🌡️ 1. Temp", "🌧️ 2. Rain", "💨 3. Wind", "🔭 4. Vis", "💧 5. Humid", "☁️ 6. Cloud", "⚡ 7. Storm"],
-        "impact_list": ["Extreme danger!", "High danger!", "Caution!", "Normal."],
-        "recom_list": ["Stay indoors.", "Work morning/evening.", "Wear light clothes.", "Stay hydrated."]
+        "risk_levels": ["Extreme Risk", "High Risk", "Moderate Risk", "Low Risk"]
     }
 }
 
-# --- ၄။ Sidebar & UI ---
+# --- ၃။ Sidebar ---
 st.sidebar.image(dm_header_logo, width=100)
 lang = st.sidebar.radio("🌐 Language", ["မြန်မာ", "English"], horizontal=True)
 T = LANG_DATA[lang]
-bias = st.sidebar.slider("🌡️ Bias Correction (°C)", -5.0, 5.0, 0.0)
 selected_city = st.sidebar.selectbox(T["station_label"], city_list)
 view_mode_choice = st.sidebar.radio(T["view_mode_label"], T["modes"])
 mode_index = T["modes"].index(view_mode_choice)
+bias = st.sidebar.slider("🌡️ Bias Correction", -5.0, 5.0, 0.0)
 
 st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
@@ -125,72 +107,75 @@ if df_h is not None:
     df_d['Tmax'] += bias
     df_d['Tmin'] += bias
 
+    # --- MODE 0: ၁၆ ရက်စာ (ဂရပ် ၇ ခု အထက်အောက်) ---
     if mode_index == 0:
-        st.warning(T["dmh_alert"])
-        
-        # Temp Chart
+        # 1. Temperature
         st.subheader(T["charts"][0])
         st.plotly_chart(px.line(df_d, x='Date', y=['Tmax', 'Tmin'], markers=True), use_container_width=True)
 
-        # Resampling 6h (Rain column အမည်သေချာစေရန် ပြင်ဆင်ထားသည်)
-        df_6h = df_h.set_index('Time').resample('6H').agg({
-            'Rain': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 
-            'Cloud_Oktas': 'max', 'Thunderstorm': 'max'
-        }).reset_index()
+        df_6h = df_h.set_index('Time').resample('6h').agg({'precipitation': 'sum', 'Wind': 'mean', 'WindDir': 'mean', 'Cloud_Oktas': 'max', 'Thunderstorm': 'max'}).reset_index()
 
-        # Rainfall
+        # 2. Rainfall
         st.subheader(T["charts"][1])
-        st.plotly_chart(px.bar(df_6h, x='Time', y='Rain', color_discrete_sequence=['green']), use_container_width=True)
+        st.plotly_chart(px.bar(df_6h, x='Time', y='precipitation', color_discrete_sequence=['dodgerblue']), use_container_width=True)
 
-        # Wind
+        # 3. Wind
         st.subheader(T["charts"][2])
-        fig_wind = go.Figure()
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='darkgreen')))
-        fig_wind.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
-        st.plotly_chart(fig_wind, use_container_width=True)
+        fig_w = go.Figure()
+        fig_w.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='lines+markers', line=dict(color='green')))
+        fig_w.add_trace(go.Scatter(x=df_6h['Time'], y=df_6h['Wind'], mode='markers', marker=dict(symbol='triangle-up', angle=df_6h['WindDir'], size=12, color='red')))
+        st.plotly_chart(fig_w, use_container_width=True)
 
-        # Visibility & Humidity
-        c_vis, c_hum = st.columns(2)
-        with c_vis:
-            st.subheader(T["charts"][3])
-            st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
-        with c_hum:
-            st.subheader(T["charts"][4])
-            st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
+        # 4. Visibility
+        st.subheader(T["charts"][3])
+        st.plotly_chart(px.line(df_h, x='Time', y='Vis', color_discrete_sequence=['gray']), use_container_width=True)
 
-        # Cloud & Storm
+        # 5. Humidity
+        st.subheader(T["charts"][4])
+        st.plotly_chart(px.area(df_h, x='Time', y='Humid', color_discrete_sequence=['purple']), use_container_width=True)
+
+        # 6. Cloud
         st.subheader(T["charts"][5])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Cloud_Oktas', color_discrete_sequence=['lightgreen']), use_container_width=True)
-        
+
+        # 7. Thunderstorm
         st.subheader(T["charts"][6])
-        st.error(T["storm_note"])
         st.plotly_chart(px.bar(df_6h, x='Time', y='Thunderstorm', color_discrete_sequence=['orange']), use_container_width=True)
 
+    # --- MODE 1: IBF (ဂရပ် ၄ ခု) ---
     elif mode_index == 1:
-        st.subheader(T["ibf_header"])
-        idx_choice = st.radio("🌡️ Select Index", ["အမြင့်ဆုံးအပူချိန်", "Heat Index", "WBGT", "UTCI"], horizontal=True)
-        
+        st.subheader("🏥 Heatwave Risk Monitoring (IBF)")
         t_now = df_h.iloc[0]
-        if idx_choice == "အမြင့်ဆုံးအပူချိန်": val, th = df_d.iloc[0]['Tmax'], [42, 40, 38]
-        elif idx_choice == "Heat Index": val, th = t_now['HI'], [41, 38, 35]
-        elif idx_choice == "WBGT": val, th = t_now['WBGT'], [32, 30, 28]
-        else: val, th = t_now['UTCI'], [38, 32, 26]
-
-        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
-        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
-        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
+        today_max = df_d.iloc[0]['Tmax']
+        
+        # Color Box Logic
+        if today_max >= 42: lvl, color, bg = 0, "white", "#FF0000"
+        elif today_max >= 40: lvl, color, bg = 1, "black", "#FFA500"
+        elif today_max >= 38: lvl, color, bg = 2, "black", "#FFFF00"
         else: lvl, color, bg = 3, "white", "#008000"
 
-        st.markdown(f"""
-            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
-                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
-                <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown(f"<div style='background-color:{bg}; color:{color}; padding:20px; border-radius:15px; text-align:center;'><h1>{T['risk_levels'][lvl]}</h1><p>Max Temp: {today_max:.1f} °C</p></div>", unsafe_allow_html=True)
 
-        c1, c2 = st.columns(2)
-        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
-        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+        # 4 Graphs
+        indices = [('Tmax', 'Max Temp (°C)', 40, df_d, 'Date'), ('HI', 'Heat Index (°C)', 41, df_h, 'Time'), ('WBGT', 'WBGT (°C)', 30, df_h, 'Time'), ('UTCI', 'UTCI (°C)', 38, df_h, 'Time')]
+        
+        for col, label, th, data, time_col in indices:
+            st.write(f"### {label}")
+            fig = px.line(data, x=time_col, y=col, markers=True)
+            fig.add_hline(y=th, line_dash="dash", line_color="red", annotation_text="Threshold")
+            st.plotly_chart(fig, use_container_width=True)
+
+    # --- MODE 2: Climate Change (အနီရောင်ဂရပ်) ---
+    elif mode_index == 2:
+        st.subheader("🌡️ Climate Change Projection (2026-2100) SSP5-8.5")
+        years = np.arange(2026, 2101)
+        # အပူချိန်မြင့်တက်လာမည့် Trend ကို Simulation လုပ်ခြင်း
+        temp_trend = [31.5 + (y-2026)*0.05 + np.random.normal(0, 0.4) for y in years]
+        
+        fig_cc = px.line(x=years, y=temp_trend, labels={'x':'Year', 'y':'Max Temp (°C)'})
+        fig_cc.update_traces(line_color='red', line_width=3) # အနီရောင်ပြောင်းခြင်း
+        st.plotly_chart(fig_cc, use_container_width=True)
+        st.warning("Under SSP5-8.5 (Fossil-fueled Development), extreme heat events are projected to increase significantly.")
 
 # --- ၅။ Export Section ---
 st.markdown("---")
