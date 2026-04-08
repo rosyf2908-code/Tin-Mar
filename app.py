@@ -221,23 +221,24 @@ if df_h is not None:
             plot_df = df_h
             x_axis = 'Time'
 
-        # Risk Level သတ်မှတ်ခြင်း
-        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"     # Extreme
-        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"   # High
-        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"   # Moderate
-        else: lvl, color, bg = 3, "white", "#008000"              # Low
+       # Risk Level သတ်မှတ်ခြင်း (သေချာအောင် ပြန်စစ်ရန်)
+        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
+        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
+        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
+        else: lvl, color, bg = 3, "white", "#008000"
 
-        # Indicator Card
+        # --- ဒီအပိုင်းမှာ Indentation မှားတတ်လို့ သတိထားပြီး အစားထိုးပါ ---
         st.markdown(f"""
-            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
-                <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
-                <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
-            </div>
-        """, unsafe_allow_html=True)
+<div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
+    <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
+    <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
+</div>
+""", unsafe_allow_html=True)
+        # -----------------------------------------------------------
 
-        col1, col2 = st.columns(2)
-        with col1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
-        with col2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+        c1, c2 = st.columns(2)
+        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
+        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
 
         # Chart ဆွဲခြင်း
         if idx_choice == "အမြင့်ဆုံးအပူချိန်":
