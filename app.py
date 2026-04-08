@@ -1,5 +1,6 @@
 import streamlit as st
-import pd as pd
+import pandas as pd
+import requests
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
