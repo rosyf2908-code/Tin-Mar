@@ -230,7 +230,6 @@ if df_h is not None:
         st.plotly_chart(px.line(x=years, y=trend, labels={'x':'Year', 'y':'Temp (°C)'}), use_container_width=True)
         st.warning("⚠️ **Climate Risk Note:** Under the SSP 5-8.5 scenario, Myanmar could face significantly higher frequency of extreme heat and unpredictable monsoon patterns by the end of the century.")
 # --- ၆။ Export Report ---
-st.markdown("---")
 if st.button("🚀 Export All Stations Report"):
     all_data = []
     p_bar = st.progress(0)
@@ -249,6 +248,9 @@ if st.button("🚀 Export All Stations Report"):
                     'Max_WBGT': day_indices['WBGT'].max(),
                     'Rain_24h': round(rain_24h, 2)
                 })
+       # --- ဒီနေရာမှာ ၁ စက္ကန့် စောင့်ခိုင်းလိုက်ပါ ---
+        time.sleep(1) 
+        
         p_bar.progress((i + 1) / len(city_list))
     st.session_state['master_df'] = pd.DataFrame(all_data)
 
