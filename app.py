@@ -250,9 +250,6 @@ if 'master_df' in st.session_state:
     st.dataframe(final_df, use_container_width=True)
     st.download_button("📥 Download (CSV)", final_df.to_csv(index=False).encode('utf-8-sig'), f"DMH_Report_{sel_date}.csv")
 
-st.markdown("---")
-st.caption("Official System: Department of Meteorology and Hydrology (DMH) Myanmar | Forecast: Open-Meteo API")
-
     # Data Description Box
     st.markdown("""
     <div style='background-color: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-top:20px;'>
