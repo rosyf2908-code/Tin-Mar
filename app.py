@@ -186,48 +186,73 @@ if df_h is not None:
         st.subheader(T["ibf_header"])
         idx_choice = st.radio("🌡️ Select Heat Stress Index to Monitor", ["အမြင့်ဆုံးအပူချိန်", "Heat Index", "WBGT", "UTCI"], horizontal=True)
         
+        # လက်ရှိအချိန်နဲ့ အနီးဆုံး data ကို ယူရန်
         t_now = df_h.iloc[0]
         tmax_today = df_d.iloc[0]['Tmax']
-        hi_today, wbgt_today, utci_today = t_now['HI'], t_now['WBGT'], t_now['UTCI']
+        
+        # Column mapping ကို သေချာအောင် လုပ်ခြင်း
+        # မှတ်ချက်- fetch_weather function ထဲက column name တွေနဲ့ တူရပါမယ်
+        hi_today = t_now.get('HI', 0)
+        wbgt_today = t_now.get('WBGT', 0)
+        utci_today = t_now.get('UTCI', 0)
 
         if idx_choice == "အမြင့်ဆုံးအပူချိန်":
             val, th = tmax_today, [42, 40, 38]
             display_title = "၁၆ ရက်စာ အမြင့်ဆုံးအပူချိန် ခန့်မှန်းချက်"
+            y_col = 'Tmax'
+            plot_df = df_d
+            x_axis = 'Date'
         elif idx_choice == "Heat Index": 
             val, th = hi_today, [41, 38, 35]
             display_title = "၁၆ ရက်စာ Heat Index ခန့်မှန်းချက်"
+            y_col = 'HI'
+            plot_df = df_h
+            x_axis = 'Time'
         elif idx_choice == "WBGT": 
             val, th = wbgt_today, [32, 30, 28]
             display_title = "၁၆ ရက်စာ WBGT ခန့်မှန်းချက်"
+            y_col = 'WBGT'
+            plot_df = df_h
+            x_axis = 'Time'
         else: 
             val, th = utci_today, [38, 32, 26]
             display_title = "၁၆ ရက်စာ UTCI ခန့်မှန်းချက်"
+            y_col = 'UTCI'
+            plot_df = df_h
+            x_axis = 'Time'
 
-        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"
-        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"
-        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"
-        else: lvl, color, bg = 3, "white", "#008000"
+        # Risk Level သတ်မှတ်ခြင်း
+        if val >= th[0]: lvl, color, bg = 0, "white", "#FF0000"     # Extreme
+        elif val >= th[1]: lvl, color, bg = 1, "black", "#FFA500"   # High
+        elif val >= th[2]: lvl, color, bg = 2, "black", "#FFFF00"   # Moderate
+        else: lvl, color, bg = 3, "white", "#008000"              # Low
 
+        # Indicator Card
         st.markdown(f"""
-            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333;'>
-                <h1 style='margin:0;'>{T['risk_levels'][lvl]}</h1>
+            <div style='background-color:{bg}; color:{color}; padding:25px; border-radius:15px; text-align:center; border: 2px solid #333; margin-bottom: 20px;'>
+                <h1 style='margin:0; font-size: 2.5em;'>{T['risk_levels'][lvl]}</h1>
                 <p style='font-size:1.5em; margin-top:10px;'>{idx_choice}: <b>{val:.1f} °C</b></p>
             </div>
         """, unsafe_allow_html=True)
 
-        c1, c2 = st.columns(2)
-        with c1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
-        with c2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
+        col1, col2 = st.columns(2)
+        with col1: st.info(f"### ⚠️ Impact\n{T['impact_list'][lvl]}")
+        with col2: st.success(f"### ✅ Action\n{T['recom_list'][lvl]}")
 
+        # Chart ဆွဲခြင်း
         if idx_choice == "အမြင့်ဆုံးအပူချိန်":
-            fig_ibf = px.bar(df_d, x='Date', y='Tmax', color='Tmax', color_continuous_scale='YlOrRd', title=display_title)
-            for i, label in enumerate(["Extreme", "High", "Moderate"]):
-                fig_ibf.add_hline(y=th[i], line_dash="dash", line_color="red", annotation_text=label)
+            fig_ibf = px.bar(plot_df, x=x_axis, y=y_col, color=y_col, 
+                             color_continuous_scale=['green', 'yellow', 'orange', 'red'],
+                             title=display_title)
         else:
-            col_map = {"Heat Index": "HI", "WBGT": "WBGT", "UTCI": "UTCI"}
-            fig_ibf = px.line(df_h, x='Time', y=col_map[idx_choice], markers=True, title=display_title)
-            fig_ibf.add_hline(y=th[0], line_dash="dash", line_color="red", annotation_text="Extreme Risk")
+            fig_ibf = px.line(plot_df, x=x_axis, y=y_col, title=display_title)
+            # Risk Threshold မြင်းများ ထည့်ခြင်း
+            colors = ["red", "orange", "yellow"]
+            labels = ["Extreme", "High", "Moderate"]
+            for i in range(3):
+                fig_ibf.add_hline(y=th[i], line_dash="dash", line_color=colors[i], annotation_text=labels[i])
 
+        fig_ibf.update_layout(hovermode="x unified")
         st.plotly_chart(fig_ibf, use_container_width=True)
 
             # Risk Indicator UI
