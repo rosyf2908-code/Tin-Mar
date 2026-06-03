@@ -8,6 +8,12 @@ from datetime import datetime
 import pytz
 from plotly.subplots import make_subplots
 
+# 💡 အသစ်ရေးထားခဲ့သော Verification Engine ကို လှမ်းခေါ်ခြင်း
+try:
+    from verification_engine import DMHForecastVerification
+except ImportError:
+    DMHForecastVerification = None
+
 # --- ၁။ Layout Setup ---
 st.set_page_config(page_title="DMH AI Weather Forecast System", layout="wide", page_icon="🌤️")
 mm_tz = pytz.timezone('Asia/Yangon')
@@ -23,7 +29,7 @@ def calculate_all_indices(temp_c, rh):
     utci = temp_c + (0.33 * e) - (0.7 * 0.1) - 4.0
     return round(hi, 1), round(wbgt, 1), round(utci, 1)
 
-# --- ၃။ ဘာသာစကားနှင့် စာသားများ (Air Quality အတွက် Mode ၇ ခုမြောက် ထပ်တိုးထားသည်) ---
+# --- ၃။ ဘာသာစကားနှင့် စာသားများ (Audit မီနူးပါ ထည့်သွင်းထားပါသည်) ---
 LANG_DATA = {
     "မြန်မာ": {
         "title": "DMH AI မိုးလေဝသခန်းမှန်းစနစ်",
@@ -36,7 +42,8 @@ LANG_DATA = {
             "Icon Style ခန့်မှန်းချက်",
             "ပင်လယ်ပြင် လှိုင်းအခြေအနေခန့်မှန်းချက်",
             "နိုင်ငံတကာနှင့် စိတ်ကြိုက်နေရာ ရှာဖွေရန်",
-            "လေထုအရည်အသွေး ခန့်မှန်းချက် (Air Quality)"
+            "လေထုအရည်အသွေး ခန့်မှန်းချက် (Air Quality)",
+            "Model Accuracy Audit 📊 (အလိုအလျောက် စစ်ဆေးချက်)"
         ], 
         "dmh_alert": "📢 အကြံပြုချက်: နောက်ဆုံးရ မိုးလေဝသသတင်းများအတွက် မိုးဇလ သတင်းများကိုစောင့်ကြည့်ပါ။",
         "storm_note": "📝 မှတ်ချက်: မိုးတိမ်တောင် ဖြစ်နိုင်ခြေ ၆၀% ထက်ကျော်လွန်ပါက လေပြင်းတိုက်ခတ်ခြင်း၊ မိုးကြိုးပစ်ခြင်းနှင့် လျှပ်စီးလက်ခြင်းများ ဖြစ်ပေါ်နိုင်သဖြင့် ဂရုပြုရန် လိုအပ်ပါသည်။",
@@ -74,7 +81,8 @@ LANG_DATA = {
             "Icon Style Forecast",
             "Marine Wave Forecast",
             "Global & Custom Coordinates Search",
-            "Air Quality Forecast"
+            "Air Quality Forecast",
+            "Model Accuracy Audit 📊"
         ],
         "dmh_alert":  "📢 Tip: Follow DMH news for the latest weather updates.",
         "storm_note": "📝 Note: If thunderstorm probability exceeds 60%, beware of strong winds and lightning.",
@@ -211,9 +219,13 @@ elif mode_index == 5:  # Global & Custom Search Logic
         selected_city = f"Custom Location ({c_lat}, {c_lon})"
         active_dict = {selected_city: {"lat": c_lat, "lon": c_lon, "tz": "Asia/Yangon"}}
 
-elif mode_index == 6:  # Air Quality Mode (Default to active city selection)
+elif mode_index == 6:  # Air Quality Mode
     selected_city = st.sidebar.selectbox(T["station_label"], city_list)
     active_dict = MYANMAR_CITIES
+
+elif mode_index == 7:  # Model Accuracy Audit Mode
+    selected_city = "Automation Engine Monitor"
+    active_dict = {}
 
 else:
     selected_city = st.sidebar.selectbox(T["station_label"], city_list)
@@ -224,7 +236,7 @@ st.title(T["title"])
 st.info(f"📍 {selected_city} | 🕒 {formatted_now}")
 
 # API Fetching Control Logic
-if mode_index not in [4, 6]:
+if mode_index not in [4, 6, 7]:
     df_h, df_d = fetch_weather_generic(selected_city, active_dict)
 else:
     df_h, df_d = None, None 
@@ -516,7 +528,7 @@ elif mode_index == 5:
     if df_global_h is not None:
         render_icon_style_forecast(df_global_h)
 
-# Mode 6: Air Quality Forecast Integration (ခွဲထုတ်ပြင်ဆင်ပြီး)
+# Mode 6: Air Quality Forecast Integration
 elif mode_index == 6:
     header_text = "😷 ၅ ရက်စာ လေထုအရည်အသွေးနှင့် အမှုန်အမွှား ခန့်မှန်းချက်" if lang == "မြန်မာ" else "😷 5-Day Air Quality Forecast System"
     st.subheader(header_text)
@@ -577,18 +589,58 @@ elif mode_index == 6:
             
         st.subheader("📊 ၅ ရက်စာ လေထုညစ်ညမ်းမှု အညွှန်းကိန်း ပြောင်းလဲမှုဇယား")
         fig_aq = px.line(df_aq, x="DateTime", y=["PM2.5 (μg/m³)", "PM10 (μg/m³)", "Ozone (μg/m³)", "NO2 (μg/m³)"],
-                         title=f"{selected_city} - 5-Day Pollutants Timeline",
-                         template="plotly_white")
-        fig_aq.update_traces(line_shape='spline', line_smoothing=1.2)
+                        title=f"{selected_city} - 5-Day Pollutants Timeline",
+                        labels={"DateTime": "နေ့ရက်/အချိန် (Time)", "value": "ပမာဏ (μg/m³)"},
+                        template="plotly_white")
+            
+        fig_aq.update_traces(line_shape='spline', line_smoothing=1.1)
         st.plotly_chart(fig_aq, use_container_width=True)
-        
-        with st.expander("📋 အသေးစိတ် ဒေတာဇယား"):
+            
+        with st.expander("📋 အသေးစိတ် လေထုအရည်အသွေး တစ်နာရီချင်းစီအလိုက် ဒေတာဇယား"):
             df_aq_disp = df_aq.copy()
             df_aq_disp['DateTime'] = df_aq_disp['DateTime'].dt.strftime('%Y-%m-%d %H:%M')
             st.dataframe(df_aq_disp.set_index("DateTime"), use_container_width=True)
-            
-    except Exception as e_aq:
-        st.error(f"Air Quality API Error: {e_aq}")
+                
+    except Exception as eaq:
+        st.error(f"လေထုအရည်အသွေး API ချိတ်ဆက်မှု အဆင်မပြေပါ - {eaq}")
+
+                
+                # CSV Export Report Button
+                csv_data = summary_df.to_csv().encode('utf-8')
+                st.download_button("📥 Export Audit Report (CSV)", csv_data, "DMH_Model_Audit_Report.csv", "text/csv")
+                
+                st.markdown("---")
+                
+                # Dynamic Dropdown ဖြင့် Mode တစ်ခုချင်းစီကို တိုက်စစ်ခြင်း
+                st.markdown("### 🔍 Mode တစ်ခုချင်းစီအလိုက် Time-Series တိုက်ဆိုင်စစ်ဆေးခြင်း")
+                selected_audit_mode = st.selectbox("စစ်ဆေးလိုသော Mode ကို ရွေးချယ်ပါ -", [f"Mode_{i}" for i in range(1, 8)])
+                
+                merged_data = verifier.merge_data()
+                
+                # Plotly Chart ဖြင့် စုစည်းဆွဲသားခြင်း
+                fig_audit = go.Figure()
+                fig_audit.add_trace(go.Scatter(
+                    x=merged_data['Date'], y=merged_data[selected_audit_mode],
+                    mode='lines+markers', name=f'AI Forecast ({selected_audit_mode})',
+                    line=dict(color='#1f77b4', width=2)
+                ))
+                fig_audit.add_trace(go.Scatter(
+                    x=merged_data['Date'], y=merged_data['Actual_Temp'],
+                    mode='lines+markers', name='Actual Observed (မြေပြင်)',
+                    line=dict(color='#ff7f0e', width=2, dash='dash')
+                ))
+                
+                fig_audit.update_layout(
+                    title=f"{selected_audit_mode} ခန့်မှန်းချက်နှင့် မြေပြင်တိုင်းထွာချက် နှိုင်းယှဉ်မှု ဂရပ်",
+                    xaxis_title="နေ့စွဲ (Date)",
+                    yaxis_title="အပူချိန် (Temperature °C)",
+                    hovermode="x unified",
+                    template="plotly_white"
+                )
+                st.plotly_chart(fig_audit, use_container_width=True)
+            else:
+                st.error("ဒေတာများ ပေါင်းစပ်ရာတွင် လွဲချော်မှုရှိနေပါသည်။ Date နှင့် Station Format ကို စစ်ဆေးပါ။")
+
 # --- ၈။ Export Report ---
 st.markdown("---")
 if st.button("🚀 Export All Stations Report"):
